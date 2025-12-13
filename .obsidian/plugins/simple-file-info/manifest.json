@@ -1,0 +1,10 @@
+{
+	"id": "simple-file-info",
+	"name": "Simple File Info",
+	"version": "1.0.3",
+	"minAppVersion": "1.8.4",
+	"description": "A lightweight file info pane with native look and feel.",
+	"author": "Lukas Capkovic",
+	"authorUrl": "https://github.com/lukas-cap/",
+	"isDesktopOnly": false
+}

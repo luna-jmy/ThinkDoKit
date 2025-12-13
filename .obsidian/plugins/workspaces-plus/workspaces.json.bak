@@ -1,0 +1,227 @@
+{
+  "workspaces": {
+    "homepage": {
+      "main": {
+        "id": "5324373015726ba8",
+        "type": "split",
+        "children": [
+          {
+            "id": "4509724f8bf84da7",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "7a229615c5f76ea5",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "👉从这里开始 Start from here!.md",
+                    "mode": "preview",
+                    "source": false
+                  },
+                  "icon": "lucide-file",
+                  "title": "👉从这里开始 Start from here!"
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "vertical"
+      },
+      "left": {
+        "id": "81c9f666f91594b0",
+        "type": "split",
+        "children": [
+          {
+            "id": "0d4936ce4a90f2a3",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "c2bbd590909f709a",
+                "type": "leaf",
+                "state": {
+                  "type": "file-explorer",
+                  "state": {
+                    "sortOrder": "alphabetical",
+                    "autoReveal": false
+                  },
+                  "icon": "lucide-folder-closed",
+                  "title": "文件列表"
+                }
+              },
+              {
+                "id": "d5612903fd42aec7",
+                "type": "leaf",
+                "state": {
+                  "type": "search",
+                  "state": {
+                    "query": "",
+                    "matchingCase": false,
+                    "explainSearch": false,
+                    "collapseAll": false,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical"
+                  },
+                  "icon": "lucide-search",
+                  "title": "搜索"
+                }
+              },
+              {
+                "id": "c113b3768263545e",
+                "type": "leaf",
+                "state": {
+                  "type": "bookmarks",
+                  "state": {},
+                  "icon": "lucide-bookmark",
+                  "title": "书签"
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "horizontal",
+        "width": 230.5
+      },
+      "right": {
+        "id": "1d363781f2dc0572",
+        "type": "split",
+        "children": [
+          {
+            "id": "4670e93cec4ca723",
+            "type": "tabs",
+            "dimension": 29.840319361277444,
+            "children": [
+              {
+                "id": "bcd65f4256ddd6f9",
+                "type": "leaf",
+                "state": {
+                  "type": "journal-calendar",
+                  "state": {},
+                  "icon": "calendar-days",
+                  "title": "Calendar"
+                }
+              },
+              {
+                "id": "88b97d3b6cf6ac68",
+                "type": "leaf",
+                "state": {
+                  "type": "backlink",
+                  "state": {
+                    "file": "从这里开始 Start from here!.md",
+                    "collapseAll": false,
+                    "extraContext": false,
+                    "sortOrder": "alphabetical",
+                    "showSearch": false,
+                    "searchQuery": "",
+                    "backlinkCollapsed": false,
+                    "unlinkedCollapsed": true
+                  },
+                  "icon": "links-coming-in",
+                  "title": "从这里开始 Start from here! 的反向链接列表"
+                }
+              },
+              {
+                "id": "03978fdd3cdfe5e1",
+                "type": "leaf",
+                "state": {
+                  "type": "outgoing-link",
+                  "state": {
+                    "file": "从这里开始 Start from here!.md",
+                    "linksCollapsed": false,
+                    "unlinkedCollapsed": true
+                  },
+                  "icon": "links-going-out",
+                  "title": "从这里开始 Start from here! 的出链列表"
+                }
+              }
+            ]
+          },
+          {
+            "id": "ab6e053c3b226343",
+            "type": "tabs",
+            "dimension": 70.15968063872255,
+            "children": [
+              {
+                "id": "d4ab8c6cfc5b462a",
+                "type": "leaf",
+                "state": {
+                  "type": "outline",
+                  "state": {
+                    "file": "👉从这里开始 Start from here!.md",
+                    "followCursor": false,
+                    "showSearch": false,
+                    "searchQuery": ""
+                  },
+                  "icon": "lucide-list",
+                  "title": "👉从这里开始 Start from here! 的大纲"
+                }
+              },
+              {
+                "id": "e5596e1c26280c30",
+                "type": "leaf",
+                "state": {
+                  "type": "tag",
+                  "state": {
+                    "sortOrder": "frequency",
+                    "useHierarchy": true,
+                    "showSearch": true,
+                    "searchQuery": ""
+                  },
+                  "icon": "lucide-tags",
+                  "title": "标签"
+                }
+              },
+              {
+                "id": "9d576e43328e4571",
+                "type": "leaf",
+                "state": {
+                  "type": "file-properties",
+                  "state": {
+                    "file": "👉从这里开始 Start from here!.md"
+                  },
+                  "icon": "lucide-info",
+                  "title": "👉从这里开始 Start from here!的笔记属性"
+                }
+              },
+              {
+                "id": "055375921944b3e5",
+                "type": "leaf",
+                "state": {
+                  "type": "planner-timeline",
+                  "state": {},
+                  "icon": "calendar-with-checkmark",
+                  "title": "Timeline"
+                }
+              }
+            ],
+            "currentTab": 2
+          }
+        ],
+        "direction": "horizontal",
+        "width": 327.5
+      },
+      "left-ribbon": {
+        "hiddenItems": {
+          "homepage:Open homepage": false,
+          "switcher:打开快速切换": false,
+          "graph:查看关系图谱": false,
+          "canvas:新建白板": false,
+          "daily-notes:打开/创建今天的日记": false,
+          "templates:插入模板": true,
+          "command-palette:打开命令面板": false,
+          "zk-prefixer:创建时间戳笔记": true,
+          "random-note:开始漫游笔记": false,
+          "audio-recorder:开始/结束录音": false,
+          "workspaces:管理工作区布局": false,
+          "templater-obsidian:Templater": false,
+          "obsidian-spaced-repetition:复习卡片": false,
+          "obsidian-day-planner:Open Timeline": false,
+          "obsidian-day-planner:Open Multi-Day View": false
+        }
+      },
+      "active": "c2bbd590909f709a",
+      "mtime": "2025-06-05T13:57:43+08:00"
+    }
+  },
+  "active": "homepage"
+}

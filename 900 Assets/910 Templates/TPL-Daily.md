@@ -1,0 +1,106 @@
+---
+journal: Daily
+journal-date: 
+type: daily_log
+created: <% tp.date.now() %>
+tags:
+  - journal/daily
+---
+
+# <% tp.file.title %> 日志
+***日事日毕，日清日高***
+
+## ✨ 今日关注
+```button
+name 添加今日待办
+type command
+action QuickAdd: 📌 AddTodoToday
+color green
+```
+>*此处记录当日最重要的任务、日程和灵感。如在手机端使用，推荐用按钮添加待办*
+### 🐸 今日待办
+
+%%🐸[[学习笔记《吃掉那只青蛙》|吃掉那只青蛙]]%%  
+> *提示: 通过 `Tasks插件` 的快捷键 `Alt+t` 可以快速帮你在这里添加/编辑任务。也可以通过在任意笔记的任意位置使用 `QuickAdd: 📌 AddTodoToday` 随时添加今日待办*
+
+### 🔄 Rollover Todos
+> *提示: 点击下方按钮👇可将前一日未完成的任务转移到此处。（需开启Rollover Daily Todos 插件）*
+
+```button
+name 任务转移
+type command
+action Rollover Daily Todos: Rollover Todos Now
+color blue
+```
+
+### 🗓️ 日程安排
+> *提示: Day Planner 插件可以在侧边栏或主区域显示当日时间线。调整时间段即可更改日程时间块显示。*
+
+- 10:00 - 11:00 日程1
+- 13:30 - 15:30  日程2
+
+### 📈 习惯记录
+```button
+name 打卡
+type command
+action QuickAdd: UpdateInlineField
+color purple
+```
+
+#### 打卡（布尔值🔲✅❎）
+- [💊medicine::]
+- [🧠flashcard::]
+- [🧘‍♂️meditation::]
+- [🍽️fasting::]
+
+#### 数据（仅填写数值）
+%%图标单位含义：⚖️公斤kg；🕓分钟；⏳小时；📅日；💰元；💸万元；🧮次数%%
+- [weight⚖️::]
+- [exercise🕓::]
+- [reading🕓::]
+- [saving💰::]
+- [spent💰::]
+
+## ✍️ 今日小结与回顾
+
+- **今天最重要的一件事🐸**: 
+- **遇到的问题**: 
+- **明天需要关注的🐸**: 
+
+## 💡 灵感与思考
+
+
+## 📥 收件箱清理
+- 待完成任务（不含当日）：
+```tasks
+path includes 540 Daily
+tags include #inbox
+not done
+filename does not include {{date:YYYY-MM-DD}}
+```
+
+- 待整理日志：
+```dataview
+TABLE file.ctime AS "创建日期", file.mtime AS "最后修改时间"
+WHERE startswith(file.path, "000 Inbox") OR contains(tags, "inbox")
+WHERE file.name != "Inbox Note List"
+WHERE !startswith(file.path, "500 Journal")
+SORT file.mtime DESC
+```
+
+## 🔗 相关日志
+
+```calendar-nav
+
+```
+
+```journals-home
+show:
+  - day
+  - week
+  - month
+  - year
+scale: 1
+separator: " | "
+```
+

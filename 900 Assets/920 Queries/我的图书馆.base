@@ -1,0 +1,37 @@
+filters:
+  and:
+    - file.path.contains("BookInfo")
+views:
+  - type: cards
+    name: 图书列表
+    order:
+      - file.name
+      - 豆瓣评分
+      - 我的评级
+      - 阅读状态
+      - tags
+    sort:
+      - property: 阅读状态
+        direction: ASC
+    image: note.封面
+  - type: table
+    name: 图书信息
+    order:
+      - file.name
+      - 豆瓣评分
+      - 我的评级
+      - 阅读状态
+      - 已读页数
+      - 开始时间
+      - 读完时间
+      - 短评
+      - 备注
+      - 豆瓣页面
+    sort:
+      - property: 阅读状态
+        direction: ASC
+    image: note.封面
+    columnSize:
+      note.我的评级: 113
+      note.短评: 127
+      note.备注: 153

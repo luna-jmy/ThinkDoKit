@@ -1,0 +1,14 @@
+.view-content .metadata-container {
+    max-height: 30px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    cursor: pointer;
+}
+
+.view-content .metadata-container.is-collapsed {
+    max-height: 30px;
+}
+
+.view-content .metadata-container:not(.is-collapsed) {
+    max-height: 700px;
+}

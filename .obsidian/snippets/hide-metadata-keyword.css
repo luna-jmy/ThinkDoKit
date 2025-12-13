@@ -1,0 +1,14 @@
+/* 专门针对你的HTML结构 */
+span.dataview.inline-field-value[data-dv-key="keyword"] {
+    position: relative;
+}
+
+/* 隐藏键名，只显示值 */
+span.dataview.inline-field-value[data-dv-key="keyword"]::before {
+    content: '';
+}
+
+/* 如果有兄弟元素（键名部分），隐藏它 */
+span.dataview.inline-field-key[data-dv-key="keyword"] {
+    display: none;
+}

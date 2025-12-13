@@ -1,0 +1,21 @@
+/* 笔记中的属性默认折叠，悬停展开 */
+.markdown-source-view .metadata-container {
+    max-height: 30px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.markdown-source-view .metadata-container:hover {
+    max-height: 700px;
+}
+
+/* 阅读模式也适用 */
+.markdown-preview-view .metadata-container {
+    max-height: 30px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.markdown-preview-view .metadata-container:hover {
+    max-height: 700px;
+}

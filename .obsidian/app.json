@@ -1,0 +1,13 @@
+{
+  "attachmentFolderPath": "900 Assets/990 Attachments",
+  "alwaysUpdateLinks": true,
+  "propertiesInDocument": "hidden",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "000 Inbox",
+  "showUnsupportedFiles": true,
+  "userIgnoreFilters": [
+    "900 Assets/"
+  ],
+  "readableLineLength": true,
+  "showInlineTitle": false
+}

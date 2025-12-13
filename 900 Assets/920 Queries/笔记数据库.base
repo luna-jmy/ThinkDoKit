@@ -1,0 +1,26 @@
+views:
+  - type: table
+    name: 笔记清单（不含日志）
+    filters:
+      and:
+        - '!file.path.contains("500 Journal")'
+    order:
+      - file.name
+      - file.path
+      - type
+      - created
+      - area
+      - status
+      - priority
+      - tags
+      - keywords
+      - source
+    sort:
+      - property: file.path
+        direction: ASC
+    columnSize:
+      file.name: 134
+      file.path: 233
+      note.area: 86
+      note.status: 101
+      note.keywords: 206

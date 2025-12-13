@@ -1,0 +1,144 @@
+---
+journal: Weekly
+journal-date:
+type: weekly_review
+year: <% tp.date.now("YYYY") %>
+month: <% tp.date.now("MM") %>
+week: <% tp.date.now("[W]w") %>
+created: <% tp.date.now() %>
+tags:
+  - journal/weekly
+---
+
+# <% tp.file.title %> 周日志
+
+## 🎯 本周焦点与目标
+> *提示: 可以是月度目标的细化，或独立周计划。*
+
+## 🚧 本周任务清单 
+>*使用 Tasks 语法记录本周计划任务，并使用 Dataview 汇总相关任务。*
+- [ ] 
+
+## 🤔 周末回顾与总结
+
+- **本周亮点**:
+- **本周的关键进展**:
+- **遇到的问题/阻碍**:
+- **需要调整的地方**:
+
+## ✨下周展望
+>*下周重点关注事项*
+- ...
+
+## 🎥 娱乐放松 / 亲子
+>*户外、观影、游戏、煲剧等娱乐放松安排*
+
+
+## 💡 积累与思考
+
+- 本周新增的 Zettelkasten 笔记：
+```dataview
+TABLE 
+  created as "创建时间",
+  file.mtime as "修改时间",
+  aliases as "卡片名称"
+FROM "600 Zettelkasten"
+WHERE created >= this.journal-date AND created < this.journal-date + dur("7 days")
+SORT created DESC
+```
+
+- 本周新增资源笔记：
+```dataview
+TABLE 
+  file.ctime as "系统创建时间",
+  created as "创建时间",
+  status
+FROM "300 Resources"
+WHERE created >= this.journal-date AND created < this.journal-date + dur("7 days")
+SORT file.ctime DESC
+limit 20
+```
+
+## 📒 本周习惯记录
+
+```dataview
+TABLE WITHOUT ID
+	file.name as "📅",
+	🧠flashcard as "🧠✅",
+	💊medicine as "💊✅",
+	🧘‍♂️meditation as "🧘‍♂️✅",
+	🍽️fasting as "🍽️✅",
+	weight⚖️ as "⚖️⚖️",
+	exercise🕓 as "🏃🕓",
+	reading🕓 as "📖🕓"
+FROM "500 Journal/540 Daily"
+WHERE date(file.name) >= this.journal-date 
+	AND date(file.name) <= date(dateformat(date(this.journal-date + dur(6 days)), "yyyy-MM-dd"))
+SORT file.name ASC
+```
+
+## 🔄 本周任务跟踪回顾
+### 本周日志任务跟踪（按截止日期）
+>*提示: 此查询汇总本周截止日期的未完成任务。可以根据需要调整过滤条件（如包含特定标签或路径，不会写查询语法的话请直接问DeepSeek如何修改）。*
+
+> *注意：此模板日期范围基于当前周日期，生成历史周日志需手动调整时间范围。*
+
+```tasks
+not done
+path includes 500 Journal/540 Daily
+happens on or after <% moment().startOf('isoWeek').format('YYYY-MM-DD') %>
+happens on or before <% moment().startOf('isoWeek').add(6, 'days').format('YYYY-MM-DD') %>
+filter by function task.status.symbol === ' '
+sort by path
+sort by priority reverse
+short mode
+```
+
+### 本周已完成任务回顾
+
+```tasks
+done
+path includes 500 Journal/540 Daily
+happens on or after <% moment().startOf('isoWeek').format('YYYY-MM-DD') %>
+happens on or before <% moment().startOf('isoWeek').add(6, 'days').format('YYYY-MM-DD') %>
+sort by path
+sort by priority reverse
+short mode
+```
+
+>*提示: 此查询汇总本周已完成的任务。*
+
+>*注意：此模板日期范围基于当前周日期，生成历史周日志需手动调整时间范围。*
+
+## 🔗 相关日志
+
+- [[<% tp.date.now("YYYY-MM") %>]] 月度日志
+- [[<% tp.date.now("YYYY-[W]w", -7) %>]] 周日志
+- [[<% tp.date.now("YYYY-[W]w", 7) %>]] 周日志
+
+```calendar-timeline
+mode: week
+```
+
+```journals-home
+show:
+  - day
+  - week
+  - month
+  - year
+scale: 1
+separator: " | "
+```
+
+---
+
+```button
+name 一键归档🗄️本周日志
+type command
+action Templater: Insert 900 Assets/910 Templates/JS-WeeklyArchive.md
+remove true
+color purple
+```
+
+> *提示: 避免日志数量膨胀过快，建议按周或按月进行日志归档。*
+---

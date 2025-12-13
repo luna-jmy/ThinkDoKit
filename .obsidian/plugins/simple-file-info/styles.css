@@ -1,0 +1,35 @@
+.file-info-pane .tree-item-self {
+    color: var(--text-faint);
+    padding-inline-start: var(--size-4-2);
+}
+
+.file-info-header .tree-item-self {
+    color: var(--nav-heading-color);
+    font-weight: var(--nav-heading-weight);
+}
+
+.file-info-pane .tree-item-inner {
+    flex: 0 0 40%;
+    min-width: 0;
+}
+
+.file-info-pane .tree-item-flair-outer {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 60%;
+    margin-inline-start: auto;
+}
+
+.file-info-pane .tree-item-flair,
+.file-info-pane .tree-item-self:hover .tree-item-flair {
+    color: var(--text-normal);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    /* word-break: break-all; */
+    text-align: right;
+    line-height: normal;  /* Reset line-height to default */
+}

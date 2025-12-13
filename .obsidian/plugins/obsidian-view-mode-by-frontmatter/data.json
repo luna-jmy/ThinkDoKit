@@ -1,0 +1,17 @@
+{
+  "debounceTimeout": 300,
+  "ignoreOpenFiles": true,
+  "ignoreForceViewAll": true,
+  "folders": [
+    {
+      "folder": "",
+      "viewMode": ""
+    }
+  ],
+  "files": [
+    {
+      "filePattern": "",
+      "viewMode": ""
+    }
+  ]
+}

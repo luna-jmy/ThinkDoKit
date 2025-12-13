@@ -1,0 +1,25 @@
+views:
+  - type: table
+    name: 表格
+    filters:
+      and:
+        - file.path.contains("Projects")
+    order:
+      - file.name
+      - area
+      - status
+      - start_date
+      - due_date
+      - completion_date
+      - priority
+      - progress
+      - project-leader
+      - project-members
+    sort:
+      - property: due_date
+        direction: ASC
+    columnSize:
+      file.name: 107
+      note.area: 87
+      note.status: 82
+      note.progress: 113
