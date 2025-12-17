@@ -1,11 +1,25 @@
 module.exports = async (params) => {
     const { quickAddApi: { yesNoPrompt }, app } = params;
-    
+
     try {
         // 获取所有markdown文件
-        const files = app.vault.getMarkdownFiles();
+        const allFiles = app.vault.getMarkdownFiles();
+
+        // 安全边界1: 过滤掉 900 Assets 文件夹中的文件
+        const files = allFiles.filter(file => !file.path.startsWith('900 Assets/'));
+
+        // 安全边界2: 检查非 900 Assets 文件夹的笔记总数
+        if (files.length > 100) {
+            new Notice('⚠️ 笔记总数过多，为避免误删和UI冻结问题，禁止使用此脚本。', 5000);
+            console.warn(`安全限制: 非 900 Assets 文件夹包含 ${files.length} 个笔记，超出安全阈值 (100)`);
+            return;
+        }
+
+        // 记录扫描的文件数量用于调试
+        console.log(`安全检查通过: 扫描 ${files.length} 个文件 (已排除 900 Assets 文件夹)`);
+
         const filesToDelete = [];
-        
+
         // 遍历所有文件，检查frontmatter中的type属性
         for (const file of files) {
             try {

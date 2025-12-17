@@ -12,6 +12,9 @@ if (input !== undefined) {
   config = { ...config, ...input };
 }
 
+// 防抖机制
+let refreshTimeout = null;
+
 // 处理书名格式的函数
 function formatBookName(fileName) {
   // 去掉【】里的内容
@@ -115,16 +118,24 @@ async function displayRandomQuote(container, config) {
         copyToClipboard(quote);
       };
       
-      // 添加刷新按钮
+      // 添加刷新按钮（带防抖）
       const refreshButton = document.createElement('span');
       refreshButton.textContent = ' 🔄';
       refreshButton.style.cursor = 'pointer';
       refreshButton.style.userSelect = 'none';
       refreshButton.style.marginLeft = '5px';
       refreshButton.title = '刷新书摘';
-      
+
       refreshButton.onclick = function() {
-        displayRandomQuote(container, config);
+        // 防抖：清除之前的定时器
+        if (refreshTimeout) {
+          clearTimeout(refreshTimeout);
+        }
+
+        // 设置新的定时器
+        refreshTimeout = setTimeout(() => {
+          displayRandomQuote(container, config);
+        }, 300);
       };
       
       // 将按钮添加到按钮容器
