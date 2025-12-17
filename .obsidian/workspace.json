@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "a25c8c64b818fdfa",
+        "id": "6176137f0735b68a",
         "type": "tabs",
         "children": [
           {
-            "id": "88581af0110ba79b",
+            "id": "e65728cd59c772d8",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -141,6 +141,16 @@
               "icon": "timer",
               "title": "Timer"
             }
+          },
+          {
+            "id": "d09f70076c01f1a6",
+            "type": "leaf",
+            "state": {
+              "type": "file-info-view",
+              "state": {},
+              "icon": "info",
+              "title": "File info"
+            }
           }
         ]
       },
@@ -211,7 +221,6 @@
   "left-ribbon": {
     "hiddenItems": {
       "bases:新建数据库": false,
-      "markdown-importer:打开 Markdown 格式转换器": false,
       "homepage:Open homepage": false,
       "pomodoro-timer:Toggle timer panel": false,
       "obsidian-spaced-repetition:复习卡片": false,
@@ -233,7 +242,7 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "88581af0110ba79b",
+  "active": "e65728cd59c772d8",
   "lastOpenFiles": [
     "👉从这里开始 Start from here!.md",
     "👉从这里开始 Start from here!.md.tmp.10820.1765957988488",
