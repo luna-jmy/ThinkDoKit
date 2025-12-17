@@ -4,13 +4,12 @@
     "type": "split",
     "children": [
       {
-        "id": "4509724f8bf84da7",
+        "id": "a25c8c64b818fdfa",
         "type": "tabs",
         "children": [
           {
-            "id": "7a229615c5f76ea5",
+            "id": "88581af0110ba79b",
             "type": "leaf",
-            "pinned": true,
             "state": {
               "type": "markdown",
               "state": {
@@ -18,41 +17,11 @@
                 "mode": "preview",
                 "source": false
               },
-              "pinned": true,
               "icon": "lucide-file",
               "title": "👉从这里开始 Start from here!"
             }
-          },
-          {
-            "id": "fc9de170038a6172",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "000 Inbox/✨快速入门小贴士 Tips.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "✨快速入门小贴士 Tips"
-            }
-          },
-          {
-            "id": "89da1a8e806b48ba",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "900 Assets/920 Queries/按钮中心.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "按钮中心"
-            }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -84,7 +53,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "同样重要",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -105,12 +74,11 @@
               "title": "书签"
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "horizontal",
-    "width": 238.5
+    "width": 204.5
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -127,8 +95,8 @@
             "state": {
               "type": "journal-calendar",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "journal-calendar"
+              "icon": "calendar-days",
+              "title": "Calendar"
             }
           },
           {
@@ -170,116 +138,11 @@
             "state": {
               "type": "timer-view",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "timer-view"
-            }
-          },
-          {
-            "id": "70149142234a39f8",
-            "type": "leaf",
-            "state": {
-              "type": "file-info-view",
-              "state": {},
-              "icon": "lucide-ghost",
-              "title": "file-info-view"
-            }
-          },
-          {
-            "id": "a08688b84d604474",
-            "type": "leaf",
-            "state": {
-              "type": "all-properties",
-              "state": {
-                "sortOrder": "frequency",
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-archive",
-              "title": "添加笔记属性"
-            }
-          },
-          {
-            "id": "02cb3bcd3ce7de2d",
-            "type": "leaf",
-            "state": {
-              "type": "review-queue-list-view",
-              "state": {},
-              "icon": "SpacedRepIcon",
-              "title": "笔记复习序列"
-            }
-          },
-          {
-            "id": "4e8c06db0780e367",
-            "type": "leaf",
-            "state": {
-              "type": "journal-calendar",
-              "state": {},
-              "icon": "lucide-ghost",
-              "title": "journal-calendar"
-            }
-          },
-          {
-            "id": "57916c5cd051a526",
-            "type": "leaf",
-            "state": {
-              "type": "planner-timeline",
-              "state": {},
-              "icon": "lucide-ghost",
-              "title": "planner-timeline"
-            }
-          },
-          {
-            "id": "d8b00853de3a8428",
-            "type": "leaf",
-            "state": {
-              "type": "file-info-view",
-              "state": {},
-              "icon": "lucide-ghost",
-              "title": "file-info-view"
-            }
-          },
-          {
-            "id": "4da1d4b03fe31b3a",
-            "type": "leaf",
-            "state": {
-              "type": "review-queue-list-view",
-              "state": {},
-              "icon": "SpacedRepIcon",
-              "title": "笔记复习序列"
-            }
-          },
-          {
-            "id": "566e593fbb78e494",
-            "type": "leaf",
-            "state": {
-              "type": "journal-calendar",
-              "state": {},
-              "icon": "calendar-days",
-              "title": "Calendar"
-            }
-          },
-          {
-            "id": "0500edcde1601194",
-            "type": "leaf",
-            "state": {
-              "type": "planner-timeline",
-              "state": {},
-              "icon": "calendar-with-checkmark",
-              "title": "Timeline"
-            }
-          },
-          {
-            "id": "43b16591835a366f",
-            "type": "leaf",
-            "state": {
-              "type": "file-info-view",
-              "state": {},
-              "icon": "info",
-              "title": "File info"
+              "icon": "timer",
+              "title": "Timer"
             }
           }
-        ],
-        "currentTab": 10
+        ]
       },
       {
         "id": "ab6e053c3b226343",
@@ -334,30 +197,26 @@
             "state": {
               "type": "planner-timeline",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "planner-timeline"
-            }
-          },
-          {
-            "id": "8718cedfa8010eb9",
-            "type": "leaf",
-            "state": {
-              "type": "thino_view",
-              "state": {},
-              "icon": "Memos",
-              "title": "Thino"
+              "icon": "calendar-with-checkmark",
+              "title": "Timeline"
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
-    "width": 327.5
+    "width": 248.5
   },
   "left-ribbon": {
     "hiddenItems": {
-      "bases:创建新数据库": false,
+      "bases:新建数据库": false,
+      "markdown-importer:打开 Markdown 格式转换器": false,
+      "homepage:Open homepage": false,
+      "pomodoro-timer:Toggle timer panel": false,
+      "obsidian-spaced-repetition:复习卡片": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "obsidian-excalidraw-plugin:新建绘图文件": false,
       "graph:查看关系图谱": false,
       "canvas:新建白板": false,
       "daily-notes:打开/创建今天的日记": false,
@@ -367,23 +226,20 @@
       "random-note:开始漫游笔记": false,
       "audio-recorder:开始/结束录音": false,
       "workspaces:管理工作区布局": false,
-      "switcher:打开快速切换": false,
       "templater-obsidian:Templater": false,
-      "obsidian-spaced-repetition:复习卡片": false,
-      "homepage:Open homepage": false,
+      "switcher:打开快速切换": false,
       "obsidian-day-planner:Open Timeline": false,
       "obsidian-day-planner:Open Multi-Day View": false,
-      "table-editor-obsidian:Advanced Tables Toolbar": false,
-      "obsidian-excalidraw-plugin:新建绘图文件": false,
-      "pomodoro-timer:Toggle timer panel": false,
       "obsidian-memos:Thino": false
     }
   },
-  "active": "89da1a8e806b48ba",
+  "active": "88581af0110ba79b",
   "lastOpenFiles": [
     "👉从这里开始 Start from here!.md",
-    "000 Inbox/✨快速入门小贴士 Tips.md",
+    "👉从这里开始 Start from here!.md.tmp.10820.1765957988488",
     "ThinkDoKit（知行盒子）使用指南.md",
+    "900 Assets/920 Queries/按钮中心.md",
+    "000 Inbox/✨快速入门小贴士 Tips.md",
     "✅请完成你的第一个任务！.md",
     "500 Journal/540 Daily/2025-10-06.md",
     "500 Journal/540 Daily/2025-06-03.md",
@@ -407,7 +263,6 @@
     "900 Assets/960 Scripts/random-quote.js",
     "900 Assets/960 Scripts/random-quote3.js",
     "900 Assets/920 Queries/任务中心（手机）.md",
-    "900 Assets/920 Queries/按钮中心.md",
     "900 Assets/960 Scripts/task-heatmap-vertical.js",
     "900 Assets/960 Scripts/YAMLHeaderUpdater.js",
     "900 Assets/960 Scripts/InlineFieldUpdate.js",
@@ -423,8 +278,6 @@
     "900 Assets/910 Templates/临时templater代码-移动书摘标签位置.md",
     "900 Assets/960 Scripts/year-timeline.js",
     "900 Assets/960 Scripts/task-heatmap.js",
-    "task-heatmap.js",
-    "000 Inbox/未命名.md",
     "900 Assets/990 Attachments/Pasted image 20250914205443.png",
     "900 Assets/990 Attachments/Pasted image 20250914205431.png"
   ]

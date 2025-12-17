@@ -6,13 +6,12 @@
         "type": "split",
         "children": [
           {
-            "id": "4509724f8bf84da7",
+            "id": "6176137f0735b68a",
             "type": "tabs",
             "children": [
               {
-                "id": "7a229615c5f76ea5",
+                "id": "e65728cd59c772d8",
                 "type": "leaf",
-                "pinned": true,
                 "state": {
                   "type": "markdown",
                   "state": {
@@ -20,7 +19,6 @@
                     "mode": "preview",
                     "source": false
                   },
-                  "pinned": true,
                   "icon": "lucide-file",
                   "title": "👉从这里开始 Start from here!"
                 }
@@ -57,7 +55,7 @@
                 "state": {
                   "type": "search",
                   "state": {
-                    "query": "",
+                    "query": "同样重要",
                     "matchingCase": false,
                     "explainSearch": false,
                     "collapseAll": false,
@@ -78,12 +76,11 @@
                   "title": "书签"
                 }
               }
-            ],
-            "currentTab": 2
+            ]
           }
         ],
         "direction": "horizontal",
-        "width": 238.5
+        "width": 204.5
       },
       "right": {
         "id": "1d363781f2dc0572",
@@ -205,28 +202,19 @@
                   "icon": "calendar-with-checkmark",
                   "title": "Timeline"
                 }
-              },
-              {
-                "id": "8718cedfa8010eb9",
-                "type": "leaf",
-                "state": {
-                  "type": "thino_view",
-                  "state": {},
-                  "icon": "Memos",
-                  "title": "Thino"
-                }
               }
             ],
-            "currentTab": 4
+            "currentTab": 3
           }
         ],
         "direction": "horizontal",
-        "width": 327.5
+        "width": 248.5
       },
       "left-ribbon": {
         "hiddenItems": {
+          "bases:新建数据库": false,
+          "markdown-importer:打开 Markdown 格式转换器": false,
           "homepage:Open homepage": false,
-          "bases:创建新数据库": false,
           "pomodoro-timer:Toggle timer panel": false,
           "obsidian-spaced-repetition:复习卡片": false,
           "table-editor-obsidian:Advanced Tables Toolbar": false,
@@ -247,14 +235,10 @@
           "obsidian-memos:Thino": false
         }
       },
-      "active": "7a229615c5f76ea5",
-      "mtime": "2025-10-06T17:00:06+08:00",
+      "active": "e65728cd59c772d8",
+      "mtime": "2025-12-17T16:25:15+08:00",
       "workspaces-plus:settings-v1": {
-        "explorerFoldState": [
-          "900 Assets",
-          "900 Assets/930 Snippets",
-          "900 Assets/950 Plugins"
-        ]
+        "explorerFoldState": []
       }
     }
   },
