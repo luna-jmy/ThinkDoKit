@@ -1,20 +1,22 @@
+filters:
+  and:
+    - file.path.contains("100 Projects")
 views:
   - type: table
     name: 表格
     filters:
       and:
-        - file.path.contains("Projects")
+        - type == "project"
     order:
       - file.name
-      - area
-      - status
       - start_date
       - due_date
-      - completion_date
+      - status
       - priority
       - progress
+      - completion_date
       - project-leader
-      - project-members
+      - area
     sort:
       - property: due_date
         direction: ASC

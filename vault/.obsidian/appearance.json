@@ -2,8 +2,8 @@
   "cssTheme": "Blue Topaz",
   "enabledCssSnippets": [
     "autohide-yaml-header-test1",
-    "hide-metadata-keyword",
-    "【BlueTopaz】表格样式TableStyles"
+    "【BlueTopaz】表格样式TableStyles",
+    "projectCard"
   ],
   "theme": "moonstone"
 }

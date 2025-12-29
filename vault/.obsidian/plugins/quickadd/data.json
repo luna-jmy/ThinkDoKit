@@ -985,6 +985,26 @@
       },
       "fileExistsMode": "Increment the file name",
       "setFileExistsBehavior": false
+    },
+    {
+      "id": "5bc4c0eb-8681-4ac8-9d05-a3584b735884",
+      "name": "NewProject",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "NewProject",
+        "id": "8e51b848-8794-446f-89b4-13a82a2397a4",
+        "commands": [
+          {
+            "name": "createProject",
+            "type": "UserScript",
+            "id": "6f796315-a6a0-450e-aa2e-7d901067c528",
+            "path": "900 Assets/960 Scripts/createProject.js",
+            "settings": {}
+          }
+        ]
+      }
     }
   ],
   "inputPrompt": "single-line",

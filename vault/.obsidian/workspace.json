@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "6176137f0735b68a",
+        "id": "4f8c4c352d2c2974",
         "type": "tabs",
         "children": [
           {
-            "id": "e65728cd59c772d8",
+            "id": "25b2ff9f1145f7a5",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "👉从这里开始 Start from here!.md",
+                "file": "项目中心（升级）.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "👉从这里开始 Start from here!"
+              "title": "项目中心（升级）"
             }
           }
         ]
@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 204.5
+    "width": 200
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -143,7 +143,7 @@
             }
           },
           {
-            "id": "d09f70076c01f1a6",
+            "id": "0f79131023d5659e",
             "type": "leaf",
             "state": {
               "type": "file-info-view",
@@ -195,10 +195,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "👉从这里开始 Start from here!.md"
+                "file": "项目中心（升级）.md"
               },
               "icon": "lucide-info",
-              "title": "👉从这里开始 Start from here!的笔记属性"
+              "title": "项目中心（升级）的笔记属性"
             }
           },
           {
@@ -212,15 +212,15 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
-    "width": 248.5
+    "width": 256.5
   },
   "left-ribbon": {
     "hiddenItems": {
-      "bases:新建数据库": false,
+      "bases:创建新数据库": false,
       "homepage:Open homepage": false,
       "pomodoro-timer:Toggle timer panel": false,
       "obsidian-spaced-repetition:复习卡片": false,
@@ -242,14 +242,25 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "e65728cd59c772d8",
+  "active": "25b2ff9f1145f7a5",
   "lastOpenFiles": [
-    "👉从这里开始 Start from here!.md",
-    "👉从这里开始 Start from here!.md.tmp.10820.1765957988488",
+    "100 Projects/202503项目4/测试项目3.md",
+    "项目中心（升级）.md",
+    "100 Projects/202512项目9/测试项目2.md",
+    "900 Assets/920 Queries/项目中心.md",
     "ThinkDoKit（知行盒子）使用指南.md",
+    "👉从这里开始 Start from here!.md",
+    "100 Projects/202511无主文件项目/未命名.md",
+    "100 Projects/202511无主文件项目",
+    "100 Projects/示例项目0.md",
+    "100 Projects/测试项目1.md",
+    "100 Projects/202412测试/测试.md",
+    "100 Projects/202412测试",
+    "100 Projects/202411测试",
     "900 Assets/920 Queries/按钮中心.md",
-    "000 Inbox/✨快速入门小贴士 Tips.md",
     "✅请完成你的第一个任务！.md",
+    "👉从这里开始 Start from here!.md.tmp.10820.1765957988488",
+    "000 Inbox/✨快速入门小贴士 Tips.md",
     "500 Journal/540 Daily/2025-10-06.md",
     "500 Journal/540 Daily/2025-06-03.md",
     "900 Assets/930 Snippets/【脚本说明】内联字段填充器2种.md",
@@ -263,9 +274,7 @@
     "900 Assets/990 Attachments/Pasted image 20251006162419.png",
     "900 Assets/990 Attachments/Pasted image 20251006162408.png",
     "900 Assets/990 Attachments/Pasted image 20251006162354.png",
-    "100 Projects/测试项目1.md",
     "900 Assets/950 Plugins/【主题说明】BlueTopaz用例.md",
-    "900 Assets/920 Queries/项目中心.md",
     "900 Assets/920 Queries/任务中心.md",
     "900 Assets/930 Snippets/【脚本说明】random-quote.md",
     "900 Assets/920 Queries/手机主页.md",
@@ -279,14 +288,6 @@
     "900 Assets/ThinkDoKit 更新日志.md",
     "900 Assets/930 Snippets/【脚本说明】任务热力图.md",
     "300 Resources/330 Books/332 BookExcerpts/【书摘】佛祖都说了些什么.md",
-    "300 Resources/330 Books/332 BookExcerpts/【书摘】金钱心理学.md",
-    "300 Resources/330 Books/《别告诉我你会记笔记》.md",
-    "900 Assets/930 Snippets/【脚本说明】基于任务生成甘特图.md",
-    "900 Assets/930 Snippets/【脚本说明】任务日历taskCalendar.md",
-    "900 Assets/960 Scripts/year-timeline-1.js",
-    "900 Assets/910 Templates/临时templater代码-移动书摘标签位置.md",
-    "900 Assets/960 Scripts/year-timeline.js",
-    "900 Assets/960 Scripts/task-heatmap.js",
     "900 Assets/990 Attachments/Pasted image 20250914205443.png",
     "900 Assets/990 Attachments/Pasted image 20250914205431.png"
   ]

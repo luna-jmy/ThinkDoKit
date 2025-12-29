@@ -1,0 +1,161 @@
+/* ====================================
+   项目卡片样式 - project-cards.css
+   使用方法：
+   1. 保存到 .obsidian/snippets/project-cards.css
+   2. 在 Obsidian 设置 → 外观 → CSS代码片段 中启用
+   ==================================== */
+
+/* 项目容器 - 网格布局 */
+.projects-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 10px 0;
+    margin: 20px 0;
+}
+
+/* 单个项目卡片 */
+.project-card {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--interactive-accent);
+}
+
+/* 项目标题 */
+.project-card h3 {
+    color: var(--text-accent);
+    margin: 0 0 12px 0;
+    font-size: 1.2em;
+    border-bottom: 2px solid var(--background-modifier-border);
+    padding-bottom: 8px;
+}
+
+/* 笔记列表区域 */
+.project-notes {
+    margin: 15px 0;
+    padding: 10px;
+    background: var(--background-primary);
+    border-radius: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.project-notes ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.project-notes li {
+    margin: 5px 0;
+    font-size: 0.95em;
+}
+
+.project-notes .internal-link {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+.project-notes .internal-link:hover {
+    text-decoration: underline;
+}
+
+/* 项目元数据信息 */
+.project-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--background-modifier-border);
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+
+.project-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.project-count {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+}
+
+/* 空状态提示 */
+.project-empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* 笔记列表为空时的提示 */
+.notes-empty {
+    color: var(--text-faint);
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+}
+
+/* 滚动条美化 */
+.project-notes::-webkit-scrollbar {
+    width: 6px;
+}
+
+.project-notes::-webkit-scrollbar-track {
+    background: var(--background-secondary);
+    border-radius: 3px;
+}
+
+.project-notes::-webkit-scrollbar-thumb {
+    background: var(--background-modifier-border);
+    border-radius: 3px;
+}
+
+.project-notes::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* 响应式设计 - 小屏幕单列 */
+@media (max-width: 768px) {
+    .projects-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 卡片状态标签（可选） */
+.project-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.project-status.active {
+    background: var(--color-green);
+    color: white;
+}
+
+.project-status.completed {
+    background: var(--color-blue);
+    color: white;
+}
+
+.project-status.planned {
+    background: var(--color-orange);
+    color: white;
+}
