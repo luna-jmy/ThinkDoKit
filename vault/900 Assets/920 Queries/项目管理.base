@@ -12,11 +12,11 @@ views:
       - start_date
       - due_date
       - status
+      - area
       - priority
       - progress
       - completion_date
       - project-leader
-      - area
     sort:
       - property: due_date
         direction: ASC

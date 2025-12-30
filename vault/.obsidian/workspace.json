@@ -4,16 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "4f8c4c352d2c2974",
+        "id": "6176137f0735b68a",
         "type": "tabs",
         "children": [
           {
-            "id": "25b2ff9f1145f7a5",
+            "id": "e65728cd59c772d8",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "项目中心（升级）.md",
+                "file": "900 Assets/920 Queries/项目中心（升级）.md",
                 "mode": "preview",
                 "source": false
               },
@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 204.5
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -143,7 +143,7 @@
             }
           },
           {
-            "id": "0f79131023d5659e",
+            "id": "9bc7d8a961b9fd36",
             "type": "leaf",
             "state": {
               "type": "file-info-view",
@@ -195,7 +195,7 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "项目中心（升级）.md"
+                "file": "900 Assets/920 Queries/项目中心（升级）.md"
               },
               "icon": "lucide-info",
               "title": "项目中心（升级）的笔记属性"
@@ -216,7 +216,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 256.5
+    "width": 248.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -242,8 +242,15 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "25b2ff9f1145f7a5",
+  "active": "e65728cd59c772d8",
   "lastOpenFiles": [
+    "👉从这里开始 Start from here!.md",
+    "900 Assets/920 Queries/项目中心（升级）.md",
+    "100 Projects/202501项目1/测试项目1.md",
+    "100 Projects/202412测试/测试.md",
+    "100 Projects/202501项目1/未命名1.md",
+    "100 Projects/202511我的新项目/示例项目.md",
+    "100 Projects/202512项目9/测试项目2.md",
     "900 Assets/920 Queries/笔记数据库.base",
     "900 Assets/920 Queries/Inbox清单中心.md",
     "900 Assets/920 Queries/Keywords Query.md",
@@ -255,14 +262,11 @@
     "900 Assets/920 Queries/任务中心.md",
     "900 Assets/920 Queries/项目任务查询.md",
     "100 Projects/202503项目4/测试项目3.md",
-    "100 Projects/202512项目9/测试项目2.md",
     "ThinkDoKit（知行盒子）使用指南.md",
-    "👉从这里开始 Start from here!.md",
     "100 Projects/202511无主文件项目/未命名.md",
     "100 Projects/202511无主文件项目",
     "100 Projects/示例项目0.md",
     "100 Projects/测试项目1.md",
-    "100 Projects/202412测试/测试.md",
     "100 Projects/202412测试",
     "100 Projects/202411测试",
     "900 Assets/920 Queries/按钮中心.md",
@@ -271,10 +275,7 @@
     "000 Inbox/✨快速入门小贴士 Tips.md",
     "500 Journal/540 Daily/2025-10-06.md",
     "500 Journal/540 Daily/2025-06-03.md",
-    "900 Assets/930 Snippets/【脚本说明】内联字段填充器2种.md",
-    "900 Assets/950 Plugins/【BlueTopaz】BlueTopaz主题用例.md",
     "900 Assets/990 Attachments/Pasted image 20251006163810.png",
-    "900 Assets/950 Plugins/【BlueTopaz】自定义表格样式（需开启对应CSS片段）.md",
     "900 Assets/990 Attachments/Pasted image 20251006162514.png",
     "900 Assets/990 Attachments/Pasted image 20251006162452.png",
     "900 Assets/990 Attachments/Pasted image 20251006162441.png",
@@ -287,7 +288,6 @@
     "900 Assets/960 Scripts/task-heatmap-vertical.js",
     "900 Assets/960 Scripts/YAMLHeaderUpdater.js",
     "900 Assets/960 Scripts/InlineFieldUpdate.js",
-    "900 Assets/960 Scripts/YAMLHeaderUpdater4.js",
     "900 Assets/990 Attachments/Pasted image 20250914205443.png",
     "900 Assets/990 Attachments/Pasted image 20250914205431.png"
   ]

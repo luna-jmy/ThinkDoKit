@@ -1,41 +1,45 @@
----
-cssclasses:
-  - fullwidth
-  - matrix
-start_date: 2025-01-01
-due_date: 2025-12-31
-obsidianUIMode: preview
----
+// 默认配置
+const config = {
+    maxNotes: 5,           // 每个项目预览的笔记数量
+    status: "hide",        // hide: 不显示 completed, show: 显示所有, "completed": 只显示已完成
+    area: null             // null: 不过滤, "include": 包含当前笔记area, "exclude": 排除当前笔记area
+};
 
-| `button-projectFolder` | `button-mainProject` |
-| ---------------------- | -------------------- |
-## 项目一览
->*有主项目文件的默认显示主项目文件名。无主项目文件的显示文件夹名。最多预览5个项目笔记，可在代码的第一行参数 `maxNotesDisplay = 5` 里修改预览笔记数量。*
-
-```dataviewjs
-const maxNotesDisplay = 5;
+// 处理输入参数
+if (input !== undefined) {
+    config.maxNotes = input.maxNotes !== undefined ? input.maxNotes : config.maxNotes;
+    config.status = input.status !== undefined ? input.status : config.status;
+    config.area = input.area !== undefined ? input.area : config.area;
+}
 
 const currentPage = dv.current();
 const filterStart = currentPage.start_date;
 const filterEnd = currentPage.due_date;
 
+// 获取当前笔记的 area 元数据作为筛选值
+const currentNoteArea = currentPage.area;
+
+// 获取所有项目笔记
 const allNotes = dv.pages('"100 Projects"')
     .where(p => p.file.folder !== "100 Projects");
 
-const rootFolder = app.vault.getAbstractFileByPath("100 Projects");
-const physicalFolders = rootFolder && rootFolder.children 
-    ? rootFolder.children.filter(f => f.children)
-    : [];
-
+// 使用 dataview 构建文件夹结构映射
 const projectMap = new Map();
-physicalFolders.forEach(f => projectMap.set(f.path, []));
 
+// 收集所有唯一的文件夹路径（包含所有子文件夹）
 allNotes.forEach(page => {
-    for (const folderPath of projectMap.keys()) {
-        if (page.file.folder === folderPath || page.file.folder.startsWith(folderPath + "/")) {
-            projectMap.get(folderPath).push(page);
-            break;
+    const folderPath = page.file.folder;
+    // 跳过 "100 Projects" 根目录本身
+    if (folderPath === "100 Projects") return;
+
+    // 提取项目文件夹（100 Projects 下的一级子文件夹）
+    const parts = folderPath.split("/");
+    if (parts.length >= 2 && parts[0] === "100 Projects") {
+        const projectFolderPath = parts.slice(0, 2).join("/");
+        if (!projectMap.has(projectFolderPath)) {
+            projectMap.set(projectFolderPath, []);
         }
+        projectMap.get(projectFolderPath).push(page);
     }
 });
 
@@ -57,7 +61,7 @@ const projectGroups = Array.from(projectMap.entries())
         // 如果只有一个有日期，有日期的排前面
         if (a.sortDate && !b.sortDate) return -1;
         if (!a.sortDate && b.sortDate) return 1;
-        
+
         // 如果都没有日期，或日期相同，按文件夹名称排序
         return a.key.localeCompare(b.key);
     });
@@ -74,6 +78,7 @@ for (let group of projectGroups) {
     const projectFile = notes.find(n => n.type === "project");
 
     let projectName, startDate, endDate, status, priority, progress;
+    let projectArea = null;
 
     if (projectFile) {
         projectName = projectFile.file.name;
@@ -82,15 +87,55 @@ for (let group of projectGroups) {
         status = projectFile.status || "";
         priority = projectFile.priority || "";
         progress = projectFile.progress || "";
+        projectArea = projectFile.area || null;
     } else {
         const dateMatch = folderName.match(/^(\d{6})(.*)$/);
-        projectName = dateMatch ? dateMatch[2].trim() : folderName; 
-        
+        projectName = dateMatch ? dateMatch[2].trim() : folderName;
+
         startDate = dateMatch ? `${dateMatch[1].substring(0,4)}-${dateMatch[1].substring(4,6)}-01` : "";
         endDate = "";
         status = "";
         priority = "";
         progress = "";
+        projectArea = null;
+    }
+
+    // status 筛选：默认不显示 completed 项目
+    if (config.status === "hide") {
+        if (status === "completed" || status === "完成") {
+            continue;
+        }
+    } else if (config.status === "completed") {
+        if (status !== "completed" && status !== "完成") {
+            continue;
+        }
+    }
+    // config.status === "show" 时显示所有状态
+
+    // area 筛选（使用当前笔记的 area 元数据作为筛选值）
+    let skipDueToArea = false;
+    if (config.area && currentNoteArea) {
+        const filterValue = Array.isArray(currentNoteArea) ? currentNoteArea : [currentNoteArea];
+        const projectAreas = projectArea ? (Array.isArray(projectArea) ? projectArea : [projectArea]) : [];
+
+        const hasMatch = projectAreas.some(pa => filterValue.includes(pa));
+
+        if (config.area === "include") {
+            // 包含模式：只显示匹配的项目
+            // 注意：如果项目没有主文件或没有 area，则不匹配
+            if (!hasMatch) {
+                skipDueToArea = true;
+            }
+        } else if (config.area === "exclude") {
+            // 排除模式：排除匹配的项目
+            if (hasMatch) {
+                skipDueToArea = true;
+            }
+        }
+    }
+
+    if (skipDueToArea) {
+        continue;
     }
 
     let shouldDisplay = false;
@@ -119,12 +164,12 @@ for (let group of projectGroups) {
         const title = titleWrapper.createEl("h3", {
             attr: { style: "margin: 0; flex: 1;" }
         });
-        
+
         if (projectFile) {
             const link = title.createEl("a", {
                 cls: "internal-link",
                 href: projectFile.file.path,
-                attr: { "data-href": projectFile.file.path } 
+                attr: { "data-href": projectFile.file.path }
             });
             link.textContent = projectName;
             link.style.color = "inherit";
@@ -185,7 +230,7 @@ for (let group of projectGroups) {
                     style: "width: 100%; height: 8px; background: var(--background-modifier-border); border-radius: 4px; margin: 10px 0; overflow: hidden;"
                 }
             });
-            const progressFill = progressBar.createEl("div", {
+            progressBar.createEl("div", {
                 attr: {
                     style: `width: ${progress}%; height: 100%; background: var(--interactive-accent); transition: width 0.3s ease;`
                 }
@@ -199,7 +244,7 @@ for (let group of projectGroups) {
         if (notesList.length > 0) {
             const ul = notesDiv.createEl("ul");
 
-            const notesToShow = maxNotesDisplay === 0 ? notesList : notesList.slice(0, maxNotesDisplay);
+            const notesToShow = config.maxNotes === 0 ? notesList : notesList.slice(0, config.maxNotes);
 
             notesToShow.forEach(note => {
                 const li = ul.createEl("li");
@@ -210,11 +255,11 @@ for (let group of projectGroups) {
                 link.textContent = note.file.name;
             });
 
-            if (maxNotesDisplay > 0 && notesList.length > maxNotesDisplay) {
+            if (config.maxNotes > 0 && notesList.length > config.maxNotes) {
                 const moreText = notesDiv.createEl("div", {
                     cls: "notes-empty"
                 });
-                moreText.textContent = `还有 ${notesList.length - maxNotesDisplay} 个笔记...`;
+                moreText.textContent = `还有 ${notesList.length - config.maxNotes} 个笔记...`;
             }
         } else {
             const emptyText = notesDiv.createEl("div", { cls: "notes-empty" });
@@ -248,69 +293,3 @@ const filterEndFormatted = dv.date(filterEnd).toFormat("yyyy-MM-dd");
 const filterInfo = dv.el("p", `📊 显示 ${displayedProjects} 个项目 (${filterStartFormatted} ~ ${filterEndFormatted})`, {
     attr: { style: "color: var(--text-muted); margin-bottom: 10px;" }
 });
-```
-
-## 项目进度
-
-```dataviewjs
-const currentPage = dv.current();
-const filterStart = currentPage.start_date;
-const filterEnd = currentPage.due_date;
-
-const pages = dv.pages('#project')
-    .where(p => p.type === "project")
-    .where(p => p.start_date && p.due_date)
-    .where(p => {
-        const projectStart = dv.date(p.start_date);
-        const projectEnd = dv.date(p.due_date);
-        const filterStartDate = dv.date(filterStart);
-        const filterEndDate = dv.date(filterEnd);
-        return projectStart <= filterEndDate && projectEnd >= filterStartDate;
-    })
-    .where(p => p.status !== "cancelled")
-    .sort(p => p.due_date, 'asc');
-
-let mermaidCode = "```mermaid\ngantt\n";
-mermaidCode += "    title 项目进度甘特图\n";
-mermaidCode += "    dateFormat YYYY-MM-DD\n";
-mermaidCode += "    axisFormat %y-%m\n\n";
-
-const groupedPages = {};
-pages.forEach(page => {
-    const objective = page.objective || "默认项目";
-    if (!groupedPages[objective]) {
-        groupedPages[objective] = [];
-    }
-    groupedPages[objective].push(page);
-});
-
-Object.keys(groupedPages).forEach(context => {
-    if (Object.keys(groupedPages).length > 1) {
-        mermaidCode += `    section ${context}\n`;
-    }
-
-    groupedPages[context].forEach(page => {
-        const taskName = page.file.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, ''); 
-        const startDate = dv.date(page.start_date).toFormat("yyyy-MM-dd");
-        const dueDate = dv.date(page.due_date).toFormat("yyyy-MM-dd");
-
-        let status = "";
-        if (page.status === "completed") {
-            status = "done, ";
-        } else if (page.status === "active") {
-            status = "active, ";
-        }
-
-        mermaidCode += `    ${page.file.name} :${status}${taskName}, ${startDate}, ${dueDate}\n`;
-    });
-
-    mermaidCode += "\n";
-});
-
-mermaidCode += "```";
-
-dv.paragraph(mermaidCode);
-```
-
-## 快速修改项目信息
-![[项目管理.base]]
