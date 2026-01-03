@@ -7,6 +7,45 @@
       "command": false,
       "choices": [
         {
+          "id": "e2081068-0deb-4fe7-89fd-92edf0bef8a1",
+          "name": "⏳ AddDayPlanner",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "\n- 09:00 - 10:00\n- 10:00 - 11:00\n- 11:00 - 12:00\n- 12:00 - 13:00 \n- 13:00 - 14:00\n- 14:00 - 15:00\n- 15:00 - 16:00\n- 16:00 - 17:00\n- 17:00 - 17:30 "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "`button-sdayPlanner`",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "cursor"
+          },
+          "newLineCapture": {
+            "enabled": false,
+            "direction": "below"
+          },
+          "prepend": false,
+          "task": false,
+          "openFile": false,
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "mode": "default",
+            "focus": true
+          }
+        },
+        {
           "id": "74470b26-dcad-4505-8ae8-67d4c4c30035",
           "name": "📅 AddDateToday",
           "type": "Capture",
@@ -253,7 +292,7 @@
           }
         }
       ],
-      "collapsed": true
+      "collapsed": false
     },
     {
       "id": "5b5ac9fe-eb8e-410a-bb32-2c8bc241ad39",
@@ -891,7 +930,7 @@
           {
             "name": "InlineFieldUpdate",
             "type": "UserScript",
-            "id": "e3971e30-9092-4279-898c-f9db1097981d",
+            "id": "76c45f6d-aa71-43ef-b5fc-ab79324a114f",
             "path": "900 Assets/960 Scripts/InlineFieldUpdate.js",
             "settings": {}
           }
@@ -1001,6 +1040,66 @@
             "type": "UserScript",
             "id": "6f796315-a6a0-450e-aa2e-7d901067c528",
             "path": "900 Assets/960 Scripts/createProject.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "da55fb91-e42f-4e26-820e-5b6a4d8ed713",
+      "name": "任务rollover",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "任务rollover",
+        "id": "f18ec5a8-fda1-4de2-aa78-b9b0cac12fdc",
+        "commands": [
+          {
+            "name": "journal_tasks_rolling",
+            "type": "UserScript",
+            "id": "9065a5a1-88cf-4d2c-84a4-b2b41ecaa81f",
+            "path": "900 Assets/960 Scripts/journal_tasks_rolling.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "7c0ba94a-cede-4102-99ac-c3a6e0e94445",
+      "name": "DailyTracker",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "DailyTracker",
+        "id": "46b45ae8-ff6a-41b6-b952-a9d42b3e381c",
+        "commands": [
+          {
+            "name": "InlineFieldUpdate-tracker",
+            "type": "UserScript",
+            "id": "7ffc3a7f-386d-41db-8424-a8c089d4ee9b",
+            "path": "900 Assets/960 Scripts/InlineFieldUpdate-tracker.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "cf05f9b3-bf20-4066-add7-3811be070bd7",
+      "name": "DailyData",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "DailyData",
+        "id": "cb5a8ded-5d81-4c95-a5c6-57c1a073fb68",
+        "commands": [
+          {
+            "name": "InlineFieldUpdate-data",
+            "type": "UserScript",
+            "id": "49d5f50d-9303-45b3-b5ed-0fd5b6d4e3c8",
+            "path": "900 Assets/960 Scripts/InlineFieldUpdate-data.js",
             "settings": {}
           }
         ]

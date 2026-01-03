@@ -1,8 +1,9 @@
 module.exports = async (params) => {
     try {
         const { quickAddApi, app } = params;
+        const BUTTON_NAME = 'button-tracker';
 
-        console.log("Inline Field Update (Scanner + Interactive Mode) Started");
+        console.log(`Inline Field Update (${BUTTON_NAME} Mode) Started`);
 
         // 1. 获取当前活动文件
         const activeFile = app.workspace.getActiveFile();
@@ -31,7 +32,7 @@ module.exports = async (params) => {
                     hasButton: false
                 });
             }
-            if (line.includes('button-supdate')) {
+            if (line.includes(BUTTON_NAME)) {
                 headers[headers.length - 1].hasButton = true;
             }
         }
@@ -42,7 +43,7 @@ module.exports = async (params) => {
         let targetHeader = null;
 
         if (activeHeaders.length === 0) {
-            new Notice("未找到任何 update 按钮 (button-supdate)");
+            new Notice(`未找到更新按钮 (${BUTTON_NAME})`);
             return;
         } else if (activeHeaders.length === 1) {
             targetHeader = activeHeaders[0];
@@ -52,7 +53,7 @@ module.exports = async (params) => {
                 options,
                 options,
                 false,
-                "检测到多个按钮，请选择要更新的区域:"
+                `检测到多个 ${BUTTON_NAME}，请选择区域:`
             );
             if (!selectedText) return;
             targetHeader = activeHeaders.find(h => h.text === selectedText);
@@ -69,7 +70,7 @@ module.exports = async (params) => {
             }
         }
 
-        const allFields = []; // All fields in this section
+        const allFields = [];
         const inlineFieldRegex = /\[([^:\]]+)::([^\]]*)\]/g;
         let isInCodeBlock = false;
 
@@ -81,7 +82,7 @@ module.exports = async (params) => {
             }
             if (isInCodeBlock) continue;
 
-            inlineFieldRegex.lastIndex = 0; // reset for new line
+            inlineFieldRegex.lastIndex = 0;
             let match;
             while ((match = inlineFieldRegex.exec(line)) !== null) {
                 allFields.push({
@@ -89,8 +90,7 @@ module.exports = async (params) => {
                     fullMatch: match[0],
                     fieldName: match[1].trim(),
                     currentValue: match[2].trim(),
-                    isEmpty: match[2].trim() === "",
-                    headerText: targetHeader.text
+                    isEmpty: match[2].trim() === ""
                 });
             }
         }
@@ -100,37 +100,16 @@ module.exports = async (params) => {
             return;
         }
 
-        // 6. Interaction Menu (New: All / Empty / Single)
-        // 参考 InlineFieldUpdate.js 的逻辑
+        // 6. Interaction Menu
         const emptyFields = allFields.filter(f => f.isEmpty);
-
-        const actionOptions = [];
-        const actionValues = [];
-
-        // Option 1: Process All
-        actionOptions.push(`🔄 更新所有字段 (${allFields.length}个)`);
-        actionValues.push('ALL');
-
-        // Option 2: Process Empty Only (if any)
-        if (emptyFields.length > 0) {
-            actionOptions.push(`📝 仅填充空白字段 (${emptyFields.length}个)`);
-            actionValues.push('EMPTY');
-        }
-
-        // Option 3: Process Single Field
-        // 我们可以把每个字段作为独立的选项列出来，或者先选一个动作叫 "Select Single"
-        // 为了方便，直接把每个字段列在下面 (Mix style)
-        // 或者先选模式。InlineFieldUpdate.js 是把 "处理所有" 和 单个字段 放在同一个列表里。
-
-        // 我们采用 InlineFieldUpdate.js 的混合列表模式，加上 "Empty Only" 选项
         const menuOptions = [];
         const menuValues = [];
 
-        menuOptions.push(`🚀 处理本区所有字段 (${allFields.length}个)`);
+        menuOptions.push(`🚀 处理本区所有打卡 (${allFields.length}个)`);
         menuValues.push({ type: 'ALL' });
 
         if (emptyFields.length > 0) {
-            menuOptions.push(`✨ 仅填充空白字段 (${emptyFields.length}个)`);
+            menuOptions.push(`✨ 仅填充空白打卡 (${emptyFields.length}个)`);
             menuValues.push({ type: 'EMPTY' });
         }
 
@@ -147,7 +126,7 @@ module.exports = async (params) => {
             menuOptions,
             menuValues,
             false,
-            `区域: ${targetHeader.text} - 选择操作:`
+            `打卡区域: ${targetHeader.text}`
         );
 
         if (!selectedAction || selectedAction.type === 'SEPARATOR') return;
@@ -161,15 +140,12 @@ module.exports = async (params) => {
             fieldsToProcess = [selectedAction.field];
         }
 
-        // 7. Process Loop
-        const isCheckMode = targetHeader.text.includes("打卡");
-        const isDataMode = targetHeader.text.includes("数据");
-
+        // 7. Process Loop (Checkbox Only)
         let modifiedCount = 0;
         const updatesByLine = {};
 
         for (const field of fieldsToProcess) {
-            const result = await processField(field, quickAddApi, isCheckMode, isDataMode);
+            const result = await processFieldTracker(field, quickAddApi);
             if (result.shouldUpdate) {
                 if (!updatesByLine[field.lineIndex]) updatesByLine[field.lineIndex] = [];
                 updatesByLine[field.lineIndex].push({
@@ -192,7 +168,7 @@ module.exports = async (params) => {
             }
             const newContent = lines.join('\n');
             await app.vault.modify(activeFile, newContent);
-            new Notice(`已更新 ${modifiedCount} 个字段`);
+            new Notice(`已更新 ${modifiedCount} 个打卡项`);
         } else {
             new Notice("未修改任何内容");
         }
@@ -203,84 +179,28 @@ module.exports = async (params) => {
     }
 };
 
-async function processField(field, quickAddApi, isCheckMode, isDataMode) {
-    const { fieldName, currentValue, isEmpty, fullMatch } = field;
-    let newValue = null;
-    let shouldUpdate = false;
+async function processFieldTracker(field, quickAddApi) {
+    const { fieldName, currentValue, fullMatch } = field;
 
-    // Prompt Text
-    const basePrompt = isEmpty
-        ? `请填写 "${fieldName}"`
-        : `更新 "${fieldName}" (当前: ${currentValue})`;
+    const options = ['✔️', '❌', '🔲'];
+    const displayOptions = options.map(opt =>
+        opt === currentValue ? `${opt} - ${fieldName} (当前)` : `${opt} - ${fieldName}`
+    );
+    displayOptions.push("⏭️ 跳过");
+    const values = [...options, 'SKIP'];
 
-    if (isCheckMode) {
-        // 打卡 Checkbox
-        const options = ['✔️', '❌', '🔲'];
-        // 显示当前状态
-        const displayOptions = options.map(opt =>
-            opt === currentValue ? `${opt} - ${fieldName} (当前)` : `${opt} - ${fieldName}`
-        );
-        displayOptions.push("⏭️ 跳过");
-        const values = [...options, 'SKIP'];
+    const choice = await quickAddApi.suggester(
+        displayOptions,
+        values,
+        false,
+        `打卡: ${fieldName}`
+    );
 
-        const choice = await quickAddApi.suggester(displayOptions, values, false, `[打卡] ${basePrompt}`);
-        if (choice && choice !== 'SKIP') {
-            newValue = choice;
-            shouldUpdate = true;
-        }
-    } else if (isDataMode) {
-        // 数据 Number (Allow skip)
-        // inputPrompt 不容易直接做 "Button Skip"，但用户可以 Escape 取消。
-        // 为了显式 Skip，我们可以在 inputPrompt 里说明 "Esc to Skip" 或者不做特殊处理 (Cancel = Skip Loop? No, Cancel = Stop All?)
-        // 为了更好的体验，通常 inputPrompt Cancel = Skip Current Field.
-        // 但是 quickAddApi.inputPrompt 如果返回 undefined (Esc)，我们视为 Skip 还是 Quit?
-        // 在批量处理中，通常 ESC = Quit Process. Input Empty = Clear?
-        // 这里设定：ESC = Skip Current Field (继续下一个)。如果想退出整个脚本，需要狂按ESC？
-        // 或者：ESC = 终止。
-        // 让我们看看 checkbox 逻辑：choice === SKIP -> continue.
-        // 对于 InputPrompt，我们很难加 Skip 按钮。
-        // 变通：如果用户不输入直接回车 -> 保持原值 (Skip)。
-
-        while (true) {
-            const input = await quickAddApi.inputPrompt(
-                `[数据] ${basePrompt}`,
-                currentValue
-            );
-
-            if (input === undefined || input === null) {
-                // User cancelled / Esc
-                // 视为跳过当前字段
-                break;
-            }
-
-            // 如果没变，也是跳过
-            if (input === currentValue) break;
-
-            if (!isNaN(parseFloat(input)) && isFinite(input)) {
-                newValue = input;
-                shouldUpdate = true;
-                break;
-            } else {
-                new Notice("⚠️ 必须输入数字!");
-            }
-        }
-    } else {
-        // 普通 Text
-        const input = await quickAddApi.inputPrompt(
-            `[文本] ${basePrompt}`,
-            currentValue
-        );
-        if (input !== undefined && input !== null && input !== currentValue) {
-            newValue = input;
-            shouldUpdate = true;
-        }
-    }
-
-    if (shouldUpdate && newValue !== currentValue) {
+    if (choice && choice !== 'SKIP' && choice !== currentValue) {
         return {
             shouldUpdate: true,
             originalMatch: fullMatch,
-            newContent: `[${fieldName}::${newValue}]`
+            newContent: `[${fieldName}::${choice}]`
         };
     }
     return { shouldUpdate: false };

@@ -1,0 +1,7 @@
+{
+  "deleteOption": ".trash",
+  "logsModal": true,
+  "excludedFolders": "900 Assets/960 Scripts",
+  "ribbonIcon": false,
+  "excludeSubfolders": false
+}

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "900 Assets/920 Queries/项目中心（升级）.md",
-                "mode": "preview",
+                "file": "500 Journal/540 Daily/2026-01-02.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "项目中心（升级）"
+              "title": "2026-01-02"
             }
           }
         ]
@@ -143,7 +143,7 @@
             }
           },
           {
-            "id": "9bc7d8a961b9fd36",
+            "id": "b4efdb5bd0f0cb58",
             "type": "leaf",
             "state": {
               "type": "file-info-view",
@@ -195,10 +195,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "900 Assets/920 Queries/项目中心（升级）.md"
+                "file": "👉从这里开始 Start from here!.md"
               },
               "icon": "lucide-info",
-              "title": "项目中心（升级）的笔记属性"
+              "title": "👉从这里开始 Start from here!的笔记属性"
             }
           },
           {
@@ -212,7 +212,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
@@ -244,6 +244,20 @@
   },
   "active": "e65728cd59c772d8",
   "lastOpenFiles": [
+    "500 Journal/540 Daily/2026-01-03.md",
+    "900 Assets/960 Scripts/InlineFieldUpdate.js",
+    "500 Journal/540 Daily/2026-01-02.md",
+    "900 Assets/920 Queries/按钮中心.md",
+    "900 Assets/960 Scripts/InlineFieldUpdate-data.js",
+    "900 Assets/960 Scripts/InlineFieldUpdate-tracker.js",
+    "900 Assets/990 Attachments/Pasted image 20260103225301.png",
+    "500 Journal/540 Daily/2026-01-01.md",
+    "900 Assets/910 Templates/TPL-Daily.md",
+    "900 Assets/960 Scripts/InlineFieldUpdate3.js",
+    "500 Journal/540 Daily/2025-12-31.md",
+    "900 Assets/960 Scripts/Obsidian Scripting - Check View Mode.md",
+    "500 Journal/540 Daily/2025-12-30.md",
+    "900 Assets/960 Scripts/journal_tasks_rolling.js",
     "👉从这里开始 Start from here!.md",
     "900 Assets/920 Queries/项目中心（升级）.md",
     "100 Projects/202501项目1/测试项目1.md",
@@ -262,19 +276,10 @@
     "900 Assets/920 Queries/任务中心.md",
     "900 Assets/920 Queries/项目任务查询.md",
     "100 Projects/202503项目4/测试项目3.md",
-    "ThinkDoKit（知行盒子）使用指南.md",
-    "100 Projects/202511无主文件项目/未命名.md",
     "100 Projects/202511无主文件项目",
-    "100 Projects/示例项目0.md",
-    "100 Projects/测试项目1.md",
     "100 Projects/202412测试",
     "100 Projects/202411测试",
-    "900 Assets/920 Queries/按钮中心.md",
-    "✅请完成你的第一个任务！.md",
     "👉从这里开始 Start from here!.md.tmp.10820.1765957988488",
-    "000 Inbox/✨快速入门小贴士 Tips.md",
-    "500 Journal/540 Daily/2025-10-06.md",
-    "500 Journal/540 Daily/2025-06-03.md",
     "900 Assets/990 Attachments/Pasted image 20251006163810.png",
     "900 Assets/990 Attachments/Pasted image 20251006162514.png",
     "900 Assets/990 Attachments/Pasted image 20251006162452.png",
@@ -283,12 +288,6 @@
     "900 Assets/990 Attachments/Pasted image 20251006162419.png",
     "900 Assets/990 Attachments/Pasted image 20251006162408.png",
     "900 Assets/990 Attachments/Pasted image 20251006162354.png",
-    "900 Assets/960 Scripts/random-quote.js",
-    "900 Assets/960 Scripts/random-quote3.js",
-    "900 Assets/960 Scripts/task-heatmap-vertical.js",
-    "900 Assets/960 Scripts/YAMLHeaderUpdater.js",
-    "900 Assets/960 Scripts/InlineFieldUpdate.js",
-    "900 Assets/990 Attachments/Pasted image 20250914205443.png",
-    "900 Assets/990 Attachments/Pasted image 20250914205431.png"
+    "900 Assets/990 Attachments/Pasted image 20250914205443.png"
   ]
 }
