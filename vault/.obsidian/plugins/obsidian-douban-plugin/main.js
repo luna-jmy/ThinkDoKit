@@ -239,12 +239,12 @@ var require_common = __commonJS({
             args.unshift("%O");
           }
           let index2 = 0;
-          args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format2) => {
+          args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
             if (match === "%%") {
               return "%";
             }
             index2++;
-            const formatter = createDebug.formatters[format2];
+            const formatter = createDebug.formatters[format];
             if (typeof formatter === "function") {
               const val2 = args[index2];
               match = formatter.call(self, val2);
@@ -294,49 +294,63 @@ var require_common = __commonJS({
         createDebug.namespaces = namespaces;
         createDebug.names = [];
         createDebug.skips = [];
-        let i;
-        const split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
-        const len = split.length;
-        for (i = 0; i < len; i++) {
-          if (!split[i]) {
-            continue;
-          }
-          namespaces = split[i].replace(/\*/g, ".*?");
-          if (namespaces[0] === "-") {
-            createDebug.skips.push(new RegExp("^" + namespaces.slice(1) + "$"));
+        const split = (typeof namespaces === "string" ? namespaces : "").trim().replace(/\s+/g, ",").split(",").filter(Boolean);
+        for (const ns of split) {
+          if (ns[0] === "-") {
+            createDebug.skips.push(ns.slice(1));
           } else {
-            createDebug.names.push(new RegExp("^" + namespaces + "$"));
+            createDebug.names.push(ns);
           }
         }
       }
+      function matchesTemplate(search, template) {
+        let searchIndex = 0;
+        let templateIndex = 0;
+        let starIndex = -1;
+        let matchIndex = 0;
+        while (searchIndex < search.length) {
+          if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === "*")) {
+            if (template[templateIndex] === "*") {
+              starIndex = templateIndex;
+              matchIndex = searchIndex;
+              templateIndex++;
+            } else {
+              searchIndex++;
+              templateIndex++;
+            }
+          } else if (starIndex !== -1) {
+            templateIndex = starIndex + 1;
+            matchIndex++;
+            searchIndex = matchIndex;
+          } else {
+            return false;
+          }
+        }
+        while (templateIndex < template.length && template[templateIndex] === "*") {
+          templateIndex++;
+        }
+        return templateIndex === template.length;
+      }
       function disable() {
         const namespaces = [
-          ...createDebug.names.map(toNamespace),
-          ...createDebug.skips.map(toNamespace).map((namespace) => "-" + namespace)
+          ...createDebug.names,
+          ...createDebug.skips.map((namespace) => "-" + namespace)
         ].join(",");
         createDebug.enable("");
         return namespaces;
       }
       function enabled(name) {
-        if (name[name.length - 1] === "*") {
-          return true;
-        }
-        let i;
-        let len;
-        for (i = 0, len = createDebug.skips.length; i < len; i++) {
-          if (createDebug.skips[i].test(name)) {
+        for (const skip of createDebug.skips) {
+          if (matchesTemplate(name, skip)) {
             return false;
           }
         }
-        for (i = 0, len = createDebug.names.length; i < len; i++) {
-          if (createDebug.names[i].test(name)) {
+        for (const ns of createDebug.names) {
+          if (matchesTemplate(name, ns)) {
             return true;
           }
         }
         return false;
-      }
-      function toNamespace(regexp) {
-        return regexp.toString().substring(2, regexp.toString().length - 2).replace(/\.\*\?$/, "*");
       }
       function coerce(val2) {
         if (val2 instanceof Error) {
@@ -456,7 +470,8 @@ var require_browser = __commonJS({
       if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
         return false;
       }
-      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+      let m;
+      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
     }
     function formatArgs(args) {
       args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module2.exports.humanize(this.diff);
@@ -493,7 +508,7 @@ var require_browser = __commonJS({
     function load2() {
       let r;
       try {
-        r = exports.storage.getItem("debug");
+        r = exports.storage.getItem("debug") || exports.storage.getItem("DEBUG");
       } catch (error) {
       }
       if (!r && typeof process !== "undefined" && "env" in process) {
@@ -549,9 +564,17 @@ var require_follow_redirects = __commonJS({
     var Writable = require("stream").Writable;
     var assert = require("assert");
     var debug = require_debug();
+    (function detectUnsupportedEnvironment() {
+      var looksLikeNode = typeof process !== "undefined";
+      var looksLikeBrowser = typeof window !== "undefined" && typeof document !== "undefined";
+      var looksLikeV8 = isFunction(Error.captureStackTrace);
+      if (!looksLikeNode && (looksLikeBrowser || !looksLikeV8)) {
+        console.warn("The follow-redirects package should be excluded from browser builds.");
+      }
+    })();
     var useNativeURL = false;
     try {
-      assert(new URL2());
+      assert(new URL2(""));
     } catch (error) {
       useNativeURL = error.code === "ERR_INVALID_URL";
     }
@@ -952,7 +975,9 @@ var require_follow_redirects = __commonJS({
     }
     function createErrorType(code, message, baseClass) {
       function CustomError(properties) {
-        Error.captureStackTrace(this, this.constructor);
+        if (isFunction(Error.captureStackTrace)) {
+          Error.captureStackTrace(this, this.constructor);
+        }
         Object.assign(this, properties || {});
         this.code = code;
         this.message = this.cause ? message + ": " + this.cause.message : message;
@@ -2316,12 +2341,15 @@ PS: This file could be delete if you want to.
   "121402": `Display status bar when import data ?`,
   "121410": `Search Default Type`,
   "121411": `Search defuault type when open command palette 'search douban and create file'`,
-  "121430": `Save Attachment File`,
+  "121430": `Save Attachment(Picture) File`,
   "121431": `Save attachment file to local disk, such as image ? If you do not enable this feature, it will not show cover image in note`,
-  "121432": `Attachment folder`,
+  "121432": `Attachment(Picture) folder`,
   "121433": `Attachment file created from Obsidian-Douban will be placed in this folder,
 	 If blank, they will be created by default name. support all basic template variables. example: {{type}}/assets`,
   "121434": `assets`,
+  "121452": `Attachment(Picture) File Name`,
+  "121453": `Attachment file name, If blank, they will be created by default name '{{title}}'. support all basic template variables. example: {{type}}-{{title}}`,
+  "121454": `{{title}}`,
   "121435": `Save High Definition Cover`,
   "121436": `High Definition Cover looks better but it will take more space, and you must login douban in this plugin`,
   "121437": `Please login first, Then this function could be enable`,
@@ -2380,6 +2408,7 @@ PS: This file could be delete if you want to.
   "140102": `subject type is different, will not sync this, chosen sync type is {0} but this {1} subject type is {2}`,
   "130105": `Can not use Douban this time, Please try again after 12 hour or 24 hour. Or you can reset your connection `,
   "130106": `Can not use Douban this time, Please try Login In Douban Plugin. If not working please again after 12 hour or 24 hour. Or you can reset your connection `,
+  "130404": `404 Url Not Found`,
   "130107": `Can not find array setting for {1} in {0} , Please add it in array settings`,
   "130108": `Redirect times too much, please check your network or proxy`,
   "130120": `An error occurred during Sync, but Sync will continue. Error item is {}`,
@@ -2912,9 +2941,12 @@ var zh_cn_default = {
   "121411": `\u5728\u6253\u5F00"\u641C\u7D22\u8C46\u74E3\u5E76\u521B\u5EFA\u6587\u4EF6"\u65F6\u9ED8\u8BA4\u641C\u7D22\u7684\u7C7B\u578B`,
   "121430": `\u4FDD\u5B58\u56FE\u7247\u9644\u4EF6`,
   "121431": `\u5BFC\u5165\u6570\u636E\u4F1A\u540C\u6B65\u4FDD\u5B58\u56FE\u7247\u9644\u4EF6\u5230\u672C\u5730\u6587\u4EF6\u5939, \u5982\u7535\u5F71\u5C01\u9762,\u4E66\u7C4D\u5C01\u9762\u3002\u5982\u679C\u9700\u8981\u663E\u793A\u5C01\u9762\uFF0C\u8BF7\u4FDD\u6301\u5F00\u542F\u8BE5\u529F\u80FD\u3002`,
-  "121432": `\u9644\u4EF6\u5B58\u653E\u4F4D\u7F6E`,
+  "121432": `\u9644\u4EF6(\u56FE\u7247)\u5B58\u653E\u4F4D\u7F6E`,
   "121433": `\u4FDD\u5B58\u7684\u9644\u4EF6\u5C06\u4F1A\u5B58\u653E\u81F3\u8BE5\u6587\u4EF6\u5939\u4E2D. \u5982\u679C\u4E3A\u7A7A, \u7B14\u8BB0\u5C06\u4F1A\u5B58\u653E\u5230\u9ED8\u8BA4\u4F4D\u7F6E(assets), \u4E14\u652F\u6301\u6240\u6709'\u901A\u7528'\u7684\u53C2\u6570\u3002\u5982\uFF1A{{myType}}/attachments`,
+  "121452": `\u9644\u4EF6(\u56FE\u7247)\u6587\u4EF6\u540D`,
+  "121453": `\u9644\u4EF6\u7684\u6587\u4EF6\u540D\u6A21\u677F, \u652F\u6301\u6240\u6709'\u901A\u7528'\u7684\u53C2\u6570\u4F5C\u4E3A\u540D\u79F0(\u5982:{{type}}-{{title}})\uFF0C\u4E14\u652F\u6301\u8DEF\u5F84, \u6BD4\u5982: '{{myType}}/\u9644\u4EF6-{{title}}'\u3002\u5982\u679C\u4E3A\u7A7A, \u5219\u4F7F\u7528\u9ED8\u8BA4\u540D\u79F0{{title}}`,
   "121434": `assets`,
+  "121454": `{{title}}`,
   "121435": `\u4FDD\u5B58\u9AD8\u6E05\u5C01\u9762`,
   "121436": `\u9AD8\u6E05\u5C01\u9762\u56FE\u7247\u8D28\u91CF\u66F4\u9AD8\u6E05\u6670\u5EA6\u66F4\u597D, \u9700\u8981\u60A8\u5728\u6B64\u63D2\u4EF6 \u767B\u5F55\u8C46\u74E3 \u624D\u80FD\u751F\u6548, \u82E5\u672A\u767B\u5F55\u5219\u9ED8\u8BA4\u4F7F\u7528\u4F4E\u7CBE\u5EA6\u7248\u672C\u5C01\u9762`,
   "121437": `\u767B\u5F55\u540E\u6B64\u529F\u80FD\u624D\u4F1A\u751F\u6548`,
@@ -3006,6 +3038,7 @@ var zh_cn_default = {
   "310118": `producer:\u51FA\u54C1\u65B9`,
   "310130": `\u51FA\u7248\u5E74\u4EFD`,
   "310121": `\u5C01\u9762URL`,
+  "310122": `menu:\u76EE\u5F55`,
   "310201": `\u8C46\u74E3ID`,
   "310202": `\u7535\u5F71\u540D\u79F0`,
   "310203": `\u7C7B\u578B`,
@@ -3028,6 +3061,7 @@ var zh_cn_default = {
   "310220": `-`,
   "310230": `\u4E0A\u6620\u5E74\u4EFD`,
   "310221": `\u5C01\u9762URL`,
+  "310222": `-`,
   "310301": `\u8C46\u74E3ID`,
   "310302": `\u7535\u89C6\u5267\u540D\u79F0`,
   "310303": `\u7C7B\u578B`,
@@ -3050,6 +3084,7 @@ var zh_cn_default = {
   "310320": `episode:\u96C6\u6570`,
   "310330": `\u4E0A\u6620\u5E74\u4EFD`,
   "310321": `\u5C01\u9762URL`,
+  "310322": `-`,
   "310401": `\u8C46\u74E3ID`,
   "310402": `\u97F3\u4E50\u540D`,
   "310403": `\u7C7B\u578B`,
@@ -3070,6 +3105,7 @@ var zh_cn_default = {
   "310418": `-`,
   "310430": `\u53D1\u884C\u5E74\u4EFD`,
   "310421": `\u5C01\u9762URL`,
+  "310422": `menu:\u76EE\u5F55`,
   "310501": `\u8C46\u74E3ID`,
   "310502": `\u65E5\u8BB0\u6807\u9898`,
   "310503": `\u7C7B\u578B`,
@@ -3090,6 +3126,7 @@ var zh_cn_default = {
   "310518": `-`,
   "310530": `\u53D1\u5E03\u5E74\u4EFD`,
   "310521": `\u5C01\u9762URL`,
+  "310522": `-`,
   "310601": `\u8C46\u74E3ID`,
   "310602": `\u6E38\u620F\u540D\u79F0`,
   "310603": `\u7C7B\u578B`,
@@ -3110,6 +3147,7 @@ var zh_cn_default = {
   "310618": `-`,
   "310630": `\u53D1\u884C\u5E74\u4EFD`,
   "310621": `\u5C01\u9762URL`,
+  "310622": `-`,
   "310701": `\u5F85\u5F00\u53D1`,
   "310702": `\u5F85\u5F00\u53D1`,
   "310703": `\u5F85\u5F00\u53D1`,
@@ -3129,7 +3167,8 @@ var zh_cn_default = {
   "310717": `-`,
   "310718": `-`,
   "310730": `-`,
-  "310721": `\u5C01\u9762URL`,
+  "310721": `-`,
+  "310722": `-`,
   "320101": `\u6269\u5C551`,
   "320102": `\u6269\u5C552`,
   "320103": `\u6269\u5C553`,
@@ -3381,9 +3420,9 @@ var ESTIMATE_TIME_PER = 2e3;
 var ESTIMATE_TIME_PER_WITH_REQUEST_SLOW = ESTIMATE_TIME_PER + BasicConst.CALL_DOUBAN_DELAY_SLOW + BasicConst.CALL_DOUBAN_DELAY_RANGE_SLOW / 2;
 var ESTIMATE_TIME_PER_WITH_REQUEST = ESTIMATE_TIME_PER + BasicConst.CALL_DOUBAN_DELAY + BasicConst.CALL_DOUBAN_DELAY_RANGE / 2;
 var TemplateTextMode;
-(function(TemplateTextMode3) {
-  TemplateTextMode3[TemplateTextMode3["NORMAL"] = 0] = "NORMAL";
-  TemplateTextMode3[TemplateTextMode3["YAML"] = 1] = "YAML";
+(function(TemplateTextMode4) {
+  TemplateTextMode4[TemplateTextMode4["NORMAL"] = 0] = "NORMAL";
+  TemplateTextMode4[TemplateTextMode4["YAML"] = 1] = "YAML";
 })(TemplateTextMode || (TemplateTextMode = {}));
 var SearchHandleMode;
 (function(SearchHandleMode2) {
@@ -3487,7 +3526,8 @@ var SearchTypeRecords = {
   [SupportType.book]: i18nHelper.getMessage("BOOK"),
   [SupportType.music]: i18nHelper.getMessage("MUSIC"),
   [SupportType.note]: i18nHelper.getMessage("NOTE"),
-  [SupportType.game]: i18nHelper.getMessage("GAME")
+  [SupportType.game]: i18nHelper.getMessage("GAME"),
+  [SupportType.theater]: i18nHelper.getMessage("THEATER")
 };
 var PersonNameModeRecords = {
   [PersonNameMode.CH_NAME]: i18nHelper.getMessage("121206"),
@@ -3794,13 +3834,15 @@ var DEFAULT_SETTINGS = {
     { name: "myType", value: "music", field: SupportType.music },
     { name: "myType", value: "note", field: SupportType.note },
     { name: "myType", value: "game", field: SupportType.game },
-    { name: "myType", value: "teleplay", field: SupportType.teleplay }
+    { name: "myType", value: "teleplay", field: SupportType.teleplay },
+    { name: "myType", value: "theater", field: SupportType.theater }
   ],
   loginCookiesContent: "",
   loginHeadersContent: "",
   cacheImage: true,
   cacheHighQuantityImage: true,
   attachmentPath: "assets",
+  attachmentFileName: "{{title}}",
   syncHandledDataArray: [],
   scoreSetting: {
     starFull: "\u2B50",
@@ -3920,7 +3962,7 @@ var https = null;
 var http = null;
 var DesktopHttpUtil = class {
   static request(url, headers, settingsManager, options) {
-    const _a2 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a2, headersInner = __objRest(_a2, ["Accept-Encoding"]);
+    const _a5 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a5, headersInner = __objRest(_a5, ["Accept-Encoding"]);
     const optionsInner = __spreadValues({
       headers: headersInner
     }, options);
@@ -4133,7 +4175,7 @@ var DoubanHttpUtil = class {
   static httpRequestGet(url, headers, settingsManager) {
     return __async(this, null, function* () {
       settingsManager.debug(`\u8BF7\u6C42\u5730\u5740:${url}`);
-      const _a2 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a2, headersInner = __objRest(_a2, ["Accept-Encoding"]);
+      const _a5 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a5, headersInner = __objRest(_a5, ["Accept-Encoding"]);
       settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6\u7F51\u9875\u5F00\u59CB:
 url:${url}
 headers:${JSON.stringify(headers)}`);
@@ -4174,7 +4216,7 @@ var MobileHttpUtil = class {
   }
   static httpRequestGetInner(url, headers, times, settingsManager) {
     return __async(this, null, function* () {
-      const _a2 = headers, { Cookie } = _a2, headersInner = __objRest(_a2, ["Cookie"]);
+      const _a5 = headers, { Cookie } = _a5, headersInner = __objRest(_a5, ["Cookie"]);
       let requestUrlParam = {
         url,
         method: "GET",
@@ -4220,7 +4262,7 @@ ${response}`);
 var HttpUtil = class {
   static httpRequest(url, headers, settingsManager, options) {
     return __async(this, null, function* () {
-      const _a2 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a2, headersInner = __objRest(_a2, ["Accept-Encoding"]);
+      const _a5 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a5, headersInner = __objRest(_a5, ["Accept-Encoding"]);
       settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6json\u5F00\u59CB:
 url:${url}
 headers:${JSON.stringify(headers)}`);
@@ -4234,7 +4276,7 @@ headers:${JSON.stringify(headers)}`);
   }
   static getText(url, headers, settingsManager) {
     return __async(this, null, function* () {
-      const _a2 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a2, headersInner = __objRest(_a2, ["Accept-Encoding"]);
+      const _a5 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a5, headersInner = __objRest(_a5, ["Accept-Encoding"]);
       settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6json\u5F00\u59CB:
 url:${url}
 headers:${JSON.stringify(headers)}`);
@@ -4512,10 +4554,10 @@ var SearchParserHandlerV2 = class {
       return [];
     }
     return items.map((i) => {
-      var _a2, _b, _c, _d;
+      var _a5, _b, _c, _d;
       const target = i.target;
       const result = {
-        id: (_a2 = target.id) != null ? _a2 : "",
+        id: (_a5 = target.id) != null ? _a5 : "",
         title: (_b = target.title) != null ? _b : "-",
         score: target.rating && target.rating.value ? Number(target.rating.value) : null,
         cast: (_c = target.card_subtitle) != null ? _c : "",
@@ -4573,24 +4615,11 @@ var OtherAllPageSearchResultPageParser = class {
   }
 };
 
-// node_modules/cheerio/lib/esm/options.js
-var defaultOpts = {
-  xml: false,
-  decodeEntities: true
-};
-var options_default = defaultOpts;
-var xmlModeDefault = {
-  _useHtmlParser2: true,
-  xmlMode: true
-};
-function flatten(options) {
-  return (options === null || options === void 0 ? void 0 : options.xml) ? typeof options.xml === "boolean" ? xmlModeDefault : __spreadValues(__spreadValues({}, xmlModeDefault), options.xml) : options !== null && options !== void 0 ? options : void 0;
-}
-
-// node_modules/cheerio/lib/esm/static.js
+// node_modules/cheerio/dist/browser/static.js
 var static_exports = {};
 __export(static_exports, {
   contains: () => contains,
+  extract: () => extract,
   html: () => html,
   merge: () => merge,
   parseHTML: () => parseHTML,
@@ -4616,6 +4645,7 @@ __export(esm_exports2, {
   getChildren: () => getChildren,
   getElementById: () => getElementById,
   getElements: () => getElements,
+  getElementsByClassName: () => getElementsByClassName,
   getElementsByTagName: () => getElementsByTagName,
   getElementsByTagType: () => getElementsByTagType,
   getFeed: () => getFeed,
@@ -4762,8 +4792,8 @@ var NodeWithChildren = class extends Node {
     this.children = children2;
   }
   get firstChild() {
-    var _a2;
-    return (_a2 = this.children[0]) !== null && _a2 !== void 0 ? _a2 : null;
+    var _a5;
+    return (_a5 = this.children[0]) !== null && _a5 !== void 0 ? _a5 : null;
   }
   get lastChild() {
     return this.children.length > 0 ? this.children[this.children.length - 1] : null;
@@ -4811,11 +4841,11 @@ var Element2 = class extends NodeWithChildren {
   }
   get attributes() {
     return Object.keys(this.attribs).map((name) => {
-      var _a2, _b;
+      var _a5, _b;
       return {
         name,
         value: this.attribs[name],
-        namespace: (_a2 = this["x-attribsNamespace"]) === null || _a2 === void 0 ? void 0 : _a2[name],
+        namespace: (_a5 = this["x-attribsNamespace"]) === null || _a5 === void 0 ? void 0 : _a5[name],
         prefix: (_b = this["x-attribsPrefix"]) === null || _b === void 0 ? void 0 : _b[name]
       };
     });
@@ -4903,7 +4933,7 @@ function cloneChildren(childs) {
 }
 
 // node_modules/domhandler/lib/esm/index.js
-var defaultOpts2 = {
+var defaultOpts = {
   withStartIndices: false,
   withEndIndices: false,
   xmlMode: false
@@ -4918,14 +4948,14 @@ var DomHandler = class {
     this.parser = null;
     if (typeof options === "function") {
       elementCB = options;
-      options = defaultOpts2;
+      options = defaultOpts;
     }
     if (typeof callback === "object") {
       options = callback;
       callback = void 0;
     }
     this.callback = callback !== null && callback !== void 0 ? callback : null;
-    this.options = options !== null && options !== void 0 ? options : defaultOpts2;
+    this.options = options !== null && options !== void 0 ? options : defaultOpts;
     this.elementCB = elementCB !== null && elementCB !== void 0 ? elementCB : null;
   }
   onparserinit(parser) {
@@ -5078,35 +5108,35 @@ var fromCodePoint = (_a = String.fromCodePoint) !== null && _a !== void 0 ? _a :
   return output;
 };
 function replaceCodePoint(codePoint) {
-  var _a2;
+  var _a5;
   if (codePoint >= 55296 && codePoint <= 57343 || codePoint > 1114111) {
     return 65533;
   }
-  return (_a2 = decodeMap.get(codePoint)) !== null && _a2 !== void 0 ? _a2 : codePoint;
+  return (_a5 = decodeMap.get(codePoint)) !== null && _a5 !== void 0 ? _a5 : codePoint;
 }
 
 // node_modules/entities/lib/esm/decode.js
 var CharCodes;
-(function(CharCodes3) {
-  CharCodes3[CharCodes3["NUM"] = 35] = "NUM";
-  CharCodes3[CharCodes3["SEMI"] = 59] = "SEMI";
-  CharCodes3[CharCodes3["EQUALS"] = 61] = "EQUALS";
-  CharCodes3[CharCodes3["ZERO"] = 48] = "ZERO";
-  CharCodes3[CharCodes3["NINE"] = 57] = "NINE";
-  CharCodes3[CharCodes3["LOWER_A"] = 97] = "LOWER_A";
-  CharCodes3[CharCodes3["LOWER_F"] = 102] = "LOWER_F";
-  CharCodes3[CharCodes3["LOWER_X"] = 120] = "LOWER_X";
-  CharCodes3[CharCodes3["LOWER_Z"] = 122] = "LOWER_Z";
-  CharCodes3[CharCodes3["UPPER_A"] = 65] = "UPPER_A";
-  CharCodes3[CharCodes3["UPPER_F"] = 70] = "UPPER_F";
-  CharCodes3[CharCodes3["UPPER_Z"] = 90] = "UPPER_Z";
+(function(CharCodes5) {
+  CharCodes5[CharCodes5["NUM"] = 35] = "NUM";
+  CharCodes5[CharCodes5["SEMI"] = 59] = "SEMI";
+  CharCodes5[CharCodes5["EQUALS"] = 61] = "EQUALS";
+  CharCodes5[CharCodes5["ZERO"] = 48] = "ZERO";
+  CharCodes5[CharCodes5["NINE"] = 57] = "NINE";
+  CharCodes5[CharCodes5["LOWER_A"] = 97] = "LOWER_A";
+  CharCodes5[CharCodes5["LOWER_F"] = 102] = "LOWER_F";
+  CharCodes5[CharCodes5["LOWER_X"] = 120] = "LOWER_X";
+  CharCodes5[CharCodes5["LOWER_Z"] = 122] = "LOWER_Z";
+  CharCodes5[CharCodes5["UPPER_A"] = 65] = "UPPER_A";
+  CharCodes5[CharCodes5["UPPER_F"] = 70] = "UPPER_F";
+  CharCodes5[CharCodes5["UPPER_Z"] = 90] = "UPPER_Z";
 })(CharCodes || (CharCodes = {}));
 var TO_LOWER_BIT = 32;
 var BinTrieFlags;
-(function(BinTrieFlags2) {
-  BinTrieFlags2[BinTrieFlags2["VALUE_LENGTH"] = 49152] = "VALUE_LENGTH";
-  BinTrieFlags2[BinTrieFlags2["BRANCH_LENGTH"] = 16256] = "BRANCH_LENGTH";
-  BinTrieFlags2[BinTrieFlags2["JUMP_TABLE"] = 127] = "JUMP_TABLE";
+(function(BinTrieFlags4) {
+  BinTrieFlags4[BinTrieFlags4["VALUE_LENGTH"] = 49152] = "VALUE_LENGTH";
+  BinTrieFlags4[BinTrieFlags4["BRANCH_LENGTH"] = 16256] = "BRANCH_LENGTH";
+  BinTrieFlags4[BinTrieFlags4["JUMP_TABLE"] = 127] = "JUMP_TABLE";
 })(BinTrieFlags || (BinTrieFlags = {}));
 function isNumber(code) {
   return code >= CharCodes.ZERO && code <= CharCodes.NINE;
@@ -5121,18 +5151,18 @@ function isEntityInAttributeInvalidEnd(code) {
   return code === CharCodes.EQUALS || isAsciiAlphaNumeric(code);
 }
 var EntityDecoderState;
-(function(EntityDecoderState2) {
-  EntityDecoderState2[EntityDecoderState2["EntityStart"] = 0] = "EntityStart";
-  EntityDecoderState2[EntityDecoderState2["NumericStart"] = 1] = "NumericStart";
-  EntityDecoderState2[EntityDecoderState2["NumericDecimal"] = 2] = "NumericDecimal";
-  EntityDecoderState2[EntityDecoderState2["NumericHex"] = 3] = "NumericHex";
-  EntityDecoderState2[EntityDecoderState2["NamedEntity"] = 4] = "NamedEntity";
+(function(EntityDecoderState4) {
+  EntityDecoderState4[EntityDecoderState4["EntityStart"] = 0] = "EntityStart";
+  EntityDecoderState4[EntityDecoderState4["NumericStart"] = 1] = "NumericStart";
+  EntityDecoderState4[EntityDecoderState4["NumericDecimal"] = 2] = "NumericDecimal";
+  EntityDecoderState4[EntityDecoderState4["NumericHex"] = 3] = "NumericHex";
+  EntityDecoderState4[EntityDecoderState4["NamedEntity"] = 4] = "NamedEntity";
 })(EntityDecoderState || (EntityDecoderState = {}));
 var DecodingMode;
-(function(DecodingMode2) {
-  DecodingMode2[DecodingMode2["Legacy"] = 0] = "Legacy";
-  DecodingMode2[DecodingMode2["Strict"] = 1] = "Strict";
-  DecodingMode2[DecodingMode2["Attribute"] = 2] = "Attribute";
+(function(DecodingMode4) {
+  DecodingMode4[DecodingMode4["Legacy"] = 0] = "Legacy";
+  DecodingMode4[DecodingMode4["Strict"] = 1] = "Strict";
+  DecodingMode4[DecodingMode4["Attribute"] = 2] = "Attribute";
 })(DecodingMode || (DecodingMode = {}));
 var EntityDecoder = class {
   constructor(decodeTree, emitCodePoint, errors) {
@@ -5227,9 +5257,9 @@ var EntityDecoder = class {
     return -1;
   }
   emitNumericEntity(lastCp, expectedLength) {
-    var _a2;
+    var _a5;
     if (this.consumed <= expectedLength) {
-      (_a2 = this.errors) === null || _a2 === void 0 ? void 0 : _a2.absenceOfDigitsInNumericCharacterReference(this.consumed);
+      (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.absenceOfDigitsInNumericCharacterReference(this.consumed);
       return 0;
     }
     if (lastCp === CharCodes.SEMI) {
@@ -5272,11 +5302,11 @@ var EntityDecoder = class {
     return -1;
   }
   emitNotTerminatedNamedEntity() {
-    var _a2;
+    var _a5;
     const { result, decodeTree } = this;
     const valueLength = (decodeTree[result] & BinTrieFlags.VALUE_LENGTH) >> 14;
     this.emitNamedEntityData(result, valueLength, this.consumed);
-    (_a2 = this.errors) === null || _a2 === void 0 ? void 0 : _a2.missingSemicolonAfterCharacterReference();
+    (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.missingSemicolonAfterCharacterReference();
     return this.consumed;
   }
   emitNamedEntityData(result, valueLength, consumed) {
@@ -5288,7 +5318,7 @@ var EntityDecoder = class {
     return consumed;
   }
   end() {
-    var _a2;
+    var _a5;
     switch (this.state) {
       case EntityDecoderState.NamedEntity: {
         return this.result !== 0 && (this.decodeMode !== DecodingMode.Attribute || this.result === this.treeIndex) ? this.emitNotTerminatedNamedEntity() : 0;
@@ -5300,7 +5330,7 @@ var EntityDecoder = class {
         return this.emitNumericEntity(0, 3);
       }
       case EntityDecoderState.NumericStart: {
-        (_a2 = this.errors) === null || _a2 === void 0 ? void 0 : _a2.absenceOfDigitsInNumericCharacterReference(this.consumed);
+        (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.absenceOfDigitsInNumericCharacterReference(this.consumed);
         return 0;
       }
       case EntityDecoderState.EntityStart: {
@@ -5556,13 +5586,13 @@ function replaceQuotes(value) {
   return value.replace(/"/g, "&quot;");
 }
 function formatAttributes(attributes2, opts) {
-  var _a2;
+  var _a5;
   if (!attributes2)
     return;
-  const encode = ((_a2 = opts.encodeEntities) !== null && _a2 !== void 0 ? _a2 : opts.decodeEntities) === false ? replaceQuotes : opts.xmlMode || opts.encodeEntities !== "utf8" ? encodeXML : escapeAttribute;
+  const encode = ((_a5 = opts.encodeEntities) !== null && _a5 !== void 0 ? _a5 : opts.decodeEntities) === false ? replaceQuotes : opts.xmlMode || opts.encodeEntities !== "utf8" ? encodeXML : escapeAttribute;
   return Object.keys(attributes2).map((key) => {
-    var _a3, _b;
-    const value = (_a3 = attributes2[key]) !== null && _a3 !== void 0 ? _a3 : "";
+    var _a6, _b;
+    const value = (_a6 = attributes2[key]) !== null && _a6 !== void 0 ? _a6 : "";
     if (opts.xmlMode === "foreign") {
       key = (_b = attributeNames.get(key)) !== null && _b !== void 0 ? _b : key;
     }
@@ -5634,9 +5664,9 @@ var foreignModeIntegrationPoints = new Set([
 ]);
 var foreignElements = new Set(["svg", "math"]);
 function renderTag(elem, opts) {
-  var _a2;
+  var _a5;
   if (opts.xmlMode === "foreign") {
-    elem.name = (_a2 = elementNames.get(elem.name)) !== null && _a2 !== void 0 ? _a2 : elem.name;
+    elem.name = (_a5 = elementNames.get(elem.name)) !== null && _a5 !== void 0 ? _a5 : elem.name;
     if (elem.parent && foreignModeIntegrationPoints.has(elem.parent.name)) {
       opts = __spreadProps(__spreadValues({}, opts), { xmlMode: false });
     }
@@ -5668,9 +5698,9 @@ function renderDirective(elem) {
   return `<${elem.data}>`;
 }
 function renderText(elem, opts) {
-  var _a2;
+  var _a5;
   let data2 = elem.data || "";
-  if (((_a2 = opts.encodeEntities) !== null && _a2 !== void 0 ? _a2 : opts.decodeEntities) !== false && !(!opts.xmlMode && elem.parent && unencodedElements.has(elem.parent.name))) {
+  if (((_a5 = opts.encodeEntities) !== null && _a5 !== void 0 ? _a5 : opts.decodeEntities) !== false && !(!opts.xmlMode && elem.parent && unencodedElements.has(elem.parent.name))) {
     data2 = opts.xmlMode || opts.encodeEntities !== "utf8" ? encodeXML(data2) : escapeText(data2);
   }
   return data2;
@@ -5745,8 +5775,8 @@ function getSiblings(elem) {
   return siblings2;
 }
 function getAttributeValue(elem, name) {
-  var _a2;
-  return (_a2 = elem.attribs) === null || _a2 === void 0 ? void 0 : _a2[name];
+  var _a5;
+  return (_a5 = elem.attribs) === null || _a5 === void 0 ? void 0 : _a5[name];
 }
 function hasAttrib(elem, name) {
   return elem.attribs != null && Object.prototype.hasOwnProperty.call(elem.attribs, name) && elem.attribs[name] != null;
@@ -5864,7 +5894,7 @@ function filter(test, node, recurse = true, limit = Infinity) {
 }
 function find(test, nodes, recurse, limit) {
   const result = [];
-  const nodeStack = [nodes];
+  const nodeStack = [Array.isArray(nodes) ? nodes : [nodes]];
   const indexStack = [0];
   for (; ; ) {
     if (indexStack[0] >= nodeStack[0].length) {
@@ -5891,25 +5921,26 @@ function findOneChild(test, nodes) {
   return nodes.find(test);
 }
 function findOne(test, nodes, recurse = true) {
-  let elem = null;
-  for (let i = 0; i < nodes.length && !elem; i++) {
-    const node = nodes[i];
-    if (!isTag2(node)) {
-      continue;
-    } else if (test(node)) {
-      elem = node;
-    } else if (recurse && node.children.length > 0) {
-      elem = findOne(test, node.children, true);
+  const searchedNodes = Array.isArray(nodes) ? nodes : [nodes];
+  for (let i = 0; i < searchedNodes.length; i++) {
+    const node = searchedNodes[i];
+    if (isTag2(node) && test(node)) {
+      return node;
+    }
+    if (recurse && hasChildren(node) && node.children.length > 0) {
+      const found = findOne(test, node.children, true);
+      if (found)
+        return found;
     }
   }
-  return elem;
+  return null;
 }
 function existsOne(test, nodes) {
-  return nodes.some((checked) => isTag2(checked) && (test(checked) || existsOne(test, checked.children)));
+  return (Array.isArray(nodes) ? nodes : [nodes]).some((node) => isTag2(node) && test(node) || hasChildren(node) && existsOne(test, node.children));
 }
 function findAll(test, nodes) {
   const result = [];
-  const nodeStack = [nodes];
+  const nodeStack = [Array.isArray(nodes) ? nodes : [nodes]];
   const indexStack = [0];
   for (; ; ) {
     if (indexStack[0] >= nodeStack[0].length) {
@@ -5921,11 +5952,9 @@ function findAll(test, nodes) {
       continue;
     }
     const elem = nodeStack[0][indexStack[0]++];
-    if (!isTag2(elem))
-      continue;
-    if (test(elem))
+    if (isTag2(elem) && test(elem))
       result.push(elem);
-    if (elem.children.length > 0) {
+    if (hasChildren(elem) && elem.children.length > 0) {
       indexStack.unshift(0);
       nodeStack.unshift(elem.children);
     }
@@ -5986,6 +6015,9 @@ function getElementById(id, nodes, recurse = true) {
 }
 function getElementsByTagName(tagName, nodes, recurse = true, limit = Infinity) {
   return filter(Checks["tag_name"](tagName), nodes, recurse, limit);
+}
+function getElementsByClassName(className, nodes, recurse = true, limit = Infinity) {
+  return filter(getAttribCheck("class", className), nodes, recurse, limit);
 }
 function getElementsByTagType(type, nodes, recurse = true, limit = Infinity) {
   return filter(Checks["tag_type"](type), nodes, recurse, limit);
@@ -6076,17 +6108,17 @@ function getFeed(doc) {
   return !feedRoot ? null : feedRoot.name === "feed" ? getAtomFeed(feedRoot) : getRssFeed(feedRoot);
 }
 function getAtomFeed(feedRoot) {
-  var _a2;
+  var _a5;
   const childs = feedRoot.children;
   const feed = {
     type: "atom",
     items: getElementsByTagName("entry", childs).map((item) => {
-      var _a3;
+      var _a6;
       const { children: children2 } = item;
       const entry = { media: getMediaElements(children2) };
       addConditionally(entry, "id", "id", children2);
       addConditionally(entry, "title", "title", children2);
-      const href2 = (_a3 = getOneElement("link", children2)) === null || _a3 === void 0 ? void 0 : _a3.attribs["href"];
+      const href2 = (_a6 = getOneElement("link", children2)) === null || _a6 === void 0 ? void 0 : _a6.attribs["href"];
       if (href2) {
         entry.link = href2;
       }
@@ -6103,7 +6135,7 @@ function getAtomFeed(feedRoot) {
   };
   addConditionally(feed, "id", "id", childs);
   addConditionally(feed, "title", "title", childs);
-  const href = (_a2 = getOneElement("link", childs)) === null || _a2 === void 0 ? void 0 : _a2.attribs["href"];
+  const href = (_a5 = getOneElement("link", childs)) === null || _a5 === void 0 ? void 0 : _a5.attribs["href"];
   if (href) {
     feed.link = href;
   }
@@ -6116,8 +6148,8 @@ function getAtomFeed(feedRoot) {
   return feed;
 }
 function getRssFeed(feedRoot) {
-  var _a2, _b;
-  const childs = (_b = (_a2 = getOneElement("channel", feedRoot.children)) === null || _a2 === void 0 ? void 0 : _a2.children) !== null && _b !== void 0 ? _b : [];
+  var _a5, _b;
+  const childs = (_b = (_a5 = getOneElement("channel", feedRoot.children)) === null || _a5 === void 0 ? void 0 : _a5.children) !== null && _b !== void 0 ? _b : [];
   const feed = {
     type: feedRoot.name.substr(0, 3),
     id: "",
@@ -6193,7 +6225,30 @@ function isValidFeed(value) {
   return value === "rss" || value === "feed" || value === "rdf:RDF";
 }
 
-// node_modules/cheerio/lib/esm/static.js
+// node_modules/cheerio/dist/browser/options.js
+var defaultOpts2 = {
+  _useHtmlParser2: false
+};
+function flattenOptions(options, baseOptions) {
+  if (!options) {
+    return baseOptions !== null && baseOptions !== void 0 ? baseOptions : defaultOpts2;
+  }
+  const opts = __spreadValues(__spreadValues({
+    _useHtmlParser2: !!options.xmlMode
+  }, baseOptions), options);
+  if (options.xml) {
+    opts._useHtmlParser2 = true;
+    opts.xmlMode = true;
+    if (options.xml !== true) {
+      Object.assign(opts, options.xml);
+    }
+  } else if (options.xmlMode) {
+    opts._useHtmlParser2 = true;
+  }
+  return opts;
+}
+
+// node_modules/cheerio/dist/browser/static.js
 function render2(that, dom, options) {
   if (!that)
     return "";
@@ -6204,7 +6259,7 @@ function isOptions(dom, options) {
 }
 function html(dom, options) {
   const toRender = isOptions(dom) ? (options = dom, void 0) : dom;
-  const opts = __spreadValues(__spreadValues(__spreadValues({}, options_default), this === null || this === void 0 ? void 0 : this._options), flatten(options !== null && options !== void 0 ? options : {}));
+  const opts = __spreadValues(__spreadValues({}, this === null || this === void 0 ? void 0 : this._options), flattenOptions(options));
   return render2(this, toRender, opts);
 }
 function xml(dom) {
@@ -6212,7 +6267,7 @@ function xml(dom) {
   return render2(this, dom, options);
 }
 function text(elements) {
-  const elems = elements ? elements : this ? this.root() : [];
+  const elems = elements !== null && elements !== void 0 ? elements : this ? this.root() : [];
   let ret = "";
   for (let i = 0; i < elems.length; i++) {
     ret += textContent(elems[i]);
@@ -6226,11 +6281,11 @@ function parseHTML(data2, context, keepScripts = typeof context === "boolean" ? 
   if (typeof context === "boolean") {
     keepScripts = context;
   }
-  const parsed = this.load(data2, options_default, false);
+  const parsed = this.load(data2, this._options, false);
   if (!keepScripts) {
     parsed("script").remove();
   }
-  return parsed.root()[0].children.slice();
+  return [...parsed.root()[0].children];
 }
 function root() {
   return this(this._root);
@@ -6248,6 +6303,9 @@ function contains(container, contained) {
   }
   return false;
 }
+function extract(map2) {
+  return this.root().extract(map2);
+}
 function merge(arr1, arr2) {
   if (!isArrayLike(arr1) || !isArrayLike(arr2)) {
     return;
@@ -6264,7 +6322,7 @@ function isArrayLike(item) {
   if (Array.isArray(item)) {
     return true;
   }
-  if (typeof item !== "object" || !Object.prototype.hasOwnProperty.call(item, "length") || typeof item.length !== "number" || item.length < 0) {
+  if (typeof item !== "object" || item === null || !("length" in item) || typeof item.length !== "number" || item.length < 0) {
     return false;
   }
   for (let i = 0; i < item.length; i++) {
@@ -6275,7 +6333,7 @@ function isArrayLike(item) {
   return true;
 }
 
-// node_modules/cheerio/lib/esm/api/attributes.js
+// node_modules/cheerio/dist/browser/api/attributes.js
 var attributes_exports = {};
 __export(attributes_exports, {
   addClass: () => addClass,
@@ -6289,12 +6347,12 @@ __export(attributes_exports, {
   val: () => val
 });
 
-// node_modules/cheerio/lib/esm/utils.js
+// node_modules/cheerio/dist/browser/utils.js
 function isCheerio(maybeCheerio) {
   return maybeCheerio.cheerio != null;
 }
 function camelCase(str) {
-  return str.replace(/[_.-](\w|$)/g, (_, x) => x.toUpperCase());
+  return str.replace(/[._-](\w|$)/g, (_, x) => x.toUpperCase());
 }
 function cssCase(str) {
   return str.replace(/[A-Z]/g, "-$&").toLowerCase();
@@ -6305,50 +6363,1397 @@ function domEach(array, fn2) {
     fn2(array[i], i);
   return array;
 }
-function cloneDom(dom) {
-  const clone2 = "length" in dom ? Array.prototype.map.call(dom, (el) => cloneNode(el, true)) : [cloneNode(dom, true)];
-  const root2 = new Document(clone2);
-  clone2.forEach((node) => {
-    node.parent = root2;
-  });
-  return clone2;
-}
-var CharacterCodes;
-(function(CharacterCodes2) {
-  CharacterCodes2[CharacterCodes2["LowerA"] = 97] = "LowerA";
-  CharacterCodes2[CharacterCodes2["LowerZ"] = 122] = "LowerZ";
-  CharacterCodes2[CharacterCodes2["UpperA"] = 65] = "UpperA";
-  CharacterCodes2[CharacterCodes2["UpperZ"] = 90] = "UpperZ";
-  CharacterCodes2[CharacterCodes2["Exclamation"] = 33] = "Exclamation";
-})(CharacterCodes || (CharacterCodes = {}));
+var CharacterCode;
+(function(CharacterCode2) {
+  CharacterCode2[CharacterCode2["LowerA"] = 97] = "LowerA";
+  CharacterCode2[CharacterCode2["LowerZ"] = 122] = "LowerZ";
+  CharacterCode2[CharacterCode2["UpperA"] = 65] = "UpperA";
+  CharacterCode2[CharacterCode2["UpperZ"] = 90] = "UpperZ";
+  CharacterCode2[CharacterCode2["Exclamation"] = 33] = "Exclamation";
+})(CharacterCode || (CharacterCode = {}));
 function isHtml(str) {
   const tagStart = str.indexOf("<");
-  if (tagStart < 0 || tagStart > str.length - 3)
+  if (tagStart === -1 || tagStart > str.length - 3)
     return false;
   const tagChar = str.charCodeAt(tagStart + 1);
-  return (tagChar >= CharacterCodes.LowerA && tagChar <= CharacterCodes.LowerZ || tagChar >= CharacterCodes.UpperA && tagChar <= CharacterCodes.UpperZ || tagChar === CharacterCodes.Exclamation) && str.includes(">", tagStart + 2);
+  return (tagChar >= CharacterCode.LowerA && tagChar <= CharacterCode.LowerZ || tagChar >= CharacterCode.UpperA && tagChar <= CharacterCode.UpperZ || tagChar === CharacterCode.Exclamation) && str.includes(">", tagStart + 2);
 }
 
-// node_modules/cheerio/lib/esm/api/attributes.js
-var hasOwn = Object.prototype.hasOwnProperty;
+// node_modules/htmlparser2/node_modules/entities/dist/esm/generated/decode-data-html.js
+var htmlDecodeTree = /* @__PURE__ */ new Uint16Array(/* @__PURE__ */ '\u1D41<\xD5\u0131\u028A\u049D\u057B\u05D0\u0675\u06DE\u07A2\u07D6\u080F\u0A4A\u0A91\u0DA1\u0E6D\u0F09\u0F26\u10CA\u1228\u12E1\u1415\u149D\u14C3\u14DF\u1525\0\0\0\0\0\0\u156B\u16CD\u198D\u1C12\u1DDD\u1F7E\u2060\u21B0\u228D\u23C0\u23FB\u2442\u2824\u2912\u2D08\u2E48\u2FCE\u3016\u32BA\u3639\u37AC\u38FE\u3A28\u3A71\u3AE0\u3B2E\u0800EMabcfglmnoprstu\\bfms\x7F\x84\x8B\x90\x95\x98\xA6\xB3\xB9\xC8\xCFlig\u803B\xC6\u40C6P\u803B&\u4026cute\u803B\xC1\u40C1reve;\u4102\u0100iyx}rc\u803B\xC2\u40C2;\u4410r;\uC000\u{1D504}rave\u803B\xC0\u40C0pha;\u4391acr;\u4100d;\u6A53\u0100gp\x9D\xA1on;\u4104f;\uC000\u{1D538}plyFunction;\u6061ing\u803B\xC5\u40C5\u0100cs\xBE\xC3r;\uC000\u{1D49C}ign;\u6254ilde\u803B\xC3\u40C3ml\u803B\xC4\u40C4\u0400aceforsu\xE5\xFB\xFE\u0117\u011C\u0122\u0127\u012A\u0100cr\xEA\xF2kslash;\u6216\u0176\xF6\xF8;\u6AE7ed;\u6306y;\u4411\u0180crt\u0105\u010B\u0114ause;\u6235noullis;\u612Ca;\u4392r;\uC000\u{1D505}pf;\uC000\u{1D539}eve;\u42D8c\xF2\u0113mpeq;\u624E\u0700HOacdefhilorsu\u014D\u0151\u0156\u0180\u019E\u01A2\u01B5\u01B7\u01BA\u01DC\u0215\u0273\u0278\u027Ecy;\u4427PY\u803B\xA9\u40A9\u0180cpy\u015D\u0162\u017Aute;\u4106\u0100;i\u0167\u0168\u62D2talDifferentialD;\u6145leys;\u612D\u0200aeio\u0189\u018E\u0194\u0198ron;\u410Cdil\u803B\xC7\u40C7rc;\u4108nint;\u6230ot;\u410A\u0100dn\u01A7\u01ADilla;\u40B8terDot;\u40B7\xF2\u017Fi;\u43A7rcle\u0200DMPT\u01C7\u01CB\u01D1\u01D6ot;\u6299inus;\u6296lus;\u6295imes;\u6297o\u0100cs\u01E2\u01F8kwiseContourIntegral;\u6232eCurly\u0100DQ\u0203\u020FoubleQuote;\u601Duote;\u6019\u0200lnpu\u021E\u0228\u0247\u0255on\u0100;e\u0225\u0226\u6237;\u6A74\u0180git\u022F\u0236\u023Aruent;\u6261nt;\u622FourIntegral;\u622E\u0100fr\u024C\u024E;\u6102oduct;\u6210nterClockwiseContourIntegral;\u6233oss;\u6A2Fcr;\uC000\u{1D49E}p\u0100;C\u0284\u0285\u62D3ap;\u624D\u0580DJSZacefios\u02A0\u02AC\u02B0\u02B4\u02B8\u02CB\u02D7\u02E1\u02E6\u0333\u048D\u0100;o\u0179\u02A5trahd;\u6911cy;\u4402cy;\u4405cy;\u440F\u0180grs\u02BF\u02C4\u02C7ger;\u6021r;\u61A1hv;\u6AE4\u0100ay\u02D0\u02D5ron;\u410E;\u4414l\u0100;t\u02DD\u02DE\u6207a;\u4394r;\uC000\u{1D507}\u0100af\u02EB\u0327\u0100cm\u02F0\u0322ritical\u0200ADGT\u0300\u0306\u0316\u031Ccute;\u40B4o\u0174\u030B\u030D;\u42D9bleAcute;\u42DDrave;\u4060ilde;\u42DCond;\u62C4ferentialD;\u6146\u0470\u033D\0\0\0\u0342\u0354\0\u0405f;\uC000\u{1D53B}\u0180;DE\u0348\u0349\u034D\u40A8ot;\u60DCqual;\u6250ble\u0300CDLRUV\u0363\u0372\u0382\u03CF\u03E2\u03F8ontourIntegra\xEC\u0239o\u0274\u0379\0\0\u037B\xBB\u0349nArrow;\u61D3\u0100eo\u0387\u03A4ft\u0180ART\u0390\u0396\u03A1rrow;\u61D0ightArrow;\u61D4e\xE5\u02CAng\u0100LR\u03AB\u03C4eft\u0100AR\u03B3\u03B9rrow;\u67F8ightArrow;\u67FAightArrow;\u67F9ight\u0100AT\u03D8\u03DErrow;\u61D2ee;\u62A8p\u0241\u03E9\0\0\u03EFrrow;\u61D1ownArrow;\u61D5erticalBar;\u6225n\u0300ABLRTa\u0412\u042A\u0430\u045E\u047F\u037Crrow\u0180;BU\u041D\u041E\u0422\u6193ar;\u6913pArrow;\u61F5reve;\u4311eft\u02D2\u043A\0\u0446\0\u0450ightVector;\u6950eeVector;\u695Eector\u0100;B\u0459\u045A\u61BDar;\u6956ight\u01D4\u0467\0\u0471eeVector;\u695Fector\u0100;B\u047A\u047B\u61C1ar;\u6957ee\u0100;A\u0486\u0487\u62A4rrow;\u61A7\u0100ct\u0492\u0497r;\uC000\u{1D49F}rok;\u4110\u0800NTacdfglmopqstux\u04BD\u04C0\u04C4\u04CB\u04DE\u04E2\u04E7\u04EE\u04F5\u0521\u052F\u0536\u0552\u055D\u0560\u0565G;\u414AH\u803B\xD0\u40D0cute\u803B\xC9\u40C9\u0180aiy\u04D2\u04D7\u04DCron;\u411Arc\u803B\xCA\u40CA;\u442Dot;\u4116r;\uC000\u{1D508}rave\u803B\xC8\u40C8ement;\u6208\u0100ap\u04FA\u04FEcr;\u4112ty\u0253\u0506\0\0\u0512mallSquare;\u65FBerySmallSquare;\u65AB\u0100gp\u0526\u052Aon;\u4118f;\uC000\u{1D53C}silon;\u4395u\u0100ai\u053C\u0549l\u0100;T\u0542\u0543\u6A75ilde;\u6242librium;\u61CC\u0100ci\u0557\u055Ar;\u6130m;\u6A73a;\u4397ml\u803B\xCB\u40CB\u0100ip\u056A\u056Fsts;\u6203onentialE;\u6147\u0280cfios\u0585\u0588\u058D\u05B2\u05CCy;\u4424r;\uC000\u{1D509}lled\u0253\u0597\0\0\u05A3mallSquare;\u65FCerySmallSquare;\u65AA\u0370\u05BA\0\u05BF\0\0\u05C4f;\uC000\u{1D53D}All;\u6200riertrf;\u6131c\xF2\u05CB\u0600JTabcdfgorst\u05E8\u05EC\u05EF\u05FA\u0600\u0612\u0616\u061B\u061D\u0623\u066C\u0672cy;\u4403\u803B>\u403Emma\u0100;d\u05F7\u05F8\u4393;\u43DCreve;\u411E\u0180eiy\u0607\u060C\u0610dil;\u4122rc;\u411C;\u4413ot;\u4120r;\uC000\u{1D50A};\u62D9pf;\uC000\u{1D53E}eater\u0300EFGLST\u0635\u0644\u064E\u0656\u065B\u0666qual\u0100;L\u063E\u063F\u6265ess;\u62DBullEqual;\u6267reater;\u6AA2ess;\u6277lantEqual;\u6A7Eilde;\u6273cr;\uC000\u{1D4A2};\u626B\u0400Aacfiosu\u0685\u068B\u0696\u069B\u069E\u06AA\u06BE\u06CARDcy;\u442A\u0100ct\u0690\u0694ek;\u42C7;\u405Eirc;\u4124r;\u610ClbertSpace;\u610B\u01F0\u06AF\0\u06B2f;\u610DizontalLine;\u6500\u0100ct\u06C3\u06C5\xF2\u06A9rok;\u4126mp\u0144\u06D0\u06D8ownHum\xF0\u012Fqual;\u624F\u0700EJOacdfgmnostu\u06FA\u06FE\u0703\u0707\u070E\u071A\u071E\u0721\u0728\u0744\u0778\u078B\u078F\u0795cy;\u4415lig;\u4132cy;\u4401cute\u803B\xCD\u40CD\u0100iy\u0713\u0718rc\u803B\xCE\u40CE;\u4418ot;\u4130r;\u6111rave\u803B\xCC\u40CC\u0180;ap\u0720\u072F\u073F\u0100cg\u0734\u0737r;\u412AinaryI;\u6148lie\xF3\u03DD\u01F4\u0749\0\u0762\u0100;e\u074D\u074E\u622C\u0100gr\u0753\u0758ral;\u622Bsection;\u62C2isible\u0100CT\u076C\u0772omma;\u6063imes;\u6062\u0180gpt\u077F\u0783\u0788on;\u412Ef;\uC000\u{1D540}a;\u4399cr;\u6110ilde;\u4128\u01EB\u079A\0\u079Ecy;\u4406l\u803B\xCF\u40CF\u0280cfosu\u07AC\u07B7\u07BC\u07C2\u07D0\u0100iy\u07B1\u07B5rc;\u4134;\u4419r;\uC000\u{1D50D}pf;\uC000\u{1D541}\u01E3\u07C7\0\u07CCr;\uC000\u{1D4A5}rcy;\u4408kcy;\u4404\u0380HJacfos\u07E4\u07E8\u07EC\u07F1\u07FD\u0802\u0808cy;\u4425cy;\u440Cppa;\u439A\u0100ey\u07F6\u07FBdil;\u4136;\u441Ar;\uC000\u{1D50E}pf;\uC000\u{1D542}cr;\uC000\u{1D4A6}\u0580JTaceflmost\u0825\u0829\u082C\u0850\u0863\u09B3\u09B8\u09C7\u09CD\u0A37\u0A47cy;\u4409\u803B<\u403C\u0280cmnpr\u0837\u083C\u0841\u0844\u084Dute;\u4139bda;\u439Bg;\u67EAlacetrf;\u6112r;\u619E\u0180aey\u0857\u085C\u0861ron;\u413Ddil;\u413B;\u441B\u0100fs\u0868\u0970t\u0500ACDFRTUVar\u087E\u08A9\u08B1\u08E0\u08E6\u08FC\u092F\u095B\u0390\u096A\u0100nr\u0883\u088FgleBracket;\u67E8row\u0180;BR\u0899\u089A\u089E\u6190ar;\u61E4ightArrow;\u61C6eiling;\u6308o\u01F5\u08B7\0\u08C3bleBracket;\u67E6n\u01D4\u08C8\0\u08D2eeVector;\u6961ector\u0100;B\u08DB\u08DC\u61C3ar;\u6959loor;\u630Aight\u0100AV\u08EF\u08F5rrow;\u6194ector;\u694E\u0100er\u0901\u0917e\u0180;AV\u0909\u090A\u0910\u62A3rrow;\u61A4ector;\u695Aiangle\u0180;BE\u0924\u0925\u0929\u62B2ar;\u69CFqual;\u62B4p\u0180DTV\u0937\u0942\u094CownVector;\u6951eeVector;\u6960ector\u0100;B\u0956\u0957\u61BFar;\u6958ector\u0100;B\u0965\u0966\u61BCar;\u6952ight\xE1\u039Cs\u0300EFGLST\u097E\u098B\u0995\u099D\u09A2\u09ADqualGreater;\u62DAullEqual;\u6266reater;\u6276ess;\u6AA1lantEqual;\u6A7Dilde;\u6272r;\uC000\u{1D50F}\u0100;e\u09BD\u09BE\u62D8ftarrow;\u61DAidot;\u413F\u0180npw\u09D4\u0A16\u0A1Bg\u0200LRlr\u09DE\u09F7\u0A02\u0A10eft\u0100AR\u09E6\u09ECrrow;\u67F5ightArrow;\u67F7ightArrow;\u67F6eft\u0100ar\u03B3\u0A0Aight\xE1\u03BFight\xE1\u03CAf;\uC000\u{1D543}er\u0100LR\u0A22\u0A2CeftArrow;\u6199ightArrow;\u6198\u0180cht\u0A3E\u0A40\u0A42\xF2\u084C;\u61B0rok;\u4141;\u626A\u0400acefiosu\u0A5A\u0A5D\u0A60\u0A77\u0A7C\u0A85\u0A8B\u0A8Ep;\u6905y;\u441C\u0100dl\u0A65\u0A6FiumSpace;\u605Flintrf;\u6133r;\uC000\u{1D510}nusPlus;\u6213pf;\uC000\u{1D544}c\xF2\u0A76;\u439C\u0480Jacefostu\u0AA3\u0AA7\u0AAD\u0AC0\u0B14\u0B19\u0D91\u0D97\u0D9Ecy;\u440Acute;\u4143\u0180aey\u0AB4\u0AB9\u0ABEron;\u4147dil;\u4145;\u441D\u0180gsw\u0AC7\u0AF0\u0B0Eative\u0180MTV\u0AD3\u0ADF\u0AE8ediumSpace;\u600Bhi\u0100cn\u0AE6\u0AD8\xEB\u0AD9eryThi\xEE\u0AD9ted\u0100GL\u0AF8\u0B06reaterGreate\xF2\u0673essLes\xF3\u0A48Line;\u400Ar;\uC000\u{1D511}\u0200Bnpt\u0B22\u0B28\u0B37\u0B3Areak;\u6060BreakingSpace;\u40A0f;\u6115\u0680;CDEGHLNPRSTV\u0B55\u0B56\u0B6A\u0B7C\u0BA1\u0BEB\u0C04\u0C5E\u0C84\u0CA6\u0CD8\u0D61\u0D85\u6AEC\u0100ou\u0B5B\u0B64ngruent;\u6262pCap;\u626DoubleVerticalBar;\u6226\u0180lqx\u0B83\u0B8A\u0B9Bement;\u6209ual\u0100;T\u0B92\u0B93\u6260ilde;\uC000\u2242\u0338ists;\u6204reater\u0380;EFGLST\u0BB6\u0BB7\u0BBD\u0BC9\u0BD3\u0BD8\u0BE5\u626Fqual;\u6271ullEqual;\uC000\u2267\u0338reater;\uC000\u226B\u0338ess;\u6279lantEqual;\uC000\u2A7E\u0338ilde;\u6275ump\u0144\u0BF2\u0BFDownHump;\uC000\u224E\u0338qual;\uC000\u224F\u0338e\u0100fs\u0C0A\u0C27tTriangle\u0180;BE\u0C1A\u0C1B\u0C21\u62EAar;\uC000\u29CF\u0338qual;\u62ECs\u0300;EGLST\u0C35\u0C36\u0C3C\u0C44\u0C4B\u0C58\u626Equal;\u6270reater;\u6278ess;\uC000\u226A\u0338lantEqual;\uC000\u2A7D\u0338ilde;\u6274ested\u0100GL\u0C68\u0C79reaterGreater;\uC000\u2AA2\u0338essLess;\uC000\u2AA1\u0338recedes\u0180;ES\u0C92\u0C93\u0C9B\u6280qual;\uC000\u2AAF\u0338lantEqual;\u62E0\u0100ei\u0CAB\u0CB9verseElement;\u620CghtTriangle\u0180;BE\u0CCB\u0CCC\u0CD2\u62EBar;\uC000\u29D0\u0338qual;\u62ED\u0100qu\u0CDD\u0D0CuareSu\u0100bp\u0CE8\u0CF9set\u0100;E\u0CF0\u0CF3\uC000\u228F\u0338qual;\u62E2erset\u0100;E\u0D03\u0D06\uC000\u2290\u0338qual;\u62E3\u0180bcp\u0D13\u0D24\u0D4Eset\u0100;E\u0D1B\u0D1E\uC000\u2282\u20D2qual;\u6288ceeds\u0200;EST\u0D32\u0D33\u0D3B\u0D46\u6281qual;\uC000\u2AB0\u0338lantEqual;\u62E1ilde;\uC000\u227F\u0338erset\u0100;E\u0D58\u0D5B\uC000\u2283\u20D2qual;\u6289ilde\u0200;EFT\u0D6E\u0D6F\u0D75\u0D7F\u6241qual;\u6244ullEqual;\u6247ilde;\u6249erticalBar;\u6224cr;\uC000\u{1D4A9}ilde\u803B\xD1\u40D1;\u439D\u0700Eacdfgmoprstuv\u0DBD\u0DC2\u0DC9\u0DD5\u0DDB\u0DE0\u0DE7\u0DFC\u0E02\u0E20\u0E22\u0E32\u0E3F\u0E44lig;\u4152cute\u803B\xD3\u40D3\u0100iy\u0DCE\u0DD3rc\u803B\xD4\u40D4;\u441Eblac;\u4150r;\uC000\u{1D512}rave\u803B\xD2\u40D2\u0180aei\u0DEE\u0DF2\u0DF6cr;\u414Cga;\u43A9cron;\u439Fpf;\uC000\u{1D546}enCurly\u0100DQ\u0E0E\u0E1AoubleQuote;\u601Cuote;\u6018;\u6A54\u0100cl\u0E27\u0E2Cr;\uC000\u{1D4AA}ash\u803B\xD8\u40D8i\u016C\u0E37\u0E3Cde\u803B\xD5\u40D5es;\u6A37ml\u803B\xD6\u40D6er\u0100BP\u0E4B\u0E60\u0100ar\u0E50\u0E53r;\u603Eac\u0100ek\u0E5A\u0E5C;\u63DEet;\u63B4arenthesis;\u63DC\u0480acfhilors\u0E7F\u0E87\u0E8A\u0E8F\u0E92\u0E94\u0E9D\u0EB0\u0EFCrtialD;\u6202y;\u441Fr;\uC000\u{1D513}i;\u43A6;\u43A0usMinus;\u40B1\u0100ip\u0EA2\u0EADncareplan\xE5\u069Df;\u6119\u0200;eio\u0EB9\u0EBA\u0EE0\u0EE4\u6ABBcedes\u0200;EST\u0EC8\u0EC9\u0ECF\u0EDA\u627Aqual;\u6AAFlantEqual;\u627Cilde;\u627Eme;\u6033\u0100dp\u0EE9\u0EEEuct;\u620Fortion\u0100;a\u0225\u0EF9l;\u621D\u0100ci\u0F01\u0F06r;\uC000\u{1D4AB};\u43A8\u0200Ufos\u0F11\u0F16\u0F1B\u0F1FOT\u803B"\u4022r;\uC000\u{1D514}pf;\u611Acr;\uC000\u{1D4AC}\u0600BEacefhiorsu\u0F3E\u0F43\u0F47\u0F60\u0F73\u0FA7\u0FAA\u0FAD\u1096\u10A9\u10B4\u10BEarr;\u6910G\u803B\xAE\u40AE\u0180cnr\u0F4E\u0F53\u0F56ute;\u4154g;\u67EBr\u0100;t\u0F5C\u0F5D\u61A0l;\u6916\u0180aey\u0F67\u0F6C\u0F71ron;\u4158dil;\u4156;\u4420\u0100;v\u0F78\u0F79\u611Cerse\u0100EU\u0F82\u0F99\u0100lq\u0F87\u0F8Eement;\u620Builibrium;\u61CBpEquilibrium;\u696Fr\xBB\u0F79o;\u43A1ght\u0400ACDFTUVa\u0FC1\u0FEB\u0FF3\u1022\u1028\u105B\u1087\u03D8\u0100nr\u0FC6\u0FD2gleBracket;\u67E9row\u0180;BL\u0FDC\u0FDD\u0FE1\u6192ar;\u61E5eftArrow;\u61C4eiling;\u6309o\u01F5\u0FF9\0\u1005bleBracket;\u67E7n\u01D4\u100A\0\u1014eeVector;\u695Dector\u0100;B\u101D\u101E\u61C2ar;\u6955loor;\u630B\u0100er\u102D\u1043e\u0180;AV\u1035\u1036\u103C\u62A2rrow;\u61A6ector;\u695Biangle\u0180;BE\u1050\u1051\u1055\u62B3ar;\u69D0qual;\u62B5p\u0180DTV\u1063\u106E\u1078ownVector;\u694FeeVector;\u695Cector\u0100;B\u1082\u1083\u61BEar;\u6954ector\u0100;B\u1091\u1092\u61C0ar;\u6953\u0100pu\u109B\u109Ef;\u611DndImplies;\u6970ightarrow;\u61DB\u0100ch\u10B9\u10BCr;\u611B;\u61B1leDelayed;\u69F4\u0680HOacfhimoqstu\u10E4\u10F1\u10F7\u10FD\u1119\u111E\u1151\u1156\u1161\u1167\u11B5\u11BB\u11BF\u0100Cc\u10E9\u10EEHcy;\u4429y;\u4428FTcy;\u442Ccute;\u415A\u0280;aeiy\u1108\u1109\u110E\u1113\u1117\u6ABCron;\u4160dil;\u415Erc;\u415C;\u4421r;\uC000\u{1D516}ort\u0200DLRU\u112A\u1134\u113E\u1149ownArrow\xBB\u041EeftArrow\xBB\u089AightArrow\xBB\u0FDDpArrow;\u6191gma;\u43A3allCircle;\u6218pf;\uC000\u{1D54A}\u0272\u116D\0\0\u1170t;\u621Aare\u0200;ISU\u117B\u117C\u1189\u11AF\u65A1ntersection;\u6293u\u0100bp\u118F\u119Eset\u0100;E\u1197\u1198\u628Fqual;\u6291erset\u0100;E\u11A8\u11A9\u6290qual;\u6292nion;\u6294cr;\uC000\u{1D4AE}ar;\u62C6\u0200bcmp\u11C8\u11DB\u1209\u120B\u0100;s\u11CD\u11CE\u62D0et\u0100;E\u11CD\u11D5qual;\u6286\u0100ch\u11E0\u1205eeds\u0200;EST\u11ED\u11EE\u11F4\u11FF\u627Bqual;\u6AB0lantEqual;\u627Dilde;\u627FTh\xE1\u0F8C;\u6211\u0180;es\u1212\u1213\u1223\u62D1rset\u0100;E\u121C\u121D\u6283qual;\u6287et\xBB\u1213\u0580HRSacfhiors\u123E\u1244\u1249\u1255\u125E\u1271\u1276\u129F\u12C2\u12C8\u12D1ORN\u803B\xDE\u40DEADE;\u6122\u0100Hc\u124E\u1252cy;\u440By;\u4426\u0100bu\u125A\u125C;\u4009;\u43A4\u0180aey\u1265\u126A\u126Fron;\u4164dil;\u4162;\u4422r;\uC000\u{1D517}\u0100ei\u127B\u1289\u01F2\u1280\0\u1287efore;\u6234a;\u4398\u0100cn\u128E\u1298kSpace;\uC000\u205F\u200ASpace;\u6009lde\u0200;EFT\u12AB\u12AC\u12B2\u12BC\u623Cqual;\u6243ullEqual;\u6245ilde;\u6248pf;\uC000\u{1D54B}ipleDot;\u60DB\u0100ct\u12D6\u12DBr;\uC000\u{1D4AF}rok;\u4166\u0AE1\u12F7\u130E\u131A\u1326\0\u132C\u1331\0\0\0\0\0\u1338\u133D\u1377\u1385\0\u13FF\u1404\u140A\u1410\u0100cr\u12FB\u1301ute\u803B\xDA\u40DAr\u0100;o\u1307\u1308\u619Fcir;\u6949r\u01E3\u1313\0\u1316y;\u440Eve;\u416C\u0100iy\u131E\u1323rc\u803B\xDB\u40DB;\u4423blac;\u4170r;\uC000\u{1D518}rave\u803B\xD9\u40D9acr;\u416A\u0100di\u1341\u1369er\u0100BP\u1348\u135D\u0100ar\u134D\u1350r;\u405Fac\u0100ek\u1357\u1359;\u63DFet;\u63B5arenthesis;\u63DDon\u0100;P\u1370\u1371\u62C3lus;\u628E\u0100gp\u137B\u137Fon;\u4172f;\uC000\u{1D54C}\u0400ADETadps\u1395\u13AE\u13B8\u13C4\u03E8\u13D2\u13D7\u13F3rrow\u0180;BD\u1150\u13A0\u13A4ar;\u6912ownArrow;\u61C5ownArrow;\u6195quilibrium;\u696Eee\u0100;A\u13CB\u13CC\u62A5rrow;\u61A5own\xE1\u03F3er\u0100LR\u13DE\u13E8eftArrow;\u6196ightArrow;\u6197i\u0100;l\u13F9\u13FA\u43D2on;\u43A5ing;\u416Ecr;\uC000\u{1D4B0}ilde;\u4168ml\u803B\xDC\u40DC\u0480Dbcdefosv\u1427\u142C\u1430\u1433\u143E\u1485\u148A\u1490\u1496ash;\u62ABar;\u6AEBy;\u4412ash\u0100;l\u143B\u143C\u62A9;\u6AE6\u0100er\u1443\u1445;\u62C1\u0180bty\u144C\u1450\u147Aar;\u6016\u0100;i\u144F\u1455cal\u0200BLST\u1461\u1465\u146A\u1474ar;\u6223ine;\u407Ceparator;\u6758ilde;\u6240ThinSpace;\u600Ar;\uC000\u{1D519}pf;\uC000\u{1D54D}cr;\uC000\u{1D4B1}dash;\u62AA\u0280cefos\u14A7\u14AC\u14B1\u14B6\u14BCirc;\u4174dge;\u62C0r;\uC000\u{1D51A}pf;\uC000\u{1D54E}cr;\uC000\u{1D4B2}\u0200fios\u14CB\u14D0\u14D2\u14D8r;\uC000\u{1D51B};\u439Epf;\uC000\u{1D54F}cr;\uC000\u{1D4B3}\u0480AIUacfosu\u14F1\u14F5\u14F9\u14FD\u1504\u150F\u1514\u151A\u1520cy;\u442Fcy;\u4407cy;\u442Ecute\u803B\xDD\u40DD\u0100iy\u1509\u150Drc;\u4176;\u442Br;\uC000\u{1D51C}pf;\uC000\u{1D550}cr;\uC000\u{1D4B4}ml;\u4178\u0400Hacdefos\u1535\u1539\u153F\u154B\u154F\u155D\u1560\u1564cy;\u4416cute;\u4179\u0100ay\u1544\u1549ron;\u417D;\u4417ot;\u417B\u01F2\u1554\0\u155BoWidt\xE8\u0AD9a;\u4396r;\u6128pf;\u6124cr;\uC000\u{1D4B5}\u0BE1\u1583\u158A\u1590\0\u15B0\u15B6\u15BF\0\0\0\0\u15C6\u15DB\u15EB\u165F\u166D\0\u1695\u169B\u16B2\u16B9\0\u16BEcute\u803B\xE1\u40E1reve;\u4103\u0300;Ediuy\u159C\u159D\u15A1\u15A3\u15A8\u15AD\u623E;\uC000\u223E\u0333;\u623Frc\u803B\xE2\u40E2te\u80BB\xB4\u0306;\u4430lig\u803B\xE6\u40E6\u0100;r\xB2\u15BA;\uC000\u{1D51E}rave\u803B\xE0\u40E0\u0100ep\u15CA\u15D6\u0100fp\u15CF\u15D4sym;\u6135\xE8\u15D3ha;\u43B1\u0100ap\u15DFc\u0100cl\u15E4\u15E7r;\u4101g;\u6A3F\u0264\u15F0\0\0\u160A\u0280;adsv\u15FA\u15FB\u15FF\u1601\u1607\u6227nd;\u6A55;\u6A5Clope;\u6A58;\u6A5A\u0380;elmrsz\u1618\u1619\u161B\u161E\u163F\u164F\u1659\u6220;\u69A4e\xBB\u1619sd\u0100;a\u1625\u1626\u6221\u0461\u1630\u1632\u1634\u1636\u1638\u163A\u163C\u163E;\u69A8;\u69A9;\u69AA;\u69AB;\u69AC;\u69AD;\u69AE;\u69AFt\u0100;v\u1645\u1646\u621Fb\u0100;d\u164C\u164D\u62BE;\u699D\u0100pt\u1654\u1657h;\u6222\xBB\xB9arr;\u637C\u0100gp\u1663\u1667on;\u4105f;\uC000\u{1D552}\u0380;Eaeiop\u12C1\u167B\u167D\u1682\u1684\u1687\u168A;\u6A70cir;\u6A6F;\u624Ad;\u624Bs;\u4027rox\u0100;e\u12C1\u1692\xF1\u1683ing\u803B\xE5\u40E5\u0180cty\u16A1\u16A6\u16A8r;\uC000\u{1D4B6};\u402Amp\u0100;e\u12C1\u16AF\xF1\u0288ilde\u803B\xE3\u40E3ml\u803B\xE4\u40E4\u0100ci\u16C2\u16C8onin\xF4\u0272nt;\u6A11\u0800Nabcdefiklnoprsu\u16ED\u16F1\u1730\u173C\u1743\u1748\u1778\u177D\u17E0\u17E6\u1839\u1850\u170D\u193D\u1948\u1970ot;\u6AED\u0100cr\u16F6\u171Ek\u0200ceps\u1700\u1705\u170D\u1713ong;\u624Cpsilon;\u43F6rime;\u6035im\u0100;e\u171A\u171B\u623Dq;\u62CD\u0176\u1722\u1726ee;\u62BDed\u0100;g\u172C\u172D\u6305e\xBB\u172Drk\u0100;t\u135C\u1737brk;\u63B6\u0100oy\u1701\u1741;\u4431quo;\u601E\u0280cmprt\u1753\u175B\u1761\u1764\u1768aus\u0100;e\u010A\u0109ptyv;\u69B0s\xE9\u170Cno\xF5\u0113\u0180ahw\u176F\u1771\u1773;\u43B2;\u6136een;\u626Cr;\uC000\u{1D51F}g\u0380costuvw\u178D\u179D\u17B3\u17C1\u17D5\u17DB\u17DE\u0180aiu\u1794\u1796\u179A\xF0\u0760rc;\u65EFp\xBB\u1371\u0180dpt\u17A4\u17A8\u17ADot;\u6A00lus;\u6A01imes;\u6A02\u0271\u17B9\0\0\u17BEcup;\u6A06ar;\u6605riangle\u0100du\u17CD\u17D2own;\u65BDp;\u65B3plus;\u6A04e\xE5\u1444\xE5\u14ADarow;\u690D\u0180ako\u17ED\u1826\u1835\u0100cn\u17F2\u1823k\u0180lst\u17FA\u05AB\u1802ozenge;\u69EBriangle\u0200;dlr\u1812\u1813\u1818\u181D\u65B4own;\u65BEeft;\u65C2ight;\u65B8k;\u6423\u01B1\u182B\0\u1833\u01B2\u182F\0\u1831;\u6592;\u65914;\u6593ck;\u6588\u0100eo\u183E\u184D\u0100;q\u1843\u1846\uC000=\u20E5uiv;\uC000\u2261\u20E5t;\u6310\u0200ptwx\u1859\u185E\u1867\u186Cf;\uC000\u{1D553}\u0100;t\u13CB\u1863om\xBB\u13CCtie;\u62C8\u0600DHUVbdhmptuv\u1885\u1896\u18AA\u18BB\u18D7\u18DB\u18EC\u18FF\u1905\u190A\u1910\u1921\u0200LRlr\u188E\u1890\u1892\u1894;\u6557;\u6554;\u6556;\u6553\u0280;DUdu\u18A1\u18A2\u18A4\u18A6\u18A8\u6550;\u6566;\u6569;\u6564;\u6567\u0200LRlr\u18B3\u18B5\u18B7\u18B9;\u655D;\u655A;\u655C;\u6559\u0380;HLRhlr\u18CA\u18CB\u18CD\u18CF\u18D1\u18D3\u18D5\u6551;\u656C;\u6563;\u6560;\u656B;\u6562;\u655Fox;\u69C9\u0200LRlr\u18E4\u18E6\u18E8\u18EA;\u6555;\u6552;\u6510;\u650C\u0280;DUdu\u06BD\u18F7\u18F9\u18FB\u18FD;\u6565;\u6568;\u652C;\u6534inus;\u629Flus;\u629Eimes;\u62A0\u0200LRlr\u1919\u191B\u191D\u191F;\u655B;\u6558;\u6518;\u6514\u0380;HLRhlr\u1930\u1931\u1933\u1935\u1937\u1939\u193B\u6502;\u656A;\u6561;\u655E;\u653C;\u6524;\u651C\u0100ev\u0123\u1942bar\u803B\xA6\u40A6\u0200ceio\u1951\u1956\u195A\u1960r;\uC000\u{1D4B7}mi;\u604Fm\u0100;e\u171A\u171Cl\u0180;bh\u1968\u1969\u196B\u405C;\u69C5sub;\u67C8\u016C\u1974\u197El\u0100;e\u1979\u197A\u6022t\xBB\u197Ap\u0180;Ee\u012F\u1985\u1987;\u6AAE\u0100;q\u06DC\u06DB\u0CE1\u19A7\0\u19E8\u1A11\u1A15\u1A32\0\u1A37\u1A50\0\0\u1AB4\0\0\u1AC1\0\0\u1B21\u1B2E\u1B4D\u1B52\0\u1BFD\0\u1C0C\u0180cpr\u19AD\u19B2\u19DDute;\u4107\u0300;abcds\u19BF\u19C0\u19C4\u19CA\u19D5\u19D9\u6229nd;\u6A44rcup;\u6A49\u0100au\u19CF\u19D2p;\u6A4Bp;\u6A47ot;\u6A40;\uC000\u2229\uFE00\u0100eo\u19E2\u19E5t;\u6041\xEE\u0693\u0200aeiu\u19F0\u19FB\u1A01\u1A05\u01F0\u19F5\0\u19F8s;\u6A4Don;\u410Ddil\u803B\xE7\u40E7rc;\u4109ps\u0100;s\u1A0C\u1A0D\u6A4Cm;\u6A50ot;\u410B\u0180dmn\u1A1B\u1A20\u1A26il\u80BB\xB8\u01ADptyv;\u69B2t\u8100\xA2;e\u1A2D\u1A2E\u40A2r\xE4\u01B2r;\uC000\u{1D520}\u0180cei\u1A3D\u1A40\u1A4Dy;\u4447ck\u0100;m\u1A47\u1A48\u6713ark\xBB\u1A48;\u43C7r\u0380;Ecefms\u1A5F\u1A60\u1A62\u1A6B\u1AA4\u1AAA\u1AAE\u65CB;\u69C3\u0180;el\u1A69\u1A6A\u1A6D\u42C6q;\u6257e\u0261\u1A74\0\0\u1A88rrow\u0100lr\u1A7C\u1A81eft;\u61BAight;\u61BB\u0280RSacd\u1A92\u1A94\u1A96\u1A9A\u1A9F\xBB\u0F47;\u64C8st;\u629Birc;\u629Aash;\u629Dnint;\u6A10id;\u6AEFcir;\u69C2ubs\u0100;u\u1ABB\u1ABC\u6663it\xBB\u1ABC\u02EC\u1AC7\u1AD4\u1AFA\0\u1B0Aon\u0100;e\u1ACD\u1ACE\u403A\u0100;q\xC7\xC6\u026D\u1AD9\0\0\u1AE2a\u0100;t\u1ADE\u1ADF\u402C;\u4040\u0180;fl\u1AE8\u1AE9\u1AEB\u6201\xEE\u1160e\u0100mx\u1AF1\u1AF6ent\xBB\u1AE9e\xF3\u024D\u01E7\u1AFE\0\u1B07\u0100;d\u12BB\u1B02ot;\u6A6Dn\xF4\u0246\u0180fry\u1B10\u1B14\u1B17;\uC000\u{1D554}o\xE4\u0254\u8100\xA9;s\u0155\u1B1Dr;\u6117\u0100ao\u1B25\u1B29rr;\u61B5ss;\u6717\u0100cu\u1B32\u1B37r;\uC000\u{1D4B8}\u0100bp\u1B3C\u1B44\u0100;e\u1B41\u1B42\u6ACF;\u6AD1\u0100;e\u1B49\u1B4A\u6AD0;\u6AD2dot;\u62EF\u0380delprvw\u1B60\u1B6C\u1B77\u1B82\u1BAC\u1BD4\u1BF9arr\u0100lr\u1B68\u1B6A;\u6938;\u6935\u0270\u1B72\0\0\u1B75r;\u62DEc;\u62DFarr\u0100;p\u1B7F\u1B80\u61B6;\u693D\u0300;bcdos\u1B8F\u1B90\u1B96\u1BA1\u1BA5\u1BA8\u622Arcap;\u6A48\u0100au\u1B9B\u1B9Ep;\u6A46p;\u6A4Aot;\u628Dr;\u6A45;\uC000\u222A\uFE00\u0200alrv\u1BB5\u1BBF\u1BDE\u1BE3rr\u0100;m\u1BBC\u1BBD\u61B7;\u693Cy\u0180evw\u1BC7\u1BD4\u1BD8q\u0270\u1BCE\0\0\u1BD2re\xE3\u1B73u\xE3\u1B75ee;\u62CEedge;\u62CFen\u803B\xA4\u40A4earrow\u0100lr\u1BEE\u1BF3eft\xBB\u1B80ight\xBB\u1BBDe\xE4\u1BDD\u0100ci\u1C01\u1C07onin\xF4\u01F7nt;\u6231lcty;\u632D\u0980AHabcdefhijlorstuwz\u1C38\u1C3B\u1C3F\u1C5D\u1C69\u1C75\u1C8A\u1C9E\u1CAC\u1CB7\u1CFB\u1CFF\u1D0D\u1D7B\u1D91\u1DAB\u1DBB\u1DC6\u1DCDr\xF2\u0381ar;\u6965\u0200glrs\u1C48\u1C4D\u1C52\u1C54ger;\u6020eth;\u6138\xF2\u1133h\u0100;v\u1C5A\u1C5B\u6010\xBB\u090A\u016B\u1C61\u1C67arow;\u690Fa\xE3\u0315\u0100ay\u1C6E\u1C73ron;\u410F;\u4434\u0180;ao\u0332\u1C7C\u1C84\u0100gr\u02BF\u1C81r;\u61CAtseq;\u6A77\u0180glm\u1C91\u1C94\u1C98\u803B\xB0\u40B0ta;\u43B4ptyv;\u69B1\u0100ir\u1CA3\u1CA8sht;\u697F;\uC000\u{1D521}ar\u0100lr\u1CB3\u1CB5\xBB\u08DC\xBB\u101E\u0280aegsv\u1CC2\u0378\u1CD6\u1CDC\u1CE0m\u0180;os\u0326\u1CCA\u1CD4nd\u0100;s\u0326\u1CD1uit;\u6666amma;\u43DDin;\u62F2\u0180;io\u1CE7\u1CE8\u1CF8\u40F7de\u8100\xF7;o\u1CE7\u1CF0ntimes;\u62C7n\xF8\u1CF7cy;\u4452c\u026F\u1D06\0\0\u1D0Arn;\u631Eop;\u630D\u0280lptuw\u1D18\u1D1D\u1D22\u1D49\u1D55lar;\u4024f;\uC000\u{1D555}\u0280;emps\u030B\u1D2D\u1D37\u1D3D\u1D42q\u0100;d\u0352\u1D33ot;\u6251inus;\u6238lus;\u6214quare;\u62A1blebarwedg\xE5\xFAn\u0180adh\u112E\u1D5D\u1D67ownarrow\xF3\u1C83arpoon\u0100lr\u1D72\u1D76ef\xF4\u1CB4igh\xF4\u1CB6\u0162\u1D7F\u1D85karo\xF7\u0F42\u026F\u1D8A\0\0\u1D8Ern;\u631Fop;\u630C\u0180cot\u1D98\u1DA3\u1DA6\u0100ry\u1D9D\u1DA1;\uC000\u{1D4B9};\u4455l;\u69F6rok;\u4111\u0100dr\u1DB0\u1DB4ot;\u62F1i\u0100;f\u1DBA\u1816\u65BF\u0100ah\u1DC0\u1DC3r\xF2\u0429a\xF2\u0FA6angle;\u69A6\u0100ci\u1DD2\u1DD5y;\u445Fgrarr;\u67FF\u0900Dacdefglmnopqrstux\u1E01\u1E09\u1E19\u1E38\u0578\u1E3C\u1E49\u1E61\u1E7E\u1EA5\u1EAF\u1EBD\u1EE1\u1F2A\u1F37\u1F44\u1F4E\u1F5A\u0100Do\u1E06\u1D34o\xF4\u1C89\u0100cs\u1E0E\u1E14ute\u803B\xE9\u40E9ter;\u6A6E\u0200aioy\u1E22\u1E27\u1E31\u1E36ron;\u411Br\u0100;c\u1E2D\u1E2E\u6256\u803B\xEA\u40EAlon;\u6255;\u444Dot;\u4117\u0100Dr\u1E41\u1E45ot;\u6252;\uC000\u{1D522}\u0180;rs\u1E50\u1E51\u1E57\u6A9Aave\u803B\xE8\u40E8\u0100;d\u1E5C\u1E5D\u6A96ot;\u6A98\u0200;ils\u1E6A\u1E6B\u1E72\u1E74\u6A99nters;\u63E7;\u6113\u0100;d\u1E79\u1E7A\u6A95ot;\u6A97\u0180aps\u1E85\u1E89\u1E97cr;\u4113ty\u0180;sv\u1E92\u1E93\u1E95\u6205et\xBB\u1E93p\u01001;\u1E9D\u1EA4\u0133\u1EA1\u1EA3;\u6004;\u6005\u6003\u0100gs\u1EAA\u1EAC;\u414Bp;\u6002\u0100gp\u1EB4\u1EB8on;\u4119f;\uC000\u{1D556}\u0180als\u1EC4\u1ECE\u1ED2r\u0100;s\u1ECA\u1ECB\u62D5l;\u69E3us;\u6A71i\u0180;lv\u1EDA\u1EDB\u1EDF\u43B5on\xBB\u1EDB;\u43F5\u0200csuv\u1EEA\u1EF3\u1F0B\u1F23\u0100io\u1EEF\u1E31rc\xBB\u1E2E\u0269\u1EF9\0\0\u1EFB\xED\u0548ant\u0100gl\u1F02\u1F06tr\xBB\u1E5Dess\xBB\u1E7A\u0180aei\u1F12\u1F16\u1F1Als;\u403Dst;\u625Fv\u0100;D\u0235\u1F20D;\u6A78parsl;\u69E5\u0100Da\u1F2F\u1F33ot;\u6253rr;\u6971\u0180cdi\u1F3E\u1F41\u1EF8r;\u612Fo\xF4\u0352\u0100ah\u1F49\u1F4B;\u43B7\u803B\xF0\u40F0\u0100mr\u1F53\u1F57l\u803B\xEB\u40EBo;\u60AC\u0180cip\u1F61\u1F64\u1F67l;\u4021s\xF4\u056E\u0100eo\u1F6C\u1F74ctatio\xEE\u0559nential\xE5\u0579\u09E1\u1F92\0\u1F9E\0\u1FA1\u1FA7\0\0\u1FC6\u1FCC\0\u1FD3\0\u1FE6\u1FEA\u2000\0\u2008\u205Allingdotse\xF1\u1E44y;\u4444male;\u6640\u0180ilr\u1FAD\u1FB3\u1FC1lig;\u8000\uFB03\u0269\u1FB9\0\0\u1FBDg;\u8000\uFB00ig;\u8000\uFB04;\uC000\u{1D523}lig;\u8000\uFB01lig;\uC000fj\u0180alt\u1FD9\u1FDC\u1FE1t;\u666Dig;\u8000\uFB02ns;\u65B1of;\u4192\u01F0\u1FEE\0\u1FF3f;\uC000\u{1D557}\u0100ak\u05BF\u1FF7\u0100;v\u1FFC\u1FFD\u62D4;\u6AD9artint;\u6A0D\u0100ao\u200C\u2055\u0100cs\u2011\u2052\u03B1\u201A\u2030\u2038\u2045\u2048\0\u2050\u03B2\u2022\u2025\u2027\u202A\u202C\0\u202E\u803B\xBD\u40BD;\u6153\u803B\xBC\u40BC;\u6155;\u6159;\u615B\u01B3\u2034\0\u2036;\u6154;\u6156\u02B4\u203E\u2041\0\0\u2043\u803B\xBE\u40BE;\u6157;\u615C5;\u6158\u01B6\u204C\0\u204E;\u615A;\u615D8;\u615El;\u6044wn;\u6322cr;\uC000\u{1D4BB}\u0880Eabcdefgijlnorstv\u2082\u2089\u209F\u20A5\u20B0\u20B4\u20F0\u20F5\u20FA\u20FF\u2103\u2112\u2138\u0317\u213E\u2152\u219E\u0100;l\u064D\u2087;\u6A8C\u0180cmp\u2090\u2095\u209Dute;\u41F5ma\u0100;d\u209C\u1CDA\u43B3;\u6A86reve;\u411F\u0100iy\u20AA\u20AErc;\u411D;\u4433ot;\u4121\u0200;lqs\u063E\u0642\u20BD\u20C9\u0180;qs\u063E\u064C\u20C4lan\xF4\u0665\u0200;cdl\u0665\u20D2\u20D5\u20E5c;\u6AA9ot\u0100;o\u20DC\u20DD\u6A80\u0100;l\u20E2\u20E3\u6A82;\u6A84\u0100;e\u20EA\u20ED\uC000\u22DB\uFE00s;\u6A94r;\uC000\u{1D524}\u0100;g\u0673\u061Bmel;\u6137cy;\u4453\u0200;Eaj\u065A\u210C\u210E\u2110;\u6A92;\u6AA5;\u6AA4\u0200Eaes\u211B\u211D\u2129\u2134;\u6269p\u0100;p\u2123\u2124\u6A8Arox\xBB\u2124\u0100;q\u212E\u212F\u6A88\u0100;q\u212E\u211Bim;\u62E7pf;\uC000\u{1D558}\u0100ci\u2143\u2146r;\u610Am\u0180;el\u066B\u214E\u2150;\u6A8E;\u6A90\u8300>;cdlqr\u05EE\u2160\u216A\u216E\u2173\u2179\u0100ci\u2165\u2167;\u6AA7r;\u6A7Aot;\u62D7Par;\u6995uest;\u6A7C\u0280adels\u2184\u216A\u2190\u0656\u219B\u01F0\u2189\0\u218Epro\xF8\u209Er;\u6978q\u0100lq\u063F\u2196les\xF3\u2088i\xED\u066B\u0100en\u21A3\u21ADrtneqq;\uC000\u2269\uFE00\xC5\u21AA\u0500Aabcefkosy\u21C4\u21C7\u21F1\u21F5\u21FA\u2218\u221D\u222F\u2268\u227Dr\xF2\u03A0\u0200ilmr\u21D0\u21D4\u21D7\u21DBrs\xF0\u1484f\xBB\u2024il\xF4\u06A9\u0100dr\u21E0\u21E4cy;\u444A\u0180;cw\u08F4\u21EB\u21EFir;\u6948;\u61ADar;\u610Firc;\u4125\u0180alr\u2201\u220E\u2213rts\u0100;u\u2209\u220A\u6665it\xBB\u220Alip;\u6026con;\u62B9r;\uC000\u{1D525}s\u0100ew\u2223\u2229arow;\u6925arow;\u6926\u0280amopr\u223A\u223E\u2243\u225E\u2263rr;\u61FFtht;\u623Bk\u0100lr\u2249\u2253eftarrow;\u61A9ightarrow;\u61AAf;\uC000\u{1D559}bar;\u6015\u0180clt\u226F\u2274\u2278r;\uC000\u{1D4BD}as\xE8\u21F4rok;\u4127\u0100bp\u2282\u2287ull;\u6043hen\xBB\u1C5B\u0AE1\u22A3\0\u22AA\0\u22B8\u22C5\u22CE\0\u22D5\u22F3\0\0\u22F8\u2322\u2367\u2362\u237F\0\u2386\u23AA\u23B4cute\u803B\xED\u40ED\u0180;iy\u0771\u22B0\u22B5rc\u803B\xEE\u40EE;\u4438\u0100cx\u22BC\u22BFy;\u4435cl\u803B\xA1\u40A1\u0100fr\u039F\u22C9;\uC000\u{1D526}rave\u803B\xEC\u40EC\u0200;ino\u073E\u22DD\u22E9\u22EE\u0100in\u22E2\u22E6nt;\u6A0Ct;\u622Dfin;\u69DCta;\u6129lig;\u4133\u0180aop\u22FE\u231A\u231D\u0180cgt\u2305\u2308\u2317r;\u412B\u0180elp\u071F\u230F\u2313in\xE5\u078Ear\xF4\u0720h;\u4131f;\u62B7ed;\u41B5\u0280;cfot\u04F4\u232C\u2331\u233D\u2341are;\u6105in\u0100;t\u2338\u2339\u621Eie;\u69DDdo\xF4\u2319\u0280;celp\u0757\u234C\u2350\u235B\u2361al;\u62BA\u0100gr\u2355\u2359er\xF3\u1563\xE3\u234Darhk;\u6A17rod;\u6A3C\u0200cgpt\u236F\u2372\u2376\u237By;\u4451on;\u412Ff;\uC000\u{1D55A}a;\u43B9uest\u803B\xBF\u40BF\u0100ci\u238A\u238Fr;\uC000\u{1D4BE}n\u0280;Edsv\u04F4\u239B\u239D\u23A1\u04F3;\u62F9ot;\u62F5\u0100;v\u23A6\u23A7\u62F4;\u62F3\u0100;i\u0777\u23AElde;\u4129\u01EB\u23B8\0\u23BCcy;\u4456l\u803B\xEF\u40EF\u0300cfmosu\u23CC\u23D7\u23DC\u23E1\u23E7\u23F5\u0100iy\u23D1\u23D5rc;\u4135;\u4439r;\uC000\u{1D527}ath;\u4237pf;\uC000\u{1D55B}\u01E3\u23EC\0\u23F1r;\uC000\u{1D4BF}rcy;\u4458kcy;\u4454\u0400acfghjos\u240B\u2416\u2422\u2427\u242D\u2431\u2435\u243Bppa\u0100;v\u2413\u2414\u43BA;\u43F0\u0100ey\u241B\u2420dil;\u4137;\u443Ar;\uC000\u{1D528}reen;\u4138cy;\u4445cy;\u445Cpf;\uC000\u{1D55C}cr;\uC000\u{1D4C0}\u0B80ABEHabcdefghjlmnoprstuv\u2470\u2481\u2486\u248D\u2491\u250E\u253D\u255A\u2580\u264E\u265E\u2665\u2679\u267D\u269A\u26B2\u26D8\u275D\u2768\u278B\u27C0\u2801\u2812\u0180art\u2477\u247A\u247Cr\xF2\u09C6\xF2\u0395ail;\u691Barr;\u690E\u0100;g\u0994\u248B;\u6A8Bar;\u6962\u0963\u24A5\0\u24AA\0\u24B1\0\0\0\0\0\u24B5\u24BA\0\u24C6\u24C8\u24CD\0\u24F9ute;\u413Amptyv;\u69B4ra\xEE\u084Cbda;\u43BBg\u0180;dl\u088E\u24C1\u24C3;\u6991\xE5\u088E;\u6A85uo\u803B\xAB\u40ABr\u0400;bfhlpst\u0899\u24DE\u24E6\u24E9\u24EB\u24EE\u24F1\u24F5\u0100;f\u089D\u24E3s;\u691Fs;\u691D\xEB\u2252p;\u61ABl;\u6939im;\u6973l;\u61A2\u0180;ae\u24FF\u2500\u2504\u6AABil;\u6919\u0100;s\u2509\u250A\u6AAD;\uC000\u2AAD\uFE00\u0180abr\u2515\u2519\u251Drr;\u690Crk;\u6772\u0100ak\u2522\u252Cc\u0100ek\u2528\u252A;\u407B;\u405B\u0100es\u2531\u2533;\u698Bl\u0100du\u2539\u253B;\u698F;\u698D\u0200aeuy\u2546\u254B\u2556\u2558ron;\u413E\u0100di\u2550\u2554il;\u413C\xEC\u08B0\xE2\u2529;\u443B\u0200cqrs\u2563\u2566\u256D\u257Da;\u6936uo\u0100;r\u0E19\u1746\u0100du\u2572\u2577har;\u6967shar;\u694Bh;\u61B2\u0280;fgqs\u258B\u258C\u0989\u25F3\u25FF\u6264t\u0280ahlrt\u2598\u25A4\u25B7\u25C2\u25E8rrow\u0100;t\u0899\u25A1a\xE9\u24F6arpoon\u0100du\u25AF\u25B4own\xBB\u045Ap\xBB\u0966eftarrows;\u61C7ight\u0180ahs\u25CD\u25D6\u25DErrow\u0100;s\u08F4\u08A7arpoon\xF3\u0F98quigarro\xF7\u21F0hreetimes;\u62CB\u0180;qs\u258B\u0993\u25FAlan\xF4\u09AC\u0280;cdgs\u09AC\u260A\u260D\u261D\u2628c;\u6AA8ot\u0100;o\u2614\u2615\u6A7F\u0100;r\u261A\u261B\u6A81;\u6A83\u0100;e\u2622\u2625\uC000\u22DA\uFE00s;\u6A93\u0280adegs\u2633\u2639\u263D\u2649\u264Bppro\xF8\u24C6ot;\u62D6q\u0100gq\u2643\u2645\xF4\u0989gt\xF2\u248C\xF4\u099Bi\xED\u09B2\u0180ilr\u2655\u08E1\u265Asht;\u697C;\uC000\u{1D529}\u0100;E\u099C\u2663;\u6A91\u0161\u2669\u2676r\u0100du\u25B2\u266E\u0100;l\u0965\u2673;\u696Alk;\u6584cy;\u4459\u0280;acht\u0A48\u2688\u268B\u2691\u2696r\xF2\u25C1orne\xF2\u1D08ard;\u696Bri;\u65FA\u0100io\u269F\u26A4dot;\u4140ust\u0100;a\u26AC\u26AD\u63B0che\xBB\u26AD\u0200Eaes\u26BB\u26BD\u26C9\u26D4;\u6268p\u0100;p\u26C3\u26C4\u6A89rox\xBB\u26C4\u0100;q\u26CE\u26CF\u6A87\u0100;q\u26CE\u26BBim;\u62E6\u0400abnoptwz\u26E9\u26F4\u26F7\u271A\u272F\u2741\u2747\u2750\u0100nr\u26EE\u26F1g;\u67ECr;\u61FDr\xEB\u08C1g\u0180lmr\u26FF\u270D\u2714eft\u0100ar\u09E6\u2707ight\xE1\u09F2apsto;\u67FCight\xE1\u09FDparrow\u0100lr\u2725\u2729ef\xF4\u24EDight;\u61AC\u0180afl\u2736\u2739\u273Dr;\u6985;\uC000\u{1D55D}us;\u6A2Dimes;\u6A34\u0161\u274B\u274Fst;\u6217\xE1\u134E\u0180;ef\u2757\u2758\u1800\u65CAnge\xBB\u2758ar\u0100;l\u2764\u2765\u4028t;\u6993\u0280achmt\u2773\u2776\u277C\u2785\u2787r\xF2\u08A8orne\xF2\u1D8Car\u0100;d\u0F98\u2783;\u696D;\u600Eri;\u62BF\u0300achiqt\u2798\u279D\u0A40\u27A2\u27AE\u27BBquo;\u6039r;\uC000\u{1D4C1}m\u0180;eg\u09B2\u27AA\u27AC;\u6A8D;\u6A8F\u0100bu\u252A\u27B3o\u0100;r\u0E1F\u27B9;\u601Arok;\u4142\u8400<;cdhilqr\u082B\u27D2\u2639\u27DC\u27E0\u27E5\u27EA\u27F0\u0100ci\u27D7\u27D9;\u6AA6r;\u6A79re\xE5\u25F2mes;\u62C9arr;\u6976uest;\u6A7B\u0100Pi\u27F5\u27F9ar;\u6996\u0180;ef\u2800\u092D\u181B\u65C3r\u0100du\u2807\u280Dshar;\u694Ahar;\u6966\u0100en\u2817\u2821rtneqq;\uC000\u2268\uFE00\xC5\u281E\u0700Dacdefhilnopsu\u2840\u2845\u2882\u288E\u2893\u28A0\u28A5\u28A8\u28DA\u28E2\u28E4\u0A83\u28F3\u2902Dot;\u623A\u0200clpr\u284E\u2852\u2863\u287Dr\u803B\xAF\u40AF\u0100et\u2857\u2859;\u6642\u0100;e\u285E\u285F\u6720se\xBB\u285F\u0100;s\u103B\u2868to\u0200;dlu\u103B\u2873\u2877\u287Bow\xEE\u048Cef\xF4\u090F\xF0\u13D1ker;\u65AE\u0100oy\u2887\u288Cmma;\u6A29;\u443Cash;\u6014asuredangle\xBB\u1626r;\uC000\u{1D52A}o;\u6127\u0180cdn\u28AF\u28B4\u28C9ro\u803B\xB5\u40B5\u0200;acd\u1464\u28BD\u28C0\u28C4s\xF4\u16A7ir;\u6AF0ot\u80BB\xB7\u01B5us\u0180;bd\u28D2\u1903\u28D3\u6212\u0100;u\u1D3C\u28D8;\u6A2A\u0163\u28DE\u28E1p;\u6ADB\xF2\u2212\xF0\u0A81\u0100dp\u28E9\u28EEels;\u62A7f;\uC000\u{1D55E}\u0100ct\u28F8\u28FDr;\uC000\u{1D4C2}pos\xBB\u159D\u0180;lm\u2909\u290A\u290D\u43BCtimap;\u62B8\u0C00GLRVabcdefghijlmoprstuvw\u2942\u2953\u297E\u2989\u2998\u29DA\u29E9\u2A15\u2A1A\u2A58\u2A5D\u2A83\u2A95\u2AA4\u2AA8\u2B04\u2B07\u2B44\u2B7F\u2BAE\u2C34\u2C67\u2C7C\u2CE9\u0100gt\u2947\u294B;\uC000\u22D9\u0338\u0100;v\u2950\u0BCF\uC000\u226B\u20D2\u0180elt\u295A\u2972\u2976ft\u0100ar\u2961\u2967rrow;\u61CDightarrow;\u61CE;\uC000\u22D8\u0338\u0100;v\u297B\u0C47\uC000\u226A\u20D2ightarrow;\u61CF\u0100Dd\u298E\u2993ash;\u62AFash;\u62AE\u0280bcnpt\u29A3\u29A7\u29AC\u29B1\u29CCla\xBB\u02DEute;\u4144g;\uC000\u2220\u20D2\u0280;Eiop\u0D84\u29BC\u29C0\u29C5\u29C8;\uC000\u2A70\u0338d;\uC000\u224B\u0338s;\u4149ro\xF8\u0D84ur\u0100;a\u29D3\u29D4\u666El\u0100;s\u29D3\u0B38\u01F3\u29DF\0\u29E3p\u80BB\xA0\u0B37mp\u0100;e\u0BF9\u0C00\u0280aeouy\u29F4\u29FE\u2A03\u2A10\u2A13\u01F0\u29F9\0\u29FB;\u6A43on;\u4148dil;\u4146ng\u0100;d\u0D7E\u2A0Aot;\uC000\u2A6D\u0338p;\u6A42;\u443Dash;\u6013\u0380;Aadqsx\u0B92\u2A29\u2A2D\u2A3B\u2A41\u2A45\u2A50rr;\u61D7r\u0100hr\u2A33\u2A36k;\u6924\u0100;o\u13F2\u13F0ot;\uC000\u2250\u0338ui\xF6\u0B63\u0100ei\u2A4A\u2A4Ear;\u6928\xED\u0B98ist\u0100;s\u0BA0\u0B9Fr;\uC000\u{1D52B}\u0200Eest\u0BC5\u2A66\u2A79\u2A7C\u0180;qs\u0BBC\u2A6D\u0BE1\u0180;qs\u0BBC\u0BC5\u2A74lan\xF4\u0BE2i\xED\u0BEA\u0100;r\u0BB6\u2A81\xBB\u0BB7\u0180Aap\u2A8A\u2A8D\u2A91r\xF2\u2971rr;\u61AEar;\u6AF2\u0180;sv\u0F8D\u2A9C\u0F8C\u0100;d\u2AA1\u2AA2\u62FC;\u62FAcy;\u445A\u0380AEadest\u2AB7\u2ABA\u2ABE\u2AC2\u2AC5\u2AF6\u2AF9r\xF2\u2966;\uC000\u2266\u0338rr;\u619Ar;\u6025\u0200;fqs\u0C3B\u2ACE\u2AE3\u2AEFt\u0100ar\u2AD4\u2AD9rro\xF7\u2AC1ightarro\xF7\u2A90\u0180;qs\u0C3B\u2ABA\u2AEAlan\xF4\u0C55\u0100;s\u0C55\u2AF4\xBB\u0C36i\xED\u0C5D\u0100;r\u0C35\u2AFEi\u0100;e\u0C1A\u0C25i\xE4\u0D90\u0100pt\u2B0C\u2B11f;\uC000\u{1D55F}\u8180\xAC;in\u2B19\u2B1A\u2B36\u40ACn\u0200;Edv\u0B89\u2B24\u2B28\u2B2E;\uC000\u22F9\u0338ot;\uC000\u22F5\u0338\u01E1\u0B89\u2B33\u2B35;\u62F7;\u62F6i\u0100;v\u0CB8\u2B3C\u01E1\u0CB8\u2B41\u2B43;\u62FE;\u62FD\u0180aor\u2B4B\u2B63\u2B69r\u0200;ast\u0B7B\u2B55\u2B5A\u2B5Flle\xEC\u0B7Bl;\uC000\u2AFD\u20E5;\uC000\u2202\u0338lint;\u6A14\u0180;ce\u0C92\u2B70\u2B73u\xE5\u0CA5\u0100;c\u0C98\u2B78\u0100;e\u0C92\u2B7D\xF1\u0C98\u0200Aait\u2B88\u2B8B\u2B9D\u2BA7r\xF2\u2988rr\u0180;cw\u2B94\u2B95\u2B99\u619B;\uC000\u2933\u0338;\uC000\u219D\u0338ghtarrow\xBB\u2B95ri\u0100;e\u0CCB\u0CD6\u0380chimpqu\u2BBD\u2BCD\u2BD9\u2B04\u0B78\u2BE4\u2BEF\u0200;cer\u0D32\u2BC6\u0D37\u2BC9u\xE5\u0D45;\uC000\u{1D4C3}ort\u026D\u2B05\0\0\u2BD6ar\xE1\u2B56m\u0100;e\u0D6E\u2BDF\u0100;q\u0D74\u0D73su\u0100bp\u2BEB\u2BED\xE5\u0CF8\xE5\u0D0B\u0180bcp\u2BF6\u2C11\u2C19\u0200;Ees\u2BFF\u2C00\u0D22\u2C04\u6284;\uC000\u2AC5\u0338et\u0100;e\u0D1B\u2C0Bq\u0100;q\u0D23\u2C00c\u0100;e\u0D32\u2C17\xF1\u0D38\u0200;Ees\u2C22\u2C23\u0D5F\u2C27\u6285;\uC000\u2AC6\u0338et\u0100;e\u0D58\u2C2Eq\u0100;q\u0D60\u2C23\u0200gilr\u2C3D\u2C3F\u2C45\u2C47\xEC\u0BD7lde\u803B\xF1\u40F1\xE7\u0C43iangle\u0100lr\u2C52\u2C5Ceft\u0100;e\u0C1A\u2C5A\xF1\u0C26ight\u0100;e\u0CCB\u2C65\xF1\u0CD7\u0100;m\u2C6C\u2C6D\u43BD\u0180;es\u2C74\u2C75\u2C79\u4023ro;\u6116p;\u6007\u0480DHadgilrs\u2C8F\u2C94\u2C99\u2C9E\u2CA3\u2CB0\u2CB6\u2CD3\u2CE3ash;\u62ADarr;\u6904p;\uC000\u224D\u20D2ash;\u62AC\u0100et\u2CA8\u2CAC;\uC000\u2265\u20D2;\uC000>\u20D2nfin;\u69DE\u0180Aet\u2CBD\u2CC1\u2CC5rr;\u6902;\uC000\u2264\u20D2\u0100;r\u2CCA\u2CCD\uC000<\u20D2ie;\uC000\u22B4\u20D2\u0100At\u2CD8\u2CDCrr;\u6903rie;\uC000\u22B5\u20D2im;\uC000\u223C\u20D2\u0180Aan\u2CF0\u2CF4\u2D02rr;\u61D6r\u0100hr\u2CFA\u2CFDk;\u6923\u0100;o\u13E7\u13E5ear;\u6927\u1253\u1A95\0\0\0\0\0\0\0\0\0\0\0\0\0\u2D2D\0\u2D38\u2D48\u2D60\u2D65\u2D72\u2D84\u1B07\0\0\u2D8D\u2DAB\0\u2DC8\u2DCE\0\u2DDC\u2E19\u2E2B\u2E3E\u2E43\u0100cs\u2D31\u1A97ute\u803B\xF3\u40F3\u0100iy\u2D3C\u2D45r\u0100;c\u1A9E\u2D42\u803B\xF4\u40F4;\u443E\u0280abios\u1AA0\u2D52\u2D57\u01C8\u2D5Alac;\u4151v;\u6A38old;\u69BClig;\u4153\u0100cr\u2D69\u2D6Dir;\u69BF;\uC000\u{1D52C}\u036F\u2D79\0\0\u2D7C\0\u2D82n;\u42DBave\u803B\xF2\u40F2;\u69C1\u0100bm\u2D88\u0DF4ar;\u69B5\u0200acit\u2D95\u2D98\u2DA5\u2DA8r\xF2\u1A80\u0100ir\u2D9D\u2DA0r;\u69BEoss;\u69BBn\xE5\u0E52;\u69C0\u0180aei\u2DB1\u2DB5\u2DB9cr;\u414Dga;\u43C9\u0180cdn\u2DC0\u2DC5\u01CDron;\u43BF;\u69B6pf;\uC000\u{1D560}\u0180ael\u2DD4\u2DD7\u01D2r;\u69B7rp;\u69B9\u0380;adiosv\u2DEA\u2DEB\u2DEE\u2E08\u2E0D\u2E10\u2E16\u6228r\xF2\u1A86\u0200;efm\u2DF7\u2DF8\u2E02\u2E05\u6A5Dr\u0100;o\u2DFE\u2DFF\u6134f\xBB\u2DFF\u803B\xAA\u40AA\u803B\xBA\u40BAgof;\u62B6r;\u6A56lope;\u6A57;\u6A5B\u0180clo\u2E1F\u2E21\u2E27\xF2\u2E01ash\u803B\xF8\u40F8l;\u6298i\u016C\u2E2F\u2E34de\u803B\xF5\u40F5es\u0100;a\u01DB\u2E3As;\u6A36ml\u803B\xF6\u40F6bar;\u633D\u0AE1\u2E5E\0\u2E7D\0\u2E80\u2E9D\0\u2EA2\u2EB9\0\0\u2ECB\u0E9C\0\u2F13\0\0\u2F2B\u2FBC\0\u2FC8r\u0200;ast\u0403\u2E67\u2E72\u0E85\u8100\xB6;l\u2E6D\u2E6E\u40B6le\xEC\u0403\u0269\u2E78\0\0\u2E7Bm;\u6AF3;\u6AFDy;\u443Fr\u0280cimpt\u2E8B\u2E8F\u2E93\u1865\u2E97nt;\u4025od;\u402Eil;\u6030enk;\u6031r;\uC000\u{1D52D}\u0180imo\u2EA8\u2EB0\u2EB4\u0100;v\u2EAD\u2EAE\u43C6;\u43D5ma\xF4\u0A76ne;\u660E\u0180;tv\u2EBF\u2EC0\u2EC8\u43C0chfork\xBB\u1FFD;\u43D6\u0100au\u2ECF\u2EDFn\u0100ck\u2ED5\u2EDDk\u0100;h\u21F4\u2EDB;\u610E\xF6\u21F4s\u0480;abcdemst\u2EF3\u2EF4\u1908\u2EF9\u2EFD\u2F04\u2F06\u2F0A\u2F0E\u402Bcir;\u6A23ir;\u6A22\u0100ou\u1D40\u2F02;\u6A25;\u6A72n\u80BB\xB1\u0E9Dim;\u6A26wo;\u6A27\u0180ipu\u2F19\u2F20\u2F25ntint;\u6A15f;\uC000\u{1D561}nd\u803B\xA3\u40A3\u0500;Eaceinosu\u0EC8\u2F3F\u2F41\u2F44\u2F47\u2F81\u2F89\u2F92\u2F7E\u2FB6;\u6AB3p;\u6AB7u\xE5\u0ED9\u0100;c\u0ECE\u2F4C\u0300;acens\u0EC8\u2F59\u2F5F\u2F66\u2F68\u2F7Eppro\xF8\u2F43urlye\xF1\u0ED9\xF1\u0ECE\u0180aes\u2F6F\u2F76\u2F7Approx;\u6AB9qq;\u6AB5im;\u62E8i\xED\u0EDFme\u0100;s\u2F88\u0EAE\u6032\u0180Eas\u2F78\u2F90\u2F7A\xF0\u2F75\u0180dfp\u0EEC\u2F99\u2FAF\u0180als\u2FA0\u2FA5\u2FAAlar;\u632Eine;\u6312urf;\u6313\u0100;t\u0EFB\u2FB4\xEF\u0EFBrel;\u62B0\u0100ci\u2FC0\u2FC5r;\uC000\u{1D4C5};\u43C8ncsp;\u6008\u0300fiopsu\u2FDA\u22E2\u2FDF\u2FE5\u2FEB\u2FF1r;\uC000\u{1D52E}pf;\uC000\u{1D562}rime;\u6057cr;\uC000\u{1D4C6}\u0180aeo\u2FF8\u3009\u3013t\u0100ei\u2FFE\u3005rnion\xF3\u06B0nt;\u6A16st\u0100;e\u3010\u3011\u403F\xF1\u1F19\xF4\u0F14\u0A80ABHabcdefhilmnoprstux\u3040\u3051\u3055\u3059\u30E0\u310E\u312B\u3147\u3162\u3172\u318E\u3206\u3215\u3224\u3229\u3258\u326E\u3272\u3290\u32B0\u32B7\u0180art\u3047\u304A\u304Cr\xF2\u10B3\xF2\u03DDail;\u691Car\xF2\u1C65ar;\u6964\u0380cdenqrt\u3068\u3075\u3078\u307F\u308F\u3094\u30CC\u0100eu\u306D\u3071;\uC000\u223D\u0331te;\u4155i\xE3\u116Emptyv;\u69B3g\u0200;del\u0FD1\u3089\u308B\u308D;\u6992;\u69A5\xE5\u0FD1uo\u803B\xBB\u40BBr\u0580;abcfhlpstw\u0FDC\u30AC\u30AF\u30B7\u30B9\u30BC\u30BE\u30C0\u30C3\u30C7\u30CAp;\u6975\u0100;f\u0FE0\u30B4s;\u6920;\u6933s;\u691E\xEB\u225D\xF0\u272El;\u6945im;\u6974l;\u61A3;\u619D\u0100ai\u30D1\u30D5il;\u691Ao\u0100;n\u30DB\u30DC\u6236al\xF3\u0F1E\u0180abr\u30E7\u30EA\u30EEr\xF2\u17E5rk;\u6773\u0100ak\u30F3\u30FDc\u0100ek\u30F9\u30FB;\u407D;\u405D\u0100es\u3102\u3104;\u698Cl\u0100du\u310A\u310C;\u698E;\u6990\u0200aeuy\u3117\u311C\u3127\u3129ron;\u4159\u0100di\u3121\u3125il;\u4157\xEC\u0FF2\xE2\u30FA;\u4440\u0200clqs\u3134\u3137\u313D\u3144a;\u6937dhar;\u6969uo\u0100;r\u020E\u020Dh;\u61B3\u0180acg\u314E\u315F\u0F44l\u0200;ips\u0F78\u3158\u315B\u109Cn\xE5\u10BBar\xF4\u0FA9t;\u65AD\u0180ilr\u3169\u1023\u316Esht;\u697D;\uC000\u{1D52F}\u0100ao\u3177\u3186r\u0100du\u317D\u317F\xBB\u047B\u0100;l\u1091\u3184;\u696C\u0100;v\u318B\u318C\u43C1;\u43F1\u0180gns\u3195\u31F9\u31FCht\u0300ahlrst\u31A4\u31B0\u31C2\u31D8\u31E4\u31EErrow\u0100;t\u0FDC\u31ADa\xE9\u30C8arpoon\u0100du\u31BB\u31BFow\xEE\u317Ep\xBB\u1092eft\u0100ah\u31CA\u31D0rrow\xF3\u0FEAarpoon\xF3\u0551ightarrows;\u61C9quigarro\xF7\u30CBhreetimes;\u62CCg;\u42DAingdotse\xF1\u1F32\u0180ahm\u320D\u3210\u3213r\xF2\u0FEAa\xF2\u0551;\u600Foust\u0100;a\u321E\u321F\u63B1che\xBB\u321Fmid;\u6AEE\u0200abpt\u3232\u323D\u3240\u3252\u0100nr\u3237\u323Ag;\u67EDr;\u61FEr\xEB\u1003\u0180afl\u3247\u324A\u324Er;\u6986;\uC000\u{1D563}us;\u6A2Eimes;\u6A35\u0100ap\u325D\u3267r\u0100;g\u3263\u3264\u4029t;\u6994olint;\u6A12ar\xF2\u31E3\u0200achq\u327B\u3280\u10BC\u3285quo;\u603Ar;\uC000\u{1D4C7}\u0100bu\u30FB\u328Ao\u0100;r\u0214\u0213\u0180hir\u3297\u329B\u32A0re\xE5\u31F8mes;\u62CAi\u0200;efl\u32AA\u1059\u1821\u32AB\u65B9tri;\u69CEluhar;\u6968;\u611E\u0D61\u32D5\u32DB\u32DF\u332C\u3338\u3371\0\u337A\u33A4\0\0\u33EC\u33F0\0\u3428\u3448\u345A\u34AD\u34B1\u34CA\u34F1\0\u3616\0\0\u3633cute;\u415Bqu\xEF\u27BA\u0500;Eaceinpsy\u11ED\u32F3\u32F5\u32FF\u3302\u330B\u330F\u331F\u3326\u3329;\u6AB4\u01F0\u32FA\0\u32FC;\u6AB8on;\u4161u\xE5\u11FE\u0100;d\u11F3\u3307il;\u415Frc;\u415D\u0180Eas\u3316\u3318\u331B;\u6AB6p;\u6ABAim;\u62E9olint;\u6A13i\xED\u1204;\u4441ot\u0180;be\u3334\u1D47\u3335\u62C5;\u6A66\u0380Aacmstx\u3346\u334A\u3357\u335B\u335E\u3363\u336Drr;\u61D8r\u0100hr\u3350\u3352\xEB\u2228\u0100;o\u0A36\u0A34t\u803B\xA7\u40A7i;\u403Bwar;\u6929m\u0100in\u3369\xF0nu\xF3\xF1t;\u6736r\u0100;o\u3376\u2055\uC000\u{1D530}\u0200acoy\u3382\u3386\u3391\u33A0rp;\u666F\u0100hy\u338B\u338Fcy;\u4449;\u4448rt\u026D\u3399\0\0\u339Ci\xE4\u1464ara\xEC\u2E6F\u803B\xAD\u40AD\u0100gm\u33A8\u33B4ma\u0180;fv\u33B1\u33B2\u33B2\u43C3;\u43C2\u0400;deglnpr\u12AB\u33C5\u33C9\u33CE\u33D6\u33DE\u33E1\u33E6ot;\u6A6A\u0100;q\u12B1\u12B0\u0100;E\u33D3\u33D4\u6A9E;\u6AA0\u0100;E\u33DB\u33DC\u6A9D;\u6A9Fe;\u6246lus;\u6A24arr;\u6972ar\xF2\u113D\u0200aeit\u33F8\u3408\u340F\u3417\u0100ls\u33FD\u3404lsetm\xE9\u336Ahp;\u6A33parsl;\u69E4\u0100dl\u1463\u3414e;\u6323\u0100;e\u341C\u341D\u6AAA\u0100;s\u3422\u3423\u6AAC;\uC000\u2AAC\uFE00\u0180flp\u342E\u3433\u3442tcy;\u444C\u0100;b\u3438\u3439\u402F\u0100;a\u343E\u343F\u69C4r;\u633Ff;\uC000\u{1D564}a\u0100dr\u344D\u0402es\u0100;u\u3454\u3455\u6660it\xBB\u3455\u0180csu\u3460\u3479\u349F\u0100au\u3465\u346Fp\u0100;s\u1188\u346B;\uC000\u2293\uFE00p\u0100;s\u11B4\u3475;\uC000\u2294\uFE00u\u0100bp\u347F\u348F\u0180;es\u1197\u119C\u3486et\u0100;e\u1197\u348D\xF1\u119D\u0180;es\u11A8\u11AD\u3496et\u0100;e\u11A8\u349D\xF1\u11AE\u0180;af\u117B\u34A6\u05B0r\u0165\u34AB\u05B1\xBB\u117Car\xF2\u1148\u0200cemt\u34B9\u34BE\u34C2\u34C5r;\uC000\u{1D4C8}tm\xEE\xF1i\xEC\u3415ar\xE6\u11BE\u0100ar\u34CE\u34D5r\u0100;f\u34D4\u17BF\u6606\u0100an\u34DA\u34EDight\u0100ep\u34E3\u34EApsilo\xEE\u1EE0h\xE9\u2EAFs\xBB\u2852\u0280bcmnp\u34FB\u355E\u1209\u358B\u358E\u0480;Edemnprs\u350E\u350F\u3511\u3515\u351E\u3523\u352C\u3531\u3536\u6282;\u6AC5ot;\u6ABD\u0100;d\u11DA\u351Aot;\u6AC3ult;\u6AC1\u0100Ee\u3528\u352A;\u6ACB;\u628Alus;\u6ABFarr;\u6979\u0180eiu\u353D\u3552\u3555t\u0180;en\u350E\u3545\u354Bq\u0100;q\u11DA\u350Feq\u0100;q\u352B\u3528m;\u6AC7\u0100bp\u355A\u355C;\u6AD5;\u6AD3c\u0300;acens\u11ED\u356C\u3572\u3579\u357B\u3326ppro\xF8\u32FAurlye\xF1\u11FE\xF1\u11F3\u0180aes\u3582\u3588\u331Bppro\xF8\u331Aq\xF1\u3317g;\u666A\u0680123;Edehlmnps\u35A9\u35AC\u35AF\u121C\u35B2\u35B4\u35C0\u35C9\u35D5\u35DA\u35DF\u35E8\u35ED\u803B\xB9\u40B9\u803B\xB2\u40B2\u803B\xB3\u40B3;\u6AC6\u0100os\u35B9\u35BCt;\u6ABEub;\u6AD8\u0100;d\u1222\u35C5ot;\u6AC4s\u0100ou\u35CF\u35D2l;\u67C9b;\u6AD7arr;\u697Bult;\u6AC2\u0100Ee\u35E4\u35E6;\u6ACC;\u628Blus;\u6AC0\u0180eiu\u35F4\u3609\u360Ct\u0180;en\u121C\u35FC\u3602q\u0100;q\u1222\u35B2eq\u0100;q\u35E7\u35E4m;\u6AC8\u0100bp\u3611\u3613;\u6AD4;\u6AD6\u0180Aan\u361C\u3620\u362Drr;\u61D9r\u0100hr\u3626\u3628\xEB\u222E\u0100;o\u0A2B\u0A29war;\u692Alig\u803B\xDF\u40DF\u0BE1\u3651\u365D\u3660\u12CE\u3673\u3679\0\u367E\u36C2\0\0\0\0\0\u36DB\u3703\0\u3709\u376C\0\0\0\u3787\u0272\u3656\0\0\u365Bget;\u6316;\u43C4r\xEB\u0E5F\u0180aey\u3666\u366B\u3670ron;\u4165dil;\u4163;\u4442lrec;\u6315r;\uC000\u{1D531}\u0200eiko\u3686\u369D\u36B5\u36BC\u01F2\u368B\0\u3691e\u01004f\u1284\u1281a\u0180;sv\u3698\u3699\u369B\u43B8ym;\u43D1\u0100cn\u36A2\u36B2k\u0100as\u36A8\u36AEppro\xF8\u12C1im\xBB\u12ACs\xF0\u129E\u0100as\u36BA\u36AE\xF0\u12C1rn\u803B\xFE\u40FE\u01EC\u031F\u36C6\u22E7es\u8180\xD7;bd\u36CF\u36D0\u36D8\u40D7\u0100;a\u190F\u36D5r;\u6A31;\u6A30\u0180eps\u36E1\u36E3\u3700\xE1\u2A4D\u0200;bcf\u0486\u36EC\u36F0\u36F4ot;\u6336ir;\u6AF1\u0100;o\u36F9\u36FC\uC000\u{1D565}rk;\u6ADA\xE1\u3362rime;\u6034\u0180aip\u370F\u3712\u3764d\xE5\u1248\u0380adempst\u3721\u374D\u3740\u3751\u3757\u375C\u375Fngle\u0280;dlqr\u3730\u3731\u3736\u3740\u3742\u65B5own\xBB\u1DBBeft\u0100;e\u2800\u373E\xF1\u092E;\u625Cight\u0100;e\u32AA\u374B\xF1\u105Aot;\u65ECinus;\u6A3Alus;\u6A39b;\u69CDime;\u6A3Bezium;\u63E2\u0180cht\u3772\u377D\u3781\u0100ry\u3777\u377B;\uC000\u{1D4C9};\u4446cy;\u445Brok;\u4167\u0100io\u378B\u378Ex\xF4\u1777head\u0100lr\u3797\u37A0eftarro\xF7\u084Fightarrow\xBB\u0F5D\u0900AHabcdfghlmoprstuw\u37D0\u37D3\u37D7\u37E4\u37F0\u37FC\u380E\u381C\u3823\u3834\u3851\u385D\u386B\u38A9\u38CC\u38D2\u38EA\u38F6r\xF2\u03EDar;\u6963\u0100cr\u37DC\u37E2ute\u803B\xFA\u40FA\xF2\u1150r\u01E3\u37EA\0\u37EDy;\u445Eve;\u416D\u0100iy\u37F5\u37FArc\u803B\xFB\u40FB;\u4443\u0180abh\u3803\u3806\u380Br\xF2\u13ADlac;\u4171a\xF2\u13C3\u0100ir\u3813\u3818sht;\u697E;\uC000\u{1D532}rave\u803B\xF9\u40F9\u0161\u3827\u3831r\u0100lr\u382C\u382E\xBB\u0957\xBB\u1083lk;\u6580\u0100ct\u3839\u384D\u026F\u383F\0\0\u384Arn\u0100;e\u3845\u3846\u631Cr\xBB\u3846op;\u630Fri;\u65F8\u0100al\u3856\u385Acr;\u416B\u80BB\xA8\u0349\u0100gp\u3862\u3866on;\u4173f;\uC000\u{1D566}\u0300adhlsu\u114B\u3878\u387D\u1372\u3891\u38A0own\xE1\u13B3arpoon\u0100lr\u3888\u388Cef\xF4\u382Digh\xF4\u382Fi\u0180;hl\u3899\u389A\u389C\u43C5\xBB\u13FAon\xBB\u389Aparrows;\u61C8\u0180cit\u38B0\u38C4\u38C8\u026F\u38B6\0\0\u38C1rn\u0100;e\u38BC\u38BD\u631Dr\xBB\u38BDop;\u630Eng;\u416Fri;\u65F9cr;\uC000\u{1D4CA}\u0180dir\u38D9\u38DD\u38E2ot;\u62F0lde;\u4169i\u0100;f\u3730\u38E8\xBB\u1813\u0100am\u38EF\u38F2r\xF2\u38A8l\u803B\xFC\u40FCangle;\u69A7\u0780ABDacdeflnoprsz\u391C\u391F\u3929\u392D\u39B5\u39B8\u39BD\u39DF\u39E4\u39E8\u39F3\u39F9\u39FD\u3A01\u3A20r\xF2\u03F7ar\u0100;v\u3926\u3927\u6AE8;\u6AE9as\xE8\u03E1\u0100nr\u3932\u3937grt;\u699C\u0380eknprst\u34E3\u3946\u394B\u3952\u395D\u3964\u3996app\xE1\u2415othin\xE7\u1E96\u0180hir\u34EB\u2EC8\u3959op\xF4\u2FB5\u0100;h\u13B7\u3962\xEF\u318D\u0100iu\u3969\u396Dgm\xE1\u33B3\u0100bp\u3972\u3984setneq\u0100;q\u397D\u3980\uC000\u228A\uFE00;\uC000\u2ACB\uFE00setneq\u0100;q\u398F\u3992\uC000\u228B\uFE00;\uC000\u2ACC\uFE00\u0100hr\u399B\u399Fet\xE1\u369Ciangle\u0100lr\u39AA\u39AFeft\xBB\u0925ight\xBB\u1051y;\u4432ash\xBB\u1036\u0180elr\u39C4\u39D2\u39D7\u0180;be\u2DEA\u39CB\u39CFar;\u62BBq;\u625Alip;\u62EE\u0100bt\u39DC\u1468a\xF2\u1469r;\uC000\u{1D533}tr\xE9\u39AEsu\u0100bp\u39EF\u39F1\xBB\u0D1C\xBB\u0D59pf;\uC000\u{1D567}ro\xF0\u0EFBtr\xE9\u39B4\u0100cu\u3A06\u3A0Br;\uC000\u{1D4CB}\u0100bp\u3A10\u3A18n\u0100Ee\u3980\u3A16\xBB\u397En\u0100Ee\u3992\u3A1E\xBB\u3990igzag;\u699A\u0380cefoprs\u3A36\u3A3B\u3A56\u3A5B\u3A54\u3A61\u3A6Airc;\u4175\u0100di\u3A40\u3A51\u0100bg\u3A45\u3A49ar;\u6A5Fe\u0100;q\u15FA\u3A4F;\u6259erp;\u6118r;\uC000\u{1D534}pf;\uC000\u{1D568}\u0100;e\u1479\u3A66at\xE8\u1479cr;\uC000\u{1D4CC}\u0AE3\u178E\u3A87\0\u3A8B\0\u3A90\u3A9B\0\0\u3A9D\u3AA8\u3AAB\u3AAF\0\0\u3AC3\u3ACE\0\u3AD8\u17DC\u17DFtr\xE9\u17D1r;\uC000\u{1D535}\u0100Aa\u3A94\u3A97r\xF2\u03C3r\xF2\u09F6;\u43BE\u0100Aa\u3AA1\u3AA4r\xF2\u03B8r\xF2\u09EBa\xF0\u2713is;\u62FB\u0180dpt\u17A4\u3AB5\u3ABE\u0100fl\u3ABA\u17A9;\uC000\u{1D569}im\xE5\u17B2\u0100Aa\u3AC7\u3ACAr\xF2\u03CEr\xF2\u0A01\u0100cq\u3AD2\u17B8r;\uC000\u{1D4CD}\u0100pt\u17D6\u3ADCr\xE9\u17D4\u0400acefiosu\u3AF0\u3AFD\u3B08\u3B0C\u3B11\u3B15\u3B1B\u3B21c\u0100uy\u3AF6\u3AFBte\u803B\xFD\u40FD;\u444F\u0100iy\u3B02\u3B06rc;\u4177;\u444Bn\u803B\xA5\u40A5r;\uC000\u{1D536}cy;\u4457pf;\uC000\u{1D56A}cr;\uC000\u{1D4CE}\u0100cm\u3B26\u3B29y;\u444El\u803B\xFF\u40FF\u0500acdefhiosw\u3B42\u3B48\u3B54\u3B58\u3B64\u3B69\u3B6D\u3B74\u3B7A\u3B80cute;\u417A\u0100ay\u3B4D\u3B52ron;\u417E;\u4437ot;\u417C\u0100et\u3B5D\u3B61tr\xE6\u155Fa;\u43B6r;\uC000\u{1D537}cy;\u4436grarr;\u61DDpf;\uC000\u{1D56B}cr;\uC000\u{1D4CF}\u0100jn\u3B85\u3B87;\u600Dj;\u600C'.split("").map((c) => c.charCodeAt(0)));
+
+// node_modules/htmlparser2/node_modules/entities/dist/esm/generated/decode-data-xml.js
+var xmlDecodeTree = /* @__PURE__ */ new Uint16Array(/* @__PURE__ */ "\u0200aglq	\u026D\0\0p;\u4026os;\u4027t;\u403Et;\u403Cuot;\u4022".split("").map((c) => c.charCodeAt(0)));
+
+// node_modules/htmlparser2/node_modules/entities/dist/esm/decode-codepoint.js
+var _a2;
+var decodeMap2 = new Map([
+  [0, 65533],
+  [128, 8364],
+  [130, 8218],
+  [131, 402],
+  [132, 8222],
+  [133, 8230],
+  [134, 8224],
+  [135, 8225],
+  [136, 710],
+  [137, 8240],
+  [138, 352],
+  [139, 8249],
+  [140, 338],
+  [142, 381],
+  [145, 8216],
+  [146, 8217],
+  [147, 8220],
+  [148, 8221],
+  [149, 8226],
+  [150, 8211],
+  [151, 8212],
+  [152, 732],
+  [153, 8482],
+  [154, 353],
+  [155, 8250],
+  [156, 339],
+  [158, 382],
+  [159, 376]
+]);
+var fromCodePoint2 = (_a2 = String.fromCodePoint) !== null && _a2 !== void 0 ? _a2 : function(codePoint) {
+  let output = "";
+  if (codePoint > 65535) {
+    codePoint -= 65536;
+    output += String.fromCharCode(codePoint >>> 10 & 1023 | 55296);
+    codePoint = 56320 | codePoint & 1023;
+  }
+  output += String.fromCharCode(codePoint);
+  return output;
+};
+function replaceCodePoint2(codePoint) {
+  var _a5;
+  if (codePoint >= 55296 && codePoint <= 57343 || codePoint > 1114111) {
+    return 65533;
+  }
+  return (_a5 = decodeMap2.get(codePoint)) !== null && _a5 !== void 0 ? _a5 : codePoint;
+}
+
+// node_modules/htmlparser2/node_modules/entities/dist/esm/decode.js
+var CharCodes2;
+(function(CharCodes5) {
+  CharCodes5[CharCodes5["NUM"] = 35] = "NUM";
+  CharCodes5[CharCodes5["SEMI"] = 59] = "SEMI";
+  CharCodes5[CharCodes5["EQUALS"] = 61] = "EQUALS";
+  CharCodes5[CharCodes5["ZERO"] = 48] = "ZERO";
+  CharCodes5[CharCodes5["NINE"] = 57] = "NINE";
+  CharCodes5[CharCodes5["LOWER_A"] = 97] = "LOWER_A";
+  CharCodes5[CharCodes5["LOWER_F"] = 102] = "LOWER_F";
+  CharCodes5[CharCodes5["LOWER_X"] = 120] = "LOWER_X";
+  CharCodes5[CharCodes5["LOWER_Z"] = 122] = "LOWER_Z";
+  CharCodes5[CharCodes5["UPPER_A"] = 65] = "UPPER_A";
+  CharCodes5[CharCodes5["UPPER_F"] = 70] = "UPPER_F";
+  CharCodes5[CharCodes5["UPPER_Z"] = 90] = "UPPER_Z";
+})(CharCodes2 || (CharCodes2 = {}));
+var TO_LOWER_BIT2 = 32;
+var BinTrieFlags2;
+(function(BinTrieFlags4) {
+  BinTrieFlags4[BinTrieFlags4["VALUE_LENGTH"] = 49152] = "VALUE_LENGTH";
+  BinTrieFlags4[BinTrieFlags4["BRANCH_LENGTH"] = 16256] = "BRANCH_LENGTH";
+  BinTrieFlags4[BinTrieFlags4["JUMP_TABLE"] = 127] = "JUMP_TABLE";
+})(BinTrieFlags2 || (BinTrieFlags2 = {}));
+function isNumber2(code) {
+  return code >= CharCodes2.ZERO && code <= CharCodes2.NINE;
+}
+function isHexadecimalCharacter2(code) {
+  return code >= CharCodes2.UPPER_A && code <= CharCodes2.UPPER_F || code >= CharCodes2.LOWER_A && code <= CharCodes2.LOWER_F;
+}
+function isAsciiAlphaNumeric2(code) {
+  return code >= CharCodes2.UPPER_A && code <= CharCodes2.UPPER_Z || code >= CharCodes2.LOWER_A && code <= CharCodes2.LOWER_Z || isNumber2(code);
+}
+function isEntityInAttributeInvalidEnd2(code) {
+  return code === CharCodes2.EQUALS || isAsciiAlphaNumeric2(code);
+}
+var EntityDecoderState2;
+(function(EntityDecoderState4) {
+  EntityDecoderState4[EntityDecoderState4["EntityStart"] = 0] = "EntityStart";
+  EntityDecoderState4[EntityDecoderState4["NumericStart"] = 1] = "NumericStart";
+  EntityDecoderState4[EntityDecoderState4["NumericDecimal"] = 2] = "NumericDecimal";
+  EntityDecoderState4[EntityDecoderState4["NumericHex"] = 3] = "NumericHex";
+  EntityDecoderState4[EntityDecoderState4["NamedEntity"] = 4] = "NamedEntity";
+})(EntityDecoderState2 || (EntityDecoderState2 = {}));
+var DecodingMode2;
+(function(DecodingMode4) {
+  DecodingMode4[DecodingMode4["Legacy"] = 0] = "Legacy";
+  DecodingMode4[DecodingMode4["Strict"] = 1] = "Strict";
+  DecodingMode4[DecodingMode4["Attribute"] = 2] = "Attribute";
+})(DecodingMode2 || (DecodingMode2 = {}));
+var EntityDecoder2 = class {
+  constructor(decodeTree, emitCodePoint, errors) {
+    this.decodeTree = decodeTree;
+    this.emitCodePoint = emitCodePoint;
+    this.errors = errors;
+    this.state = EntityDecoderState2.EntityStart;
+    this.consumed = 1;
+    this.result = 0;
+    this.treeIndex = 0;
+    this.excess = 1;
+    this.decodeMode = DecodingMode2.Strict;
+  }
+  startEntity(decodeMode) {
+    this.decodeMode = decodeMode;
+    this.state = EntityDecoderState2.EntityStart;
+    this.result = 0;
+    this.treeIndex = 0;
+    this.excess = 1;
+    this.consumed = 1;
+  }
+  write(input, offset2) {
+    switch (this.state) {
+      case EntityDecoderState2.EntityStart: {
+        if (input.charCodeAt(offset2) === CharCodes2.NUM) {
+          this.state = EntityDecoderState2.NumericStart;
+          this.consumed += 1;
+          return this.stateNumericStart(input, offset2 + 1);
+        }
+        this.state = EntityDecoderState2.NamedEntity;
+        return this.stateNamedEntity(input, offset2);
+      }
+      case EntityDecoderState2.NumericStart: {
+        return this.stateNumericStart(input, offset2);
+      }
+      case EntityDecoderState2.NumericDecimal: {
+        return this.stateNumericDecimal(input, offset2);
+      }
+      case EntityDecoderState2.NumericHex: {
+        return this.stateNumericHex(input, offset2);
+      }
+      case EntityDecoderState2.NamedEntity: {
+        return this.stateNamedEntity(input, offset2);
+      }
+    }
+  }
+  stateNumericStart(input, offset2) {
+    if (offset2 >= input.length) {
+      return -1;
+    }
+    if ((input.charCodeAt(offset2) | TO_LOWER_BIT2) === CharCodes2.LOWER_X) {
+      this.state = EntityDecoderState2.NumericHex;
+      this.consumed += 1;
+      return this.stateNumericHex(input, offset2 + 1);
+    }
+    this.state = EntityDecoderState2.NumericDecimal;
+    return this.stateNumericDecimal(input, offset2);
+  }
+  addToNumericResult(input, start2, end3, base) {
+    if (start2 !== end3) {
+      const digitCount = end3 - start2;
+      this.result = this.result * Math.pow(base, digitCount) + Number.parseInt(input.substr(start2, digitCount), base);
+      this.consumed += digitCount;
+    }
+  }
+  stateNumericHex(input, offset2) {
+    const startIndex = offset2;
+    while (offset2 < input.length) {
+      const char = input.charCodeAt(offset2);
+      if (isNumber2(char) || isHexadecimalCharacter2(char)) {
+        offset2 += 1;
+      } else {
+        this.addToNumericResult(input, startIndex, offset2, 16);
+        return this.emitNumericEntity(char, 3);
+      }
+    }
+    this.addToNumericResult(input, startIndex, offset2, 16);
+    return -1;
+  }
+  stateNumericDecimal(input, offset2) {
+    const startIndex = offset2;
+    while (offset2 < input.length) {
+      const char = input.charCodeAt(offset2);
+      if (isNumber2(char)) {
+        offset2 += 1;
+      } else {
+        this.addToNumericResult(input, startIndex, offset2, 10);
+        return this.emitNumericEntity(char, 2);
+      }
+    }
+    this.addToNumericResult(input, startIndex, offset2, 10);
+    return -1;
+  }
+  emitNumericEntity(lastCp, expectedLength) {
+    var _a5;
+    if (this.consumed <= expectedLength) {
+      (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.absenceOfDigitsInNumericCharacterReference(this.consumed);
+      return 0;
+    }
+    if (lastCp === CharCodes2.SEMI) {
+      this.consumed += 1;
+    } else if (this.decodeMode === DecodingMode2.Strict) {
+      return 0;
+    }
+    this.emitCodePoint(replaceCodePoint2(this.result), this.consumed);
+    if (this.errors) {
+      if (lastCp !== CharCodes2.SEMI) {
+        this.errors.missingSemicolonAfterCharacterReference();
+      }
+      this.errors.validateNumericCharacterReference(this.result);
+    }
+    return this.consumed;
+  }
+  stateNamedEntity(input, offset2) {
+    const { decodeTree } = this;
+    let current = decodeTree[this.treeIndex];
+    let valueLength = (current & BinTrieFlags2.VALUE_LENGTH) >> 14;
+    for (; offset2 < input.length; offset2++, this.excess++) {
+      const char = input.charCodeAt(offset2);
+      this.treeIndex = determineBranch2(decodeTree, current, this.treeIndex + Math.max(1, valueLength), char);
+      if (this.treeIndex < 0) {
+        return this.result === 0 || this.decodeMode === DecodingMode2.Attribute && (valueLength === 0 || isEntityInAttributeInvalidEnd2(char)) ? 0 : this.emitNotTerminatedNamedEntity();
+      }
+      current = decodeTree[this.treeIndex];
+      valueLength = (current & BinTrieFlags2.VALUE_LENGTH) >> 14;
+      if (valueLength !== 0) {
+        if (char === CharCodes2.SEMI) {
+          return this.emitNamedEntityData(this.treeIndex, valueLength, this.consumed + this.excess);
+        }
+        if (this.decodeMode !== DecodingMode2.Strict) {
+          this.result = this.treeIndex;
+          this.consumed += this.excess;
+          this.excess = 0;
+        }
+      }
+    }
+    return -1;
+  }
+  emitNotTerminatedNamedEntity() {
+    var _a5;
+    const { result, decodeTree } = this;
+    const valueLength = (decodeTree[result] & BinTrieFlags2.VALUE_LENGTH) >> 14;
+    this.emitNamedEntityData(result, valueLength, this.consumed);
+    (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.missingSemicolonAfterCharacterReference();
+    return this.consumed;
+  }
+  emitNamedEntityData(result, valueLength, consumed) {
+    const { decodeTree } = this;
+    this.emitCodePoint(valueLength === 1 ? decodeTree[result] & ~BinTrieFlags2.VALUE_LENGTH : decodeTree[result + 1], consumed);
+    if (valueLength === 3) {
+      this.emitCodePoint(decodeTree[result + 2], consumed);
+    }
+    return consumed;
+  }
+  end() {
+    var _a5;
+    switch (this.state) {
+      case EntityDecoderState2.NamedEntity: {
+        return this.result !== 0 && (this.decodeMode !== DecodingMode2.Attribute || this.result === this.treeIndex) ? this.emitNotTerminatedNamedEntity() : 0;
+      }
+      case EntityDecoderState2.NumericDecimal: {
+        return this.emitNumericEntity(0, 2);
+      }
+      case EntityDecoderState2.NumericHex: {
+        return this.emitNumericEntity(0, 3);
+      }
+      case EntityDecoderState2.NumericStart: {
+        (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.absenceOfDigitsInNumericCharacterReference(this.consumed);
+        return 0;
+      }
+      case EntityDecoderState2.EntityStart: {
+        return 0;
+      }
+    }
+  }
+};
+function determineBranch2(decodeTree, current, nodeIndex, char) {
+  const branchCount = (current & BinTrieFlags2.BRANCH_LENGTH) >> 7;
+  const jumpOffset = current & BinTrieFlags2.JUMP_TABLE;
+  if (branchCount === 0) {
+    return jumpOffset !== 0 && char === jumpOffset ? nodeIndex : -1;
+  }
+  if (jumpOffset) {
+    const value = char - jumpOffset;
+    return value < 0 || value >= branchCount ? -1 : decodeTree[nodeIndex + value] - 1;
+  }
+  let lo = nodeIndex;
+  let hi = lo + branchCount - 1;
+  while (lo <= hi) {
+    const mid = lo + hi >>> 1;
+    const midValue = decodeTree[mid];
+    if (midValue < char) {
+      lo = mid + 1;
+    } else if (midValue > char) {
+      hi = mid - 1;
+    } else {
+      return decodeTree[mid + branchCount];
+    }
+  }
+  return -1;
+}
+
+// node_modules/htmlparser2/dist/esm/Tokenizer.js
+var CharCodes3;
+(function(CharCodes5) {
+  CharCodes5[CharCodes5["Tab"] = 9] = "Tab";
+  CharCodes5[CharCodes5["NewLine"] = 10] = "NewLine";
+  CharCodes5[CharCodes5["FormFeed"] = 12] = "FormFeed";
+  CharCodes5[CharCodes5["CarriageReturn"] = 13] = "CarriageReturn";
+  CharCodes5[CharCodes5["Space"] = 32] = "Space";
+  CharCodes5[CharCodes5["ExclamationMark"] = 33] = "ExclamationMark";
+  CharCodes5[CharCodes5["Number"] = 35] = "Number";
+  CharCodes5[CharCodes5["Amp"] = 38] = "Amp";
+  CharCodes5[CharCodes5["SingleQuote"] = 39] = "SingleQuote";
+  CharCodes5[CharCodes5["DoubleQuote"] = 34] = "DoubleQuote";
+  CharCodes5[CharCodes5["Dash"] = 45] = "Dash";
+  CharCodes5[CharCodes5["Slash"] = 47] = "Slash";
+  CharCodes5[CharCodes5["Zero"] = 48] = "Zero";
+  CharCodes5[CharCodes5["Nine"] = 57] = "Nine";
+  CharCodes5[CharCodes5["Semi"] = 59] = "Semi";
+  CharCodes5[CharCodes5["Lt"] = 60] = "Lt";
+  CharCodes5[CharCodes5["Eq"] = 61] = "Eq";
+  CharCodes5[CharCodes5["Gt"] = 62] = "Gt";
+  CharCodes5[CharCodes5["Questionmark"] = 63] = "Questionmark";
+  CharCodes5[CharCodes5["UpperA"] = 65] = "UpperA";
+  CharCodes5[CharCodes5["LowerA"] = 97] = "LowerA";
+  CharCodes5[CharCodes5["UpperF"] = 70] = "UpperF";
+  CharCodes5[CharCodes5["LowerF"] = 102] = "LowerF";
+  CharCodes5[CharCodes5["UpperZ"] = 90] = "UpperZ";
+  CharCodes5[CharCodes5["LowerZ"] = 122] = "LowerZ";
+  CharCodes5[CharCodes5["LowerX"] = 120] = "LowerX";
+  CharCodes5[CharCodes5["OpeningSquareBracket"] = 91] = "OpeningSquareBracket";
+})(CharCodes3 || (CharCodes3 = {}));
+var State;
+(function(State3) {
+  State3[State3["Text"] = 1] = "Text";
+  State3[State3["BeforeTagName"] = 2] = "BeforeTagName";
+  State3[State3["InTagName"] = 3] = "InTagName";
+  State3[State3["InSelfClosingTag"] = 4] = "InSelfClosingTag";
+  State3[State3["BeforeClosingTagName"] = 5] = "BeforeClosingTagName";
+  State3[State3["InClosingTagName"] = 6] = "InClosingTagName";
+  State3[State3["AfterClosingTagName"] = 7] = "AfterClosingTagName";
+  State3[State3["BeforeAttributeName"] = 8] = "BeforeAttributeName";
+  State3[State3["InAttributeName"] = 9] = "InAttributeName";
+  State3[State3["AfterAttributeName"] = 10] = "AfterAttributeName";
+  State3[State3["BeforeAttributeValue"] = 11] = "BeforeAttributeValue";
+  State3[State3["InAttributeValueDq"] = 12] = "InAttributeValueDq";
+  State3[State3["InAttributeValueSq"] = 13] = "InAttributeValueSq";
+  State3[State3["InAttributeValueNq"] = 14] = "InAttributeValueNq";
+  State3[State3["BeforeDeclaration"] = 15] = "BeforeDeclaration";
+  State3[State3["InDeclaration"] = 16] = "InDeclaration";
+  State3[State3["InProcessingInstruction"] = 17] = "InProcessingInstruction";
+  State3[State3["BeforeComment"] = 18] = "BeforeComment";
+  State3[State3["CDATASequence"] = 19] = "CDATASequence";
+  State3[State3["InSpecialComment"] = 20] = "InSpecialComment";
+  State3[State3["InCommentLike"] = 21] = "InCommentLike";
+  State3[State3["BeforeSpecialS"] = 22] = "BeforeSpecialS";
+  State3[State3["BeforeSpecialT"] = 23] = "BeforeSpecialT";
+  State3[State3["SpecialStartSequence"] = 24] = "SpecialStartSequence";
+  State3[State3["InSpecialTag"] = 25] = "InSpecialTag";
+  State3[State3["InEntity"] = 26] = "InEntity";
+})(State || (State = {}));
+function isWhitespace(c) {
+  return c === CharCodes3.Space || c === CharCodes3.NewLine || c === CharCodes3.Tab || c === CharCodes3.FormFeed || c === CharCodes3.CarriageReturn;
+}
+function isEndOfTagSection(c) {
+  return c === CharCodes3.Slash || c === CharCodes3.Gt || isWhitespace(c);
+}
+function isASCIIAlpha(c) {
+  return c >= CharCodes3.LowerA && c <= CharCodes3.LowerZ || c >= CharCodes3.UpperA && c <= CharCodes3.UpperZ;
+}
+var QuoteType;
+(function(QuoteType2) {
+  QuoteType2[QuoteType2["NoValue"] = 0] = "NoValue";
+  QuoteType2[QuoteType2["Unquoted"] = 1] = "Unquoted";
+  QuoteType2[QuoteType2["Single"] = 2] = "Single";
+  QuoteType2[QuoteType2["Double"] = 3] = "Double";
+})(QuoteType || (QuoteType = {}));
+var Sequences = {
+  Cdata: new Uint8Array([67, 68, 65, 84, 65, 91]),
+  CdataEnd: new Uint8Array([93, 93, 62]),
+  CommentEnd: new Uint8Array([45, 45, 62]),
+  ScriptEnd: new Uint8Array([60, 47, 115, 99, 114, 105, 112, 116]),
+  StyleEnd: new Uint8Array([60, 47, 115, 116, 121, 108, 101]),
+  TitleEnd: new Uint8Array([60, 47, 116, 105, 116, 108, 101]),
+  TextareaEnd: new Uint8Array([
+    60,
+    47,
+    116,
+    101,
+    120,
+    116,
+    97,
+    114,
+    101,
+    97
+  ]),
+  XmpEnd: new Uint8Array([60, 47, 120, 109, 112])
+};
+var Tokenizer = class {
+  constructor({ xmlMode = false, decodeEntities = true }, cbs) {
+    this.cbs = cbs;
+    this.state = State.Text;
+    this.buffer = "";
+    this.sectionStart = 0;
+    this.index = 0;
+    this.entityStart = 0;
+    this.baseState = State.Text;
+    this.isSpecial = false;
+    this.running = true;
+    this.offset = 0;
+    this.currentSequence = void 0;
+    this.sequenceIndex = 0;
+    this.xmlMode = xmlMode;
+    this.decodeEntities = decodeEntities;
+    this.entityDecoder = new EntityDecoder2(xmlMode ? xmlDecodeTree : htmlDecodeTree, (cp, consumed) => this.emitCodePoint(cp, consumed));
+  }
+  reset() {
+    this.state = State.Text;
+    this.buffer = "";
+    this.sectionStart = 0;
+    this.index = 0;
+    this.baseState = State.Text;
+    this.currentSequence = void 0;
+    this.running = true;
+    this.offset = 0;
+  }
+  write(chunk) {
+    this.offset += this.buffer.length;
+    this.buffer = chunk;
+    this.parse();
+  }
+  end() {
+    if (this.running)
+      this.finish();
+  }
+  pause() {
+    this.running = false;
+  }
+  resume() {
+    this.running = true;
+    if (this.index < this.buffer.length + this.offset) {
+      this.parse();
+    }
+  }
+  stateText(c) {
+    if (c === CharCodes3.Lt || !this.decodeEntities && this.fastForwardTo(CharCodes3.Lt)) {
+      if (this.index > this.sectionStart) {
+        this.cbs.ontext(this.sectionStart, this.index);
+      }
+      this.state = State.BeforeTagName;
+      this.sectionStart = this.index;
+    } else if (this.decodeEntities && c === CharCodes3.Amp) {
+      this.startEntity();
+    }
+  }
+  stateSpecialStartSequence(c) {
+    const isEnd = this.sequenceIndex === this.currentSequence.length;
+    const isMatch = isEnd ? isEndOfTagSection(c) : (c | 32) === this.currentSequence[this.sequenceIndex];
+    if (!isMatch) {
+      this.isSpecial = false;
+    } else if (!isEnd) {
+      this.sequenceIndex++;
+      return;
+    }
+    this.sequenceIndex = 0;
+    this.state = State.InTagName;
+    this.stateInTagName(c);
+  }
+  stateInSpecialTag(c) {
+    if (this.sequenceIndex === this.currentSequence.length) {
+      if (c === CharCodes3.Gt || isWhitespace(c)) {
+        const endOfText = this.index - this.currentSequence.length;
+        if (this.sectionStart < endOfText) {
+          const actualIndex = this.index;
+          this.index = endOfText;
+          this.cbs.ontext(this.sectionStart, endOfText);
+          this.index = actualIndex;
+        }
+        this.isSpecial = false;
+        this.sectionStart = endOfText + 2;
+        this.stateInClosingTagName(c);
+        return;
+      }
+      this.sequenceIndex = 0;
+    }
+    if ((c | 32) === this.currentSequence[this.sequenceIndex]) {
+      this.sequenceIndex += 1;
+    } else if (this.sequenceIndex === 0) {
+      if (this.currentSequence === Sequences.TitleEnd) {
+        if (this.decodeEntities && c === CharCodes3.Amp) {
+          this.startEntity();
+        }
+      } else if (this.fastForwardTo(CharCodes3.Lt)) {
+        this.sequenceIndex = 1;
+      }
+    } else {
+      this.sequenceIndex = Number(c === CharCodes3.Lt);
+    }
+  }
+  stateCDATASequence(c) {
+    if (c === Sequences.Cdata[this.sequenceIndex]) {
+      if (++this.sequenceIndex === Sequences.Cdata.length) {
+        this.state = State.InCommentLike;
+        this.currentSequence = Sequences.CdataEnd;
+        this.sequenceIndex = 0;
+        this.sectionStart = this.index + 1;
+      }
+    } else {
+      this.sequenceIndex = 0;
+      this.state = State.InDeclaration;
+      this.stateInDeclaration(c);
+    }
+  }
+  fastForwardTo(c) {
+    while (++this.index < this.buffer.length + this.offset) {
+      if (this.buffer.charCodeAt(this.index - this.offset) === c) {
+        return true;
+      }
+    }
+    this.index = this.buffer.length + this.offset - 1;
+    return false;
+  }
+  stateInCommentLike(c) {
+    if (c === this.currentSequence[this.sequenceIndex]) {
+      if (++this.sequenceIndex === this.currentSequence.length) {
+        if (this.currentSequence === Sequences.CdataEnd) {
+          this.cbs.oncdata(this.sectionStart, this.index, 2);
+        } else {
+          this.cbs.oncomment(this.sectionStart, this.index, 2);
+        }
+        this.sequenceIndex = 0;
+        this.sectionStart = this.index + 1;
+        this.state = State.Text;
+      }
+    } else if (this.sequenceIndex === 0) {
+      if (this.fastForwardTo(this.currentSequence[0])) {
+        this.sequenceIndex = 1;
+      }
+    } else if (c !== this.currentSequence[this.sequenceIndex - 1]) {
+      this.sequenceIndex = 0;
+    }
+  }
+  isTagStartChar(c) {
+    return this.xmlMode ? !isEndOfTagSection(c) : isASCIIAlpha(c);
+  }
+  startSpecial(sequence, offset2) {
+    this.isSpecial = true;
+    this.currentSequence = sequence;
+    this.sequenceIndex = offset2;
+    this.state = State.SpecialStartSequence;
+  }
+  stateBeforeTagName(c) {
+    if (c === CharCodes3.ExclamationMark) {
+      this.state = State.BeforeDeclaration;
+      this.sectionStart = this.index + 1;
+    } else if (c === CharCodes3.Questionmark) {
+      this.state = State.InProcessingInstruction;
+      this.sectionStart = this.index + 1;
+    } else if (this.isTagStartChar(c)) {
+      const lower = c | 32;
+      this.sectionStart = this.index;
+      if (this.xmlMode) {
+        this.state = State.InTagName;
+      } else if (lower === Sequences.ScriptEnd[2]) {
+        this.state = State.BeforeSpecialS;
+      } else if (lower === Sequences.TitleEnd[2] || lower === Sequences.XmpEnd[2]) {
+        this.state = State.BeforeSpecialT;
+      } else {
+        this.state = State.InTagName;
+      }
+    } else if (c === CharCodes3.Slash) {
+      this.state = State.BeforeClosingTagName;
+    } else {
+      this.state = State.Text;
+      this.stateText(c);
+    }
+  }
+  stateInTagName(c) {
+    if (isEndOfTagSection(c)) {
+      this.cbs.onopentagname(this.sectionStart, this.index);
+      this.sectionStart = -1;
+      this.state = State.BeforeAttributeName;
+      this.stateBeforeAttributeName(c);
+    }
+  }
+  stateBeforeClosingTagName(c) {
+    if (isWhitespace(c)) {
+    } else if (c === CharCodes3.Gt) {
+      this.state = State.Text;
+    } else {
+      this.state = this.isTagStartChar(c) ? State.InClosingTagName : State.InSpecialComment;
+      this.sectionStart = this.index;
+    }
+  }
+  stateInClosingTagName(c) {
+    if (c === CharCodes3.Gt || isWhitespace(c)) {
+      this.cbs.onclosetag(this.sectionStart, this.index);
+      this.sectionStart = -1;
+      this.state = State.AfterClosingTagName;
+      this.stateAfterClosingTagName(c);
+    }
+  }
+  stateAfterClosingTagName(c) {
+    if (c === CharCodes3.Gt || this.fastForwardTo(CharCodes3.Gt)) {
+      this.state = State.Text;
+      this.sectionStart = this.index + 1;
+    }
+  }
+  stateBeforeAttributeName(c) {
+    if (c === CharCodes3.Gt) {
+      this.cbs.onopentagend(this.index);
+      if (this.isSpecial) {
+        this.state = State.InSpecialTag;
+        this.sequenceIndex = 0;
+      } else {
+        this.state = State.Text;
+      }
+      this.sectionStart = this.index + 1;
+    } else if (c === CharCodes3.Slash) {
+      this.state = State.InSelfClosingTag;
+    } else if (!isWhitespace(c)) {
+      this.state = State.InAttributeName;
+      this.sectionStart = this.index;
+    }
+  }
+  stateInSelfClosingTag(c) {
+    if (c === CharCodes3.Gt) {
+      this.cbs.onselfclosingtag(this.index);
+      this.state = State.Text;
+      this.sectionStart = this.index + 1;
+      this.isSpecial = false;
+    } else if (!isWhitespace(c)) {
+      this.state = State.BeforeAttributeName;
+      this.stateBeforeAttributeName(c);
+    }
+  }
+  stateInAttributeName(c) {
+    if (c === CharCodes3.Eq || isEndOfTagSection(c)) {
+      this.cbs.onattribname(this.sectionStart, this.index);
+      this.sectionStart = this.index;
+      this.state = State.AfterAttributeName;
+      this.stateAfterAttributeName(c);
+    }
+  }
+  stateAfterAttributeName(c) {
+    if (c === CharCodes3.Eq) {
+      this.state = State.BeforeAttributeValue;
+    } else if (c === CharCodes3.Slash || c === CharCodes3.Gt) {
+      this.cbs.onattribend(QuoteType.NoValue, this.sectionStart);
+      this.sectionStart = -1;
+      this.state = State.BeforeAttributeName;
+      this.stateBeforeAttributeName(c);
+    } else if (!isWhitespace(c)) {
+      this.cbs.onattribend(QuoteType.NoValue, this.sectionStart);
+      this.state = State.InAttributeName;
+      this.sectionStart = this.index;
+    }
+  }
+  stateBeforeAttributeValue(c) {
+    if (c === CharCodes3.DoubleQuote) {
+      this.state = State.InAttributeValueDq;
+      this.sectionStart = this.index + 1;
+    } else if (c === CharCodes3.SingleQuote) {
+      this.state = State.InAttributeValueSq;
+      this.sectionStart = this.index + 1;
+    } else if (!isWhitespace(c)) {
+      this.sectionStart = this.index;
+      this.state = State.InAttributeValueNq;
+      this.stateInAttributeValueNoQuotes(c);
+    }
+  }
+  handleInAttributeValue(c, quote) {
+    if (c === quote || !this.decodeEntities && this.fastForwardTo(quote)) {
+      this.cbs.onattribdata(this.sectionStart, this.index);
+      this.sectionStart = -1;
+      this.cbs.onattribend(quote === CharCodes3.DoubleQuote ? QuoteType.Double : QuoteType.Single, this.index + 1);
+      this.state = State.BeforeAttributeName;
+    } else if (this.decodeEntities && c === CharCodes3.Amp) {
+      this.startEntity();
+    }
+  }
+  stateInAttributeValueDoubleQuotes(c) {
+    this.handleInAttributeValue(c, CharCodes3.DoubleQuote);
+  }
+  stateInAttributeValueSingleQuotes(c) {
+    this.handleInAttributeValue(c, CharCodes3.SingleQuote);
+  }
+  stateInAttributeValueNoQuotes(c) {
+    if (isWhitespace(c) || c === CharCodes3.Gt) {
+      this.cbs.onattribdata(this.sectionStart, this.index);
+      this.sectionStart = -1;
+      this.cbs.onattribend(QuoteType.Unquoted, this.index);
+      this.state = State.BeforeAttributeName;
+      this.stateBeforeAttributeName(c);
+    } else if (this.decodeEntities && c === CharCodes3.Amp) {
+      this.startEntity();
+    }
+  }
+  stateBeforeDeclaration(c) {
+    if (c === CharCodes3.OpeningSquareBracket) {
+      this.state = State.CDATASequence;
+      this.sequenceIndex = 0;
+    } else {
+      this.state = c === CharCodes3.Dash ? State.BeforeComment : State.InDeclaration;
+    }
+  }
+  stateInDeclaration(c) {
+    if (c === CharCodes3.Gt || this.fastForwardTo(CharCodes3.Gt)) {
+      this.cbs.ondeclaration(this.sectionStart, this.index);
+      this.state = State.Text;
+      this.sectionStart = this.index + 1;
+    }
+  }
+  stateInProcessingInstruction(c) {
+    if (c === CharCodes3.Gt || this.fastForwardTo(CharCodes3.Gt)) {
+      this.cbs.onprocessinginstruction(this.sectionStart, this.index);
+      this.state = State.Text;
+      this.sectionStart = this.index + 1;
+    }
+  }
+  stateBeforeComment(c) {
+    if (c === CharCodes3.Dash) {
+      this.state = State.InCommentLike;
+      this.currentSequence = Sequences.CommentEnd;
+      this.sequenceIndex = 2;
+      this.sectionStart = this.index + 1;
+    } else {
+      this.state = State.InDeclaration;
+    }
+  }
+  stateInSpecialComment(c) {
+    if (c === CharCodes3.Gt || this.fastForwardTo(CharCodes3.Gt)) {
+      this.cbs.oncomment(this.sectionStart, this.index, 0);
+      this.state = State.Text;
+      this.sectionStart = this.index + 1;
+    }
+  }
+  stateBeforeSpecialS(c) {
+    const lower = c | 32;
+    if (lower === Sequences.ScriptEnd[3]) {
+      this.startSpecial(Sequences.ScriptEnd, 4);
+    } else if (lower === Sequences.StyleEnd[3]) {
+      this.startSpecial(Sequences.StyleEnd, 4);
+    } else {
+      this.state = State.InTagName;
+      this.stateInTagName(c);
+    }
+  }
+  stateBeforeSpecialT(c) {
+    const lower = c | 32;
+    switch (lower) {
+      case Sequences.TitleEnd[3]: {
+        this.startSpecial(Sequences.TitleEnd, 4);
+        break;
+      }
+      case Sequences.TextareaEnd[3]: {
+        this.startSpecial(Sequences.TextareaEnd, 4);
+        break;
+      }
+      case Sequences.XmpEnd[3]: {
+        this.startSpecial(Sequences.XmpEnd, 4);
+        break;
+      }
+      default: {
+        this.state = State.InTagName;
+        this.stateInTagName(c);
+      }
+    }
+  }
+  startEntity() {
+    this.baseState = this.state;
+    this.state = State.InEntity;
+    this.entityStart = this.index;
+    this.entityDecoder.startEntity(this.xmlMode ? DecodingMode2.Strict : this.baseState === State.Text || this.baseState === State.InSpecialTag ? DecodingMode2.Legacy : DecodingMode2.Attribute);
+  }
+  stateInEntity() {
+    const length = this.entityDecoder.write(this.buffer, this.index - this.offset);
+    if (length >= 0) {
+      this.state = this.baseState;
+      if (length === 0) {
+        this.index = this.entityStart;
+      }
+    } else {
+      this.index = this.offset + this.buffer.length - 1;
+    }
+  }
+  cleanup() {
+    if (this.running && this.sectionStart !== this.index) {
+      if (this.state === State.Text || this.state === State.InSpecialTag && this.sequenceIndex === 0) {
+        this.cbs.ontext(this.sectionStart, this.index);
+        this.sectionStart = this.index;
+      } else if (this.state === State.InAttributeValueDq || this.state === State.InAttributeValueSq || this.state === State.InAttributeValueNq) {
+        this.cbs.onattribdata(this.sectionStart, this.index);
+        this.sectionStart = this.index;
+      }
+    }
+  }
+  shouldContinue() {
+    return this.index < this.buffer.length + this.offset && this.running;
+  }
+  parse() {
+    while (this.shouldContinue()) {
+      const c = this.buffer.charCodeAt(this.index - this.offset);
+      switch (this.state) {
+        case State.Text: {
+          this.stateText(c);
+          break;
+        }
+        case State.SpecialStartSequence: {
+          this.stateSpecialStartSequence(c);
+          break;
+        }
+        case State.InSpecialTag: {
+          this.stateInSpecialTag(c);
+          break;
+        }
+        case State.CDATASequence: {
+          this.stateCDATASequence(c);
+          break;
+        }
+        case State.InAttributeValueDq: {
+          this.stateInAttributeValueDoubleQuotes(c);
+          break;
+        }
+        case State.InAttributeName: {
+          this.stateInAttributeName(c);
+          break;
+        }
+        case State.InCommentLike: {
+          this.stateInCommentLike(c);
+          break;
+        }
+        case State.InSpecialComment: {
+          this.stateInSpecialComment(c);
+          break;
+        }
+        case State.BeforeAttributeName: {
+          this.stateBeforeAttributeName(c);
+          break;
+        }
+        case State.InTagName: {
+          this.stateInTagName(c);
+          break;
+        }
+        case State.InClosingTagName: {
+          this.stateInClosingTagName(c);
+          break;
+        }
+        case State.BeforeTagName: {
+          this.stateBeforeTagName(c);
+          break;
+        }
+        case State.AfterAttributeName: {
+          this.stateAfterAttributeName(c);
+          break;
+        }
+        case State.InAttributeValueSq: {
+          this.stateInAttributeValueSingleQuotes(c);
+          break;
+        }
+        case State.BeforeAttributeValue: {
+          this.stateBeforeAttributeValue(c);
+          break;
+        }
+        case State.BeforeClosingTagName: {
+          this.stateBeforeClosingTagName(c);
+          break;
+        }
+        case State.AfterClosingTagName: {
+          this.stateAfterClosingTagName(c);
+          break;
+        }
+        case State.BeforeSpecialS: {
+          this.stateBeforeSpecialS(c);
+          break;
+        }
+        case State.BeforeSpecialT: {
+          this.stateBeforeSpecialT(c);
+          break;
+        }
+        case State.InAttributeValueNq: {
+          this.stateInAttributeValueNoQuotes(c);
+          break;
+        }
+        case State.InSelfClosingTag: {
+          this.stateInSelfClosingTag(c);
+          break;
+        }
+        case State.InDeclaration: {
+          this.stateInDeclaration(c);
+          break;
+        }
+        case State.BeforeDeclaration: {
+          this.stateBeforeDeclaration(c);
+          break;
+        }
+        case State.BeforeComment: {
+          this.stateBeforeComment(c);
+          break;
+        }
+        case State.InProcessingInstruction: {
+          this.stateInProcessingInstruction(c);
+          break;
+        }
+        case State.InEntity: {
+          this.stateInEntity();
+          break;
+        }
+      }
+      this.index++;
+    }
+    this.cleanup();
+  }
+  finish() {
+    if (this.state === State.InEntity) {
+      this.entityDecoder.end();
+      this.state = this.baseState;
+    }
+    this.handleTrailingData();
+    this.cbs.onend();
+  }
+  handleTrailingData() {
+    const endIndex = this.buffer.length + this.offset;
+    if (this.sectionStart >= endIndex) {
+      return;
+    }
+    if (this.state === State.InCommentLike) {
+      if (this.currentSequence === Sequences.CdataEnd) {
+        this.cbs.oncdata(this.sectionStart, endIndex, 0);
+      } else {
+        this.cbs.oncomment(this.sectionStart, endIndex, 0);
+      }
+    } else if (this.state === State.InTagName || this.state === State.BeforeAttributeName || this.state === State.BeforeAttributeValue || this.state === State.AfterAttributeName || this.state === State.InAttributeName || this.state === State.InAttributeValueSq || this.state === State.InAttributeValueDq || this.state === State.InAttributeValueNq || this.state === State.InClosingTagName) {
+    } else {
+      this.cbs.ontext(this.sectionStart, endIndex);
+    }
+  }
+  emitCodePoint(cp, consumed) {
+    if (this.baseState !== State.Text && this.baseState !== State.InSpecialTag) {
+      if (this.sectionStart < this.entityStart) {
+        this.cbs.onattribdata(this.sectionStart, this.entityStart);
+      }
+      this.sectionStart = this.entityStart + consumed;
+      this.index = this.sectionStart - 1;
+      this.cbs.onattribentity(cp);
+    } else {
+      if (this.sectionStart < this.entityStart) {
+        this.cbs.ontext(this.sectionStart, this.entityStart);
+      }
+      this.sectionStart = this.entityStart + consumed;
+      this.index = this.sectionStart - 1;
+      this.cbs.ontextentity(cp, this.sectionStart);
+    }
+  }
+};
+
+// node_modules/htmlparser2/dist/esm/Parser.js
+var formTags = new Set([
+  "input",
+  "option",
+  "optgroup",
+  "select",
+  "button",
+  "datalist",
+  "textarea"
+]);
+var pTag = new Set(["p"]);
+var tableSectionTags = new Set(["thead", "tbody"]);
+var ddtTags = new Set(["dd", "dt"]);
+var rtpTags = new Set(["rt", "rp"]);
+var openImpliesClose = new Map([
+  ["tr", new Set(["tr", "th", "td"])],
+  ["th", new Set(["th"])],
+  ["td", new Set(["thead", "th", "td"])],
+  ["body", new Set(["head", "link", "script"])],
+  ["li", new Set(["li"])],
+  ["p", pTag],
+  ["h1", pTag],
+  ["h2", pTag],
+  ["h3", pTag],
+  ["h4", pTag],
+  ["h5", pTag],
+  ["h6", pTag],
+  ["select", formTags],
+  ["input", formTags],
+  ["output", formTags],
+  ["button", formTags],
+  ["datalist", formTags],
+  ["textarea", formTags],
+  ["option", new Set(["option"])],
+  ["optgroup", new Set(["optgroup", "option"])],
+  ["dd", ddtTags],
+  ["dt", ddtTags],
+  ["address", pTag],
+  ["article", pTag],
+  ["aside", pTag],
+  ["blockquote", pTag],
+  ["details", pTag],
+  ["div", pTag],
+  ["dl", pTag],
+  ["fieldset", pTag],
+  ["figcaption", pTag],
+  ["figure", pTag],
+  ["footer", pTag],
+  ["form", pTag],
+  ["header", pTag],
+  ["hr", pTag],
+  ["main", pTag],
+  ["nav", pTag],
+  ["ol", pTag],
+  ["pre", pTag],
+  ["section", pTag],
+  ["table", pTag],
+  ["ul", pTag],
+  ["rt", rtpTags],
+  ["rp", rtpTags],
+  ["tbody", tableSectionTags],
+  ["tfoot", tableSectionTags]
+]);
+var voidElements = new Set([
+  "area",
+  "base",
+  "basefont",
+  "br",
+  "col",
+  "command",
+  "embed",
+  "frame",
+  "hr",
+  "img",
+  "input",
+  "isindex",
+  "keygen",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr"
+]);
+var foreignContextElements = new Set(["math", "svg"]);
+var htmlIntegrationElements = new Set([
+  "mi",
+  "mo",
+  "mn",
+  "ms",
+  "mtext",
+  "annotation-xml",
+  "foreignobject",
+  "desc",
+  "title"
+]);
+var reNameEnd = /\s|\//;
+var Parser = class {
+  constructor(cbs, options = {}) {
+    var _a5, _b, _c, _d, _e, _f;
+    this.options = options;
+    this.startIndex = 0;
+    this.endIndex = 0;
+    this.openTagStart = 0;
+    this.tagname = "";
+    this.attribname = "";
+    this.attribvalue = "";
+    this.attribs = null;
+    this.stack = [];
+    this.buffers = [];
+    this.bufferOffset = 0;
+    this.writeIndex = 0;
+    this.ended = false;
+    this.cbs = cbs !== null && cbs !== void 0 ? cbs : {};
+    this.htmlMode = !this.options.xmlMode;
+    this.lowerCaseTagNames = (_a5 = options.lowerCaseTags) !== null && _a5 !== void 0 ? _a5 : this.htmlMode;
+    this.lowerCaseAttributeNames = (_b = options.lowerCaseAttributeNames) !== null && _b !== void 0 ? _b : this.htmlMode;
+    this.recognizeSelfClosing = (_c = options.recognizeSelfClosing) !== null && _c !== void 0 ? _c : !this.htmlMode;
+    this.tokenizer = new ((_d = options.Tokenizer) !== null && _d !== void 0 ? _d : Tokenizer)(this.options, this);
+    this.foreignContext = [!this.htmlMode];
+    (_f = (_e = this.cbs).onparserinit) === null || _f === void 0 ? void 0 : _f.call(_e, this);
+  }
+  ontext(start2, endIndex) {
+    var _a5, _b;
+    const data2 = this.getSlice(start2, endIndex);
+    this.endIndex = endIndex - 1;
+    (_b = (_a5 = this.cbs).ontext) === null || _b === void 0 ? void 0 : _b.call(_a5, data2);
+    this.startIndex = endIndex;
+  }
+  ontextentity(cp, endIndex) {
+    var _a5, _b;
+    this.endIndex = endIndex - 1;
+    (_b = (_a5 = this.cbs).ontext) === null || _b === void 0 ? void 0 : _b.call(_a5, fromCodePoint2(cp));
+    this.startIndex = endIndex;
+  }
+  isVoidElement(name) {
+    return this.htmlMode && voidElements.has(name);
+  }
+  onopentagname(start2, endIndex) {
+    this.endIndex = endIndex;
+    let name = this.getSlice(start2, endIndex);
+    if (this.lowerCaseTagNames) {
+      name = name.toLowerCase();
+    }
+    this.emitOpenTag(name);
+  }
+  emitOpenTag(name) {
+    var _a5, _b, _c, _d;
+    this.openTagStart = this.startIndex;
+    this.tagname = name;
+    const impliesClose = this.htmlMode && openImpliesClose.get(name);
+    if (impliesClose) {
+      while (this.stack.length > 0 && impliesClose.has(this.stack[0])) {
+        const element = this.stack.shift();
+        (_b = (_a5 = this.cbs).onclosetag) === null || _b === void 0 ? void 0 : _b.call(_a5, element, true);
+      }
+    }
+    if (!this.isVoidElement(name)) {
+      this.stack.unshift(name);
+      if (this.htmlMode) {
+        if (foreignContextElements.has(name)) {
+          this.foreignContext.unshift(true);
+        } else if (htmlIntegrationElements.has(name)) {
+          this.foreignContext.unshift(false);
+        }
+      }
+    }
+    (_d = (_c = this.cbs).onopentagname) === null || _d === void 0 ? void 0 : _d.call(_c, name);
+    if (this.cbs.onopentag)
+      this.attribs = {};
+  }
+  endOpenTag(isImplied) {
+    var _a5, _b;
+    this.startIndex = this.openTagStart;
+    if (this.attribs) {
+      (_b = (_a5 = this.cbs).onopentag) === null || _b === void 0 ? void 0 : _b.call(_a5, this.tagname, this.attribs, isImplied);
+      this.attribs = null;
+    }
+    if (this.cbs.onclosetag && this.isVoidElement(this.tagname)) {
+      this.cbs.onclosetag(this.tagname, true);
+    }
+    this.tagname = "";
+  }
+  onopentagend(endIndex) {
+    this.endIndex = endIndex;
+    this.endOpenTag(false);
+    this.startIndex = endIndex + 1;
+  }
+  onclosetag(start2, endIndex) {
+    var _a5, _b, _c, _d, _e, _f, _g, _h;
+    this.endIndex = endIndex;
+    let name = this.getSlice(start2, endIndex);
+    if (this.lowerCaseTagNames) {
+      name = name.toLowerCase();
+    }
+    if (this.htmlMode && (foreignContextElements.has(name) || htmlIntegrationElements.has(name))) {
+      this.foreignContext.shift();
+    }
+    if (!this.isVoidElement(name)) {
+      const pos = this.stack.indexOf(name);
+      if (pos !== -1) {
+        for (let index2 = 0; index2 <= pos; index2++) {
+          const element = this.stack.shift();
+          (_b = (_a5 = this.cbs).onclosetag) === null || _b === void 0 ? void 0 : _b.call(_a5, element, index2 !== pos);
+        }
+      } else if (this.htmlMode && name === "p") {
+        this.emitOpenTag("p");
+        this.closeCurrentTag(true);
+      }
+    } else if (this.htmlMode && name === "br") {
+      (_d = (_c = this.cbs).onopentagname) === null || _d === void 0 ? void 0 : _d.call(_c, "br");
+      (_f = (_e = this.cbs).onopentag) === null || _f === void 0 ? void 0 : _f.call(_e, "br", {}, true);
+      (_h = (_g = this.cbs).onclosetag) === null || _h === void 0 ? void 0 : _h.call(_g, "br", false);
+    }
+    this.startIndex = endIndex + 1;
+  }
+  onselfclosingtag(endIndex) {
+    this.endIndex = endIndex;
+    if (this.recognizeSelfClosing || this.foreignContext[0]) {
+      this.closeCurrentTag(false);
+      this.startIndex = endIndex + 1;
+    } else {
+      this.onopentagend(endIndex);
+    }
+  }
+  closeCurrentTag(isOpenImplied) {
+    var _a5, _b;
+    const name = this.tagname;
+    this.endOpenTag(isOpenImplied);
+    if (this.stack[0] === name) {
+      (_b = (_a5 = this.cbs).onclosetag) === null || _b === void 0 ? void 0 : _b.call(_a5, name, !isOpenImplied);
+      this.stack.shift();
+    }
+  }
+  onattribname(start2, endIndex) {
+    this.startIndex = start2;
+    const name = this.getSlice(start2, endIndex);
+    this.attribname = this.lowerCaseAttributeNames ? name.toLowerCase() : name;
+  }
+  onattribdata(start2, endIndex) {
+    this.attribvalue += this.getSlice(start2, endIndex);
+  }
+  onattribentity(cp) {
+    this.attribvalue += fromCodePoint2(cp);
+  }
+  onattribend(quote, endIndex) {
+    var _a5, _b;
+    this.endIndex = endIndex;
+    (_b = (_a5 = this.cbs).onattribute) === null || _b === void 0 ? void 0 : _b.call(_a5, this.attribname, this.attribvalue, quote === QuoteType.Double ? '"' : quote === QuoteType.Single ? "'" : quote === QuoteType.NoValue ? void 0 : null);
+    if (this.attribs && !Object.prototype.hasOwnProperty.call(this.attribs, this.attribname)) {
+      this.attribs[this.attribname] = this.attribvalue;
+    }
+    this.attribvalue = "";
+  }
+  getInstructionName(value) {
+    const index2 = value.search(reNameEnd);
+    let name = index2 < 0 ? value : value.substr(0, index2);
+    if (this.lowerCaseTagNames) {
+      name = name.toLowerCase();
+    }
+    return name;
+  }
+  ondeclaration(start2, endIndex) {
+    this.endIndex = endIndex;
+    const value = this.getSlice(start2, endIndex);
+    if (this.cbs.onprocessinginstruction) {
+      const name = this.getInstructionName(value);
+      this.cbs.onprocessinginstruction(`!${name}`, `!${value}`);
+    }
+    this.startIndex = endIndex + 1;
+  }
+  onprocessinginstruction(start2, endIndex) {
+    this.endIndex = endIndex;
+    const value = this.getSlice(start2, endIndex);
+    if (this.cbs.onprocessinginstruction) {
+      const name = this.getInstructionName(value);
+      this.cbs.onprocessinginstruction(`?${name}`, `?${value}`);
+    }
+    this.startIndex = endIndex + 1;
+  }
+  oncomment(start2, endIndex, offset2) {
+    var _a5, _b, _c, _d;
+    this.endIndex = endIndex;
+    (_b = (_a5 = this.cbs).oncomment) === null || _b === void 0 ? void 0 : _b.call(_a5, this.getSlice(start2, endIndex - offset2));
+    (_d = (_c = this.cbs).oncommentend) === null || _d === void 0 ? void 0 : _d.call(_c);
+    this.startIndex = endIndex + 1;
+  }
+  oncdata(start2, endIndex, offset2) {
+    var _a5, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    this.endIndex = endIndex;
+    const value = this.getSlice(start2, endIndex - offset2);
+    if (!this.htmlMode || this.options.recognizeCDATA) {
+      (_b = (_a5 = this.cbs).oncdatastart) === null || _b === void 0 ? void 0 : _b.call(_a5);
+      (_d = (_c = this.cbs).ontext) === null || _d === void 0 ? void 0 : _d.call(_c, value);
+      (_f = (_e = this.cbs).oncdataend) === null || _f === void 0 ? void 0 : _f.call(_e);
+    } else {
+      (_h = (_g = this.cbs).oncomment) === null || _h === void 0 ? void 0 : _h.call(_g, `[CDATA[${value}]]`);
+      (_k = (_j = this.cbs).oncommentend) === null || _k === void 0 ? void 0 : _k.call(_j);
+    }
+    this.startIndex = endIndex + 1;
+  }
+  onend() {
+    var _a5, _b;
+    if (this.cbs.onclosetag) {
+      this.endIndex = this.startIndex;
+      for (let index2 = 0; index2 < this.stack.length; index2++) {
+        this.cbs.onclosetag(this.stack[index2], true);
+      }
+    }
+    (_b = (_a5 = this.cbs).onend) === null || _b === void 0 ? void 0 : _b.call(_a5);
+  }
+  reset() {
+    var _a5, _b, _c, _d;
+    (_b = (_a5 = this.cbs).onreset) === null || _b === void 0 ? void 0 : _b.call(_a5);
+    this.tokenizer.reset();
+    this.tagname = "";
+    this.attribname = "";
+    this.attribs = null;
+    this.stack.length = 0;
+    this.startIndex = 0;
+    this.endIndex = 0;
+    (_d = (_c = this.cbs).onparserinit) === null || _d === void 0 ? void 0 : _d.call(_c, this);
+    this.buffers.length = 0;
+    this.foreignContext.length = 0;
+    this.foreignContext.unshift(!this.htmlMode);
+    this.bufferOffset = 0;
+    this.writeIndex = 0;
+    this.ended = false;
+  }
+  parseComplete(data2) {
+    this.reset();
+    this.end(data2);
+  }
+  getSlice(start2, end3) {
+    while (start2 - this.bufferOffset >= this.buffers[0].length) {
+      this.shiftBuffer();
+    }
+    let slice2 = this.buffers[0].slice(start2 - this.bufferOffset, end3 - this.bufferOffset);
+    while (end3 - this.bufferOffset > this.buffers[0].length) {
+      this.shiftBuffer();
+      slice2 += this.buffers[0].slice(0, end3 - this.bufferOffset);
+    }
+    return slice2;
+  }
+  shiftBuffer() {
+    this.bufferOffset += this.buffers[0].length;
+    this.writeIndex--;
+    this.buffers.shift();
+  }
+  write(chunk) {
+    var _a5, _b;
+    if (this.ended) {
+      (_b = (_a5 = this.cbs).onerror) === null || _b === void 0 ? void 0 : _b.call(_a5, new Error(".write() after done!"));
+      return;
+    }
+    this.buffers.push(chunk);
+    if (this.tokenizer.running) {
+      this.tokenizer.write(chunk);
+      this.writeIndex++;
+    }
+  }
+  end(chunk) {
+    var _a5, _b;
+    if (this.ended) {
+      (_b = (_a5 = this.cbs).onerror) === null || _b === void 0 ? void 0 : _b.call(_a5, new Error(".end() after done!"));
+      return;
+    }
+    if (chunk)
+      this.write(chunk);
+    this.ended = true;
+    this.tokenizer.end();
+  }
+  pause() {
+    this.tokenizer.pause();
+  }
+  resume() {
+    this.tokenizer.resume();
+    while (this.tokenizer.running && this.writeIndex < this.buffers.length) {
+      this.tokenizer.write(this.buffers[this.writeIndex++]);
+    }
+    if (this.ended)
+      this.tokenizer.end();
+  }
+  parseChunk(chunk) {
+    this.write(chunk);
+  }
+  done(chunk) {
+    this.end(chunk);
+  }
+};
+
+// node_modules/htmlparser2/dist/esm/index.js
+function parseDocument(data2, options) {
+  const handler = new DomHandler(void 0, options);
+  new Parser(handler, options).end(data2);
+  return handler.root;
+}
+
+// node_modules/cheerio/dist/browser/api/attributes.js
+var _a3;
+var hasOwn = (_a3 = Object.hasOwn) !== null && _a3 !== void 0 ? _a3 : (object, prop2) => Object.prototype.hasOwnProperty.call(object, prop2);
 var rspace = /\s+/;
 var dataAttrPrefix = "data-";
-var primitives = {
-  null: null,
-  true: true,
-  false: false
-};
 var rboolean = /^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i;
 var rbrace = /^{[^]*}$|^\[[^]*]$/;
 function getAttr(elem, name, xmlMode) {
-  var _a2;
+  var _a5;
   if (!elem || !isTag2(elem))
     return void 0;
-  (_a2 = elem.attribs) !== null && _a2 !== void 0 ? _a2 : elem.attribs = {};
+  (_a5 = elem.attribs) !== null && _a5 !== void 0 ? _a5 : elem.attribs = {};
   if (!name) {
     return elem.attribs;
   }
-  if (hasOwn.call(elem.attribs, name)) {
+  if (hasOwn(elem.attribs, name)) {
     return !xmlMode && rboolean.test(name) ? name : elem.attribs[name];
   }
   if (elem.name === "option" && name === "value") {
@@ -6383,10 +7788,10 @@ function attr(name, value) {
       if (!isTag2(el))
         return;
       if (typeof name === "object") {
-        Object.keys(name).forEach((objName) => {
+        for (const objName of Object.keys(name)) {
           const objValue = name[objName];
           setAttr(el, objName, objValue);
-        });
+        }
       } else {
         setAttr(el, name, value);
       }
@@ -6395,8 +7800,6 @@ function attr(name, value) {
   return arguments.length > 1 ? this : getAttr(this[0], name, this.options.xmlMode);
 }
 function getProp(el, name, xmlMode) {
-  if (!el || !isTag2(el))
-    return;
   return name in el ? el[name] : !xmlMode && rboolean.test(name) ? getAttr(el, name, false) !== void 0 : getAttr(el, name, xmlMode);
 }
 function setProp(el, name, value, xmlMode) {
@@ -6407,51 +7810,62 @@ function setProp(el, name, value, xmlMode) {
   }
 }
 function prop(name, value) {
-  var _a2;
+  var _a5;
   if (typeof name === "string" && value === void 0) {
+    const el = this[0];
+    if (!el)
+      return void 0;
     switch (name) {
       case "style": {
         const property = this.css();
         const keys = Object.keys(property);
-        keys.forEach((p, i) => {
-          property[i] = p;
-        });
+        for (let i = 0; i < keys.length; i++) {
+          property[i] = keys[i];
+        }
         property.length = keys.length;
         return property;
       }
       case "tagName":
       case "nodeName": {
-        const el = this[0];
-        return isTag2(el) ? el.name.toUpperCase() : void 0;
+        if (!isTag2(el))
+          return void 0;
+        return el.name.toUpperCase();
       }
       case "href":
       case "src": {
-        const el = this[0];
-        if (!isTag2(el)) {
+        if (!isTag2(el))
           return void 0;
-        }
-        const prop2 = (_a2 = el.attribs) === null || _a2 === void 0 ? void 0 : _a2[name];
-        if (typeof URL !== "undefined" && (name === "href" && (el.tagName === "a" || el.name === "link") || name === "src" && (el.tagName === "img" || el.tagName === "iframe" || el.tagName === "audio" || el.tagName === "video" || el.tagName === "source")) && prop2 !== void 0 && this.options.baseURI) {
+        const prop2 = (_a5 = el.attribs) === null || _a5 === void 0 ? void 0 : _a5[name];
+        if (typeof URL !== "undefined" && (name === "href" && (el.tagName === "a" || el.tagName === "link") || name === "src" && (el.tagName === "img" || el.tagName === "iframe" || el.tagName === "audio" || el.tagName === "video" || el.tagName === "source")) && prop2 !== void 0 && this.options.baseURI) {
           return new URL(prop2, this.options.baseURI).href;
         }
         return prop2;
       }
-      case "innerText":
-        return innerText(this[0]);
-      case "textContent":
-        return textContent(this[0]);
-      case "outerHTML":
+      case "innerText": {
+        return innerText(el);
+      }
+      case "textContent": {
+        return textContent(el);
+      }
+      case "outerHTML": {
+        if (el.type === esm_exports.Root)
+          return this.html();
         return this.clone().wrap("<container />").parent().html();
-      case "innerHTML":
+      }
+      case "innerHTML": {
         return this.html();
-      default:
-        return getProp(this[0], name, this.options.xmlMode);
+      }
+      default: {
+        if (!isTag2(el))
+          return void 0;
+        return getProp(el, name, this.options.xmlMode);
+      }
     }
   }
   if (typeof name === "object" || value !== void 0) {
     if (typeof value === "function") {
       if (typeof name === "object") {
-        throw new Error("Bad combination of arguments.");
+        throw new TypeError("Bad combination of arguments.");
       }
       return domEach(this, (el, i) => {
         if (isTag2(el)) {
@@ -6463,10 +7877,10 @@ function prop(name, value) {
       if (!isTag2(el))
         return;
       if (typeof name === "object") {
-        Object.keys(name).forEach((key) => {
+        for (const key of Object.keys(name)) {
           const val2 = name[key];
           setProp(el, key, val2, this.options.xmlMode);
-        });
+        }
       } else {
         setProp(el, name, value, this.options.xmlMode);
       }
@@ -6474,56 +7888,65 @@ function prop(name, value) {
   }
   return void 0;
 }
-function setData(el, name, value) {
-  var _a2;
-  const elem = el;
-  (_a2 = elem.data) !== null && _a2 !== void 0 ? _a2 : elem.data = {};
+function setData(elem, name, value) {
+  var _a5;
+  (_a5 = elem.data) !== null && _a5 !== void 0 ? _a5 : elem.data = {};
   if (typeof name === "object")
     Object.assign(elem.data, name);
   else if (typeof name === "string" && value !== void 0) {
     elem.data[name] = value;
   }
 }
-function readData(el, name) {
-  let domNames;
-  let jsNames;
-  let value;
-  if (name == null) {
-    domNames = Object.keys(el.attribs).filter((attrName) => attrName.startsWith(dataAttrPrefix));
-    jsNames = domNames.map((domName) => camelCase(domName.slice(dataAttrPrefix.length)));
-  } else {
-    domNames = [dataAttrPrefix + cssCase(name)];
-    jsNames = [name];
-  }
-  for (let idx = 0; idx < domNames.length; ++idx) {
-    const domName = domNames[idx];
-    const jsName = jsNames[idx];
-    if (hasOwn.call(el.attribs, domName) && !hasOwn.call(el.data, jsName)) {
-      value = el.attribs[domName];
-      if (hasOwn.call(primitives, value)) {
-        value = primitives[value];
-      } else if (value === String(Number(value))) {
-        value = Number(value);
-      } else if (rbrace.test(value)) {
-        try {
-          value = JSON.parse(value);
-        } catch (e) {
-        }
-      }
-      el.data[jsName] = value;
+function readAllData(el) {
+  for (const domName of Object.keys(el.attribs)) {
+    if (!domName.startsWith(dataAttrPrefix)) {
+      continue;
+    }
+    const jsName = camelCase(domName.slice(dataAttrPrefix.length));
+    if (!hasOwn(el.data, jsName)) {
+      el.data[jsName] = parseDataValue(el.attribs[domName]);
     }
   }
-  return name == null ? el.data : value;
+  return el.data;
+}
+function readData(el, name) {
+  const domName = dataAttrPrefix + cssCase(name);
+  const data2 = el.data;
+  if (hasOwn(data2, name)) {
+    return data2[name];
+  }
+  if (hasOwn(el.attribs, domName)) {
+    return data2[name] = parseDataValue(el.attribs[domName]);
+  }
+  return void 0;
+}
+function parseDataValue(value) {
+  if (value === "null")
+    return null;
+  if (value === "true")
+    return true;
+  if (value === "false")
+    return false;
+  const num = Number(value);
+  if (value === String(num))
+    return num;
+  if (rbrace.test(value)) {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+    }
+  }
+  return value;
 }
 function data(name, value) {
-  var _a2;
+  var _a5;
   const elem = this[0];
   if (!elem || !isTag2(elem))
     return;
   const dataEl = elem;
-  (_a2 = dataEl.data) !== null && _a2 !== void 0 ? _a2 : dataEl.data = {};
-  if (!name) {
-    return readData(dataEl);
+  (_a5 = dataEl.data) !== null && _a5 !== void 0 ? _a5 : dataEl.data = {};
+  if (name == null) {
+    return readAllData(dataEl);
   }
   if (typeof name === "object" || value !== void 0) {
     domEach(this, (el) => {
@@ -6536,9 +7959,6 @@ function data(name, value) {
     });
     return this;
   }
-  if (hasOwn.call(dataEl.data, name)) {
-    return dataEl.data[name];
-  }
   return readData(dataEl, name);
 }
 function val(value) {
@@ -6547,8 +7967,9 @@ function val(value) {
   if (!element || !isTag2(element))
     return querying ? void 0 : this;
   switch (element.name) {
-    case "textarea":
+    case "textarea": {
       return this.text(value);
+    }
     case "select": {
       const option = this.find("option:selected");
       if (!querying) {
@@ -6556,22 +7977,23 @@ function val(value) {
           return this;
         }
         this.find("option").removeAttr("selected");
-        const values = typeof value !== "object" ? [value] : value;
-        for (let i = 0; i < values.length; i++) {
-          this.find(`option[value="${values[i]}"]`).attr("selected", "");
+        const values = typeof value === "object" ? value : [value];
+        for (const val2 of values) {
+          this.find(`option[value="${val2}"]`).attr("selected", "");
         }
         return this;
       }
       return this.attr("multiple") ? option.toArray().map((el) => text(el.children)) : option.attr("value");
     }
     case "input":
-    case "option":
+    case "option": {
       return querying ? this.attr("value") : this.attr("value", value);
+    }
   }
   return void 0;
 }
 function removeAttribute(elem, name) {
-  if (!elem.attribs || !hasOwn.call(elem.attribs, name))
+  if (!elem.attribs || !hasOwn(elem.attribs, name))
     return;
   delete elem.attribs[name];
 }
@@ -6580,10 +8002,10 @@ function splitNames(names) {
 }
 function removeAttr(name) {
   const attrNames = splitNames(name);
-  for (let i = 0; i < attrNames.length; i++) {
+  for (const attrName of attrNames) {
     domEach(this, (elem) => {
       if (isTag2(elem))
-        removeAttribute(elem, attrNames[i]);
+        removeAttribute(elem, attrName);
     });
   }
   return this;
@@ -6592,7 +8014,7 @@ function hasClass(className) {
   return this.toArray().some((elem) => {
     const clazz = isTag2(elem) && elem.attribs["class"];
     let idx = -1;
-    if (clazz && className.length) {
+    if (clazz && className.length > 0) {
       while ((idx = clazz.indexOf(className, idx + 1)) > -1) {
         const end3 = idx + className.length;
         if ((idx === 0 || rspace.test(clazz[idx - 1])) && (end3 === clazz.length || rspace.test(clazz[end3]))) {
@@ -6621,16 +8043,16 @@ function addClass(value) {
     if (!isTag2(el))
       continue;
     const className = getAttr(el, "class", false);
-    if (!className) {
-      setAttr(el, "class", classNames.join(" ").trim());
-    } else {
+    if (className) {
       let setClass = ` ${className} `;
-      for (let j = 0; j < classNames.length; j++) {
-        const appendClass = `${classNames[j]} `;
+      for (const cn of classNames) {
+        const appendClass = `${cn} `;
         if (!setClass.includes(` ${appendClass}`))
           setClass += appendClass;
       }
       setAttr(el, "class", setClass.trim());
+    } else {
+      setAttr(el, "class", classNames.join(" ").trim());
     }
   }
   return this;
@@ -6656,7 +8078,7 @@ function removeClass(name) {
       let changed = false;
       for (let j = 0; j < numClasses; j++) {
         const index2 = elClasses.indexOf(classes[j]);
-        if (index2 >= 0) {
+        if (index2 !== -1) {
           elClasses.splice(index2, 1);
           changed = true;
           j--;
@@ -6689,9 +8111,9 @@ function toggleClass(value, stateVal) {
     const elementClasses = splitNames(el.attribs["class"]);
     for (let j = 0; j < numClasses; j++) {
       const index2 = elementClasses.indexOf(classNames[j]);
-      if (state >= 0 && index2 < 0) {
+      if (state >= 0 && index2 === -1) {
         elementClasses.push(classNames[j]);
-      } else if (state <= 0 && index2 >= 0) {
+      } else if (state <= 0 && index2 !== -1) {
         elementClasses.splice(index2, 1);
       }
     }
@@ -6700,9 +8122,10 @@ function toggleClass(value, stateVal) {
   return this;
 }
 
-// node_modules/cheerio/lib/esm/api/traversing.js
+// node_modules/cheerio/dist/browser/api/traversing.js
 var traversing_exports = {};
 __export(traversing_exports, {
+  _findBySelector: () => _findBySelector,
   add: () => add,
   addBack: () => addBack,
   children: () => children,
@@ -6807,7 +8230,7 @@ function unescapeCSS(str) {
 function isQuote(c) {
   return c === 39 || c === 34;
 }
-function isWhitespace(c) {
+function isWhitespace2(c) {
   return c === 32 || c === 9 || c === 10 || c === 12 || c === 13;
 }
 function parse(selector) {
@@ -6831,7 +8254,7 @@ function parseSelector(subselects2, selector, selectorIndex) {
   }
   function stripWhitespace(offset2) {
     selectorIndex += offset2;
-    while (selectorIndex < selector.length && isWhitespace(selector.charCodeAt(selectorIndex))) {
+    while (selectorIndex < selector.length && isWhitespace2(selector.charCodeAt(selectorIndex))) {
       selectorIndex++;
     }
   }
@@ -6982,7 +8405,7 @@ function parseSelector(subselects2, selector, selectorIndex) {
               selectorIndex = sectionEnd + 1;
             } else {
               const valueStart = selectorIndex;
-              while (selectorIndex < selector.length && (!isWhitespace(selector.charCodeAt(selectorIndex)) && selector.charCodeAt(selectorIndex) !== 93 || isEscaped(selectorIndex))) {
+              while (selectorIndex < selector.length && (!isWhitespace2(selector.charCodeAt(selectorIndex)) && selector.charCodeAt(selectorIndex) !== 93 || isEscaped(selectorIndex))) {
                 selectorIndex += 1;
               }
               value = unescapeCSS(selector.slice(valueStart, selectorIndex));
@@ -7140,8 +8563,8 @@ function sortByProcedure(arr) {
   }
 }
 function getProcedure(token) {
-  var _a2, _b;
-  let proc = (_a2 = procedure.get(token.type)) !== null && _a2 !== void 0 ? _a2 : -1;
+  var _a5, _b;
+  let proc = (_a5 = procedure.get(token.type)) !== null && _a5 !== void 0 ? _a5 : -1;
   if (token.type === SelectorType.Attribute) {
     proc = (_b = attributes.get(token.action)) !== null && _b !== void 0 ? _b : 4;
     if (token.action === AttributeAction.Equals && token.name === "id") {
@@ -7286,8 +8709,8 @@ var attributeRules = {
       };
     }
     return (elem) => {
-      var _a2;
-      return !!((_a2 = adapter2.getAttributeValue(elem, name)) === null || _a2 === void 0 ? void 0 : _a2.startsWith(value)) && next2(elem);
+      var _a5;
+      return !!((_a5 = adapter2.getAttributeValue(elem, name)) === null || _a5 === void 0 ? void 0 : _a5.startsWith(value)) && next2(elem);
     };
   },
   end(next2, data2, options) {
@@ -7301,13 +8724,13 @@ var attributeRules = {
     if (shouldIgnoreCase(data2, options)) {
       value = value.toLowerCase();
       return (elem) => {
-        var _a2;
-        return ((_a2 = adapter2.getAttributeValue(elem, name)) === null || _a2 === void 0 ? void 0 : _a2.substr(len).toLowerCase()) === value && next2(elem);
+        var _a5;
+        return ((_a5 = adapter2.getAttributeValue(elem, name)) === null || _a5 === void 0 ? void 0 : _a5.substr(len).toLowerCase()) === value && next2(elem);
       };
     }
     return (elem) => {
-      var _a2;
-      return !!((_a2 = adapter2.getAttributeValue(elem, name)) === null || _a2 === void 0 ? void 0 : _a2.endsWith(value)) && next2(elem);
+      var _a5;
+      return !!((_a5 = adapter2.getAttributeValue(elem, name)) === null || _a5 === void 0 ? void 0 : _a5.endsWith(value)) && next2(elem);
     };
   },
   any(next2, data2, options) {
@@ -7324,8 +8747,8 @@ var attributeRules = {
       };
     }
     return (elem) => {
-      var _a2;
-      return !!((_a2 = adapter2.getAttributeValue(elem, name)) === null || _a2 === void 0 ? void 0 : _a2.includes(value)) && next2(elem);
+      var _a5;
+      return !!((_a5 = adapter2.getAttributeValue(elem, name)) === null || _a5 === void 0 ? void 0 : _a5.includes(value)) && next2(elem);
     };
   },
   not(next2, data2, options) {
@@ -7716,7 +9139,7 @@ var subselects = {
 
 // node_modules/css-select/lib/esm/pseudo-selectors/index.js
 function compilePseudoSelector(next2, selector, options, context, compileToken2) {
-  var _a2;
+  var _a5;
   const { name, data: data2 } = selector;
   if (Array.isArray(data2)) {
     if (!(name in subselects)) {
@@ -7724,7 +9147,7 @@ function compilePseudoSelector(next2, selector, options, context, compileToken2)
     }
     return subselects[name](next2, data2, options, context, compileToken2);
   }
-  const userPseudo = (_a2 = options.pseudos) === null || _a2 === void 0 ? void 0 : _a2[name];
+  const userPseudo = (_a5 = options.pseudos) === null || _a5 === void 0 ? void 0 : _a5[name];
   const stringPseudo = typeof userPseudo === "string" ? userPseudo : aliases[name];
   if (typeof stringPseudo === "string") {
     if (data2 != null) {
@@ -7917,9 +9340,9 @@ function absolutize(token, { adapter: adapter2 }, context) {
   }
 }
 function compileToken(token, options, context) {
-  var _a2;
+  var _a5;
   token.forEach(sortByProcedure);
-  context = (_a2 = options.context) !== null && _a2 !== void 0 ? _a2 : context;
+  context = (_a5 = options.context) !== null && _a5 !== void 0 ? _a5 : context;
   const isArrayContext = Array.isArray(context);
   const finalContext = context && (Array.isArray(context) ? context : [context]);
   if (options.relativeSelector !== false) {
@@ -7944,8 +9367,8 @@ function compileToken(token, options, context) {
   return query;
 }
 function compileRules(rules, options, context) {
-  var _a2;
-  return rules.reduce((previous, rule) => previous === import_boolbase5.default.falseFunc ? import_boolbase5.default.falseFunc : compileGeneralSelector(previous, rule, options, context, compileToken), (_a2 = options.rootFunc) !== null && _a2 !== void 0 ? _a2 : import_boolbase5.default.trueFunc);
+  var _a5;
+  return rules.reduce((previous, rule) => previous === import_boolbase5.default.falseFunc ? import_boolbase5.default.falseFunc : compileGeneralSelector(previous, rule, options, context, compileToken), (_a5 = options.rootFunc) !== null && _a5 !== void 0 ? _a5 : import_boolbase5.default.trueFunc);
 }
 function reduceRules(a, b) {
   if (b === import_boolbase5.default.falseFunc || a === import_boolbase5.default.trueFunc) {
@@ -7966,9 +9389,9 @@ var defaultOptions = {
   equals: defaultEquals
 };
 function convertOptionFormats(options) {
-  var _a2, _b, _c, _d;
+  var _a5, _b, _c, _d;
   const opts = options !== null && options !== void 0 ? options : defaultOptions;
-  (_a2 = opts.adapter) !== null && _a2 !== void 0 ? _a2 : opts.adapter = esm_exports2;
+  (_a5 = opts.adapter) !== null && _a5 !== void 0 ? _a5 : opts.adapter = esm_exports2;
   (_b = opts.equals) !== null && _b !== void 0 ? _b : opts.equals = (_d = (_c = opts.adapter) === null || _c === void 0 ? void 0 : _c.equals) !== null && _d !== void 0 ? _d : defaultEquals;
   return opts;
 }
@@ -8153,9 +9576,9 @@ function filterParsed(selector, elements, options) {
   return typeof found !== "undefined" ? found.size === elements.length ? elements : elements.filter((el) => found.has(el)) : [];
 }
 function filterBySelector(selector, elements, options) {
-  var _a2;
+  var _a5;
   if (selector.some(isTraversal)) {
-    const root2 = (_a2 = options.root) !== null && _a2 !== void 0 ? _a2 : getDocumentRoot(elements[0]);
+    const root2 = (_a5 = options.root) !== null && _a5 !== void 0 ? _a5 : getDocumentRoot(elements[0]);
     const opts = __spreadProps(__spreadValues({}, options), { context: elements, relativeSelector: false });
     selector.push(SCOPE_PSEUDO);
     return findFilterElements(root2, selector, opts, true, elements.length);
@@ -8228,49 +9651,54 @@ function filterElements(elements, sel, options) {
   return query === boolbase7.trueFunc ? els : els.filter(query);
 }
 
-// node_modules/cheerio/lib/esm/api/traversing.js
-var reSiblingSelector = /^\s*[~+]/;
+// node_modules/cheerio/dist/browser/api/traversing.js
+var reSiblingSelector = /^\s*[+~]/;
 function find3(selectorOrHaystack) {
-  var _a2;
   if (!selectorOrHaystack) {
     return this._make([]);
   }
-  const context = this.toArray();
   if (typeof selectorOrHaystack !== "string") {
     const haystack = isCheerio(selectorOrHaystack) ? selectorOrHaystack.toArray() : [selectorOrHaystack];
+    const context = this.toArray();
     return this._make(haystack.filter((elem) => context.some((node) => contains(node, elem))));
   }
-  const elems = reSiblingSelector.test(selectorOrHaystack) ? context : this.children().toArray();
+  return this._findBySelector(selectorOrHaystack, Number.POSITIVE_INFINITY);
+}
+function _findBySelector(selector, limit) {
+  var _a5;
+  const context = this.toArray();
+  const elems = reSiblingSelector.test(selector) ? context : this.children().toArray();
   const options = {
     context,
-    root: (_a2 = this._root) === null || _a2 === void 0 ? void 0 : _a2[0],
+    root: (_a5 = this._root) === null || _a5 === void 0 ? void 0 : _a5[0],
     xmlMode: this.options.xmlMode,
     lowerCaseTags: this.options.lowerCaseTags,
     lowerCaseAttributeNames: this.options.lowerCaseAttributeNames,
     pseudos: this.options.pseudos,
     quirksMode: this.options.quirksMode
   };
-  return this._make(select(selectorOrHaystack, elems, options));
+  return this._make(select(selector, elems, options, limit));
 }
 function _getMatcher(matchMap) {
   return function(fn2, ...postFns) {
     return function(selector) {
-      var _a2;
+      var _a5;
       let matched = matchMap(fn2, this);
       if (selector) {
-        matched = filterArray(matched, selector, this.options.xmlMode, (_a2 = this._root) === null || _a2 === void 0 ? void 0 : _a2[0]);
+        matched = filterArray(matched, selector, this.options.xmlMode, (_a5 = this._root) === null || _a5 === void 0 ? void 0 : _a5[0]);
       }
       return this._make(this.length > 1 && matched.length > 1 ? postFns.reduce((elems, fn3) => fn3(elems), matched) : matched);
     };
   };
 }
 var _matcher = _getMatcher((fn2, elems) => {
-  const ret = [];
+  let ret = [];
   for (let i = 0; i < elems.length; i++) {
     const value = fn2(elems[i]);
-    ret.push(value);
+    if (value.length > 0)
+      ret = ret.concat(value);
   }
-  return new Array().concat(...ret);
+  return ret;
 });
 var _singleMatcher = _getMatcher((fn2, elems) => {
   const ret = [];
@@ -8303,7 +9731,7 @@ function _matchUntil(nextElem, ...postFns) {
   };
 }
 function _removeDuplicates(elems) {
-  return Array.from(new Set(elems));
+  return elems.length > 1 ? Array.from(new Set(elems)) : elems;
 }
 var parent = _singleMatcher(({ parent: parent2 }) => parent2 && !isDocument(parent2) ? parent2 : null, _removeDuplicates);
 var parents = _matcher((elem) => {
@@ -8316,17 +9744,20 @@ var parents = _matcher((elem) => {
 }, uniqueSort, (elems) => elems.reverse());
 var parentsUntil = _matchUntil(({ parent: parent2 }) => parent2 && !isDocument(parent2) ? parent2 : null, uniqueSort, (elems) => elems.reverse());
 function closest(selector) {
-  var _a2;
+  var _a5;
   const set = [];
   if (!selector) {
     return this._make(set);
   }
   const selectOpts = {
     xmlMode: this.options.xmlMode,
-    root: (_a2 = this._root) === null || _a2 === void 0 ? void 0 : _a2[0]
+    root: (_a5 = this._root) === null || _a5 === void 0 ? void 0 : _a5[0]
   };
   const selectFn = typeof selector === "string" ? (elem) => is2(elem, selector, selectOpts) : getFilterFn(selector);
   domEach(this, (elem) => {
+    if (elem && !isDocument(elem) && !isTag2(elem)) {
+      elem = elem.parent;
+    }
     while (elem && isTag2(elem)) {
       if (selectFn(elem, 0)) {
         if (!set.includes(elem)) {
@@ -8397,8 +9828,8 @@ function getFilterFn(match) {
   };
 }
 function filter3(match) {
-  var _a2;
-  return this._make(filterArray(this.toArray(), match, this.options.xmlMode, (_a2 = this._root) === null || _a2 === void 0 ? void 0 : _a2[0]));
+  var _a5;
+  return this._make(filterArray(this.toArray(), match, this.options.xmlMode, (_a5 = this._root) === null || _a5 === void 0 ? void 0 : _a5[0]));
 }
 function filterArray(nodes, match, xmlMode, root2) {
   return typeof match === "string" ? filter2(match, nodes, { xmlMode, root: root2 }) : nodes.filter(getFilterFn(match));
@@ -8428,13 +9859,13 @@ function last() {
   return this.length > 0 ? this._make(this[this.length - 1]) : this;
 }
 function eq(i) {
-  var _a2;
+  var _a5;
   i = +i;
   if (i === 0 && this.length <= 1)
     return this;
   if (i < 0)
     i = this.length + i;
-  return this._make((_a2 = this[i]) !== null && _a2 !== void 0 ? _a2 : []);
+  return this._make((_a5 = this[i]) !== null && _a5 !== void 0 ? _a5 : []);
 }
 function get(i) {
   if (i == null) {
@@ -8464,8 +9895,8 @@ function slice(start2, end3) {
   return this._make(Array.prototype.slice.call(this, start2, end3));
 }
 function end() {
-  var _a2;
-  return (_a2 = this.prevObject) !== null && _a2 !== void 0 ? _a2 : this._make([]);
+  var _a5;
+  return (_a5 = this.prevObject) !== null && _a5 !== void 0 ? _a5 : this._make([]);
 }
 function add(other, context) {
   const selection = this._make(other, context);
@@ -8476,7 +9907,7 @@ function addBack(selector) {
   return this.prevObject ? this.add(selector ? this.prevObject.filter(selector) : this.prevObject) : this;
 }
 
-// node_modules/cheerio/lib/esm/api/manipulation.js
+// node_modules/cheerio/dist/browser/api/manipulation.js
 var manipulation_exports = {};
 __export(manipulation_exports, {
   _makeDomArray: () => _makeDomArray,
@@ -8501,7 +9932,7 @@ __export(manipulation_exports, {
   wrapInner: () => wrapInner
 });
 
-// node_modules/cheerio/lib/esm/parse.js
+// node_modules/cheerio/dist/browser/parse.js
 function getParse(parser) {
   return function parse6(content, options, isDocument2, context) {
     if (typeof Buffer !== "undefined" && Buffer.isBuffer(content)) {
@@ -8542,21 +9973,35 @@ function update(newChilds, parent2) {
   return parent2;
 }
 
-// node_modules/cheerio/lib/esm/api/manipulation.js
+// node_modules/cheerio/dist/browser/api/manipulation.js
 function _makeDomArray(elem, clone2) {
   if (elem == null) {
     return [];
   }
-  if (isCheerio(elem)) {
-    return clone2 ? cloneDom(elem.get()) : elem.get();
-  }
-  if (Array.isArray(elem)) {
-    return elem.reduce((newElems, el) => newElems.concat(this._makeDomArray(el, clone2)), []);
-  }
   if (typeof elem === "string") {
-    return this._parse(elem, this.options, false, null).children;
+    return this._parse(elem, this.options, false, null).children.slice(0);
   }
-  return clone2 ? cloneDom([elem]) : [elem];
+  if ("length" in elem) {
+    if (elem.length === 1) {
+      return this._makeDomArray(elem[0], clone2);
+    }
+    const result = [];
+    for (let i = 0; i < elem.length; i++) {
+      const el = elem[i];
+      if (typeof el === "object") {
+        if (el == null) {
+          continue;
+        }
+        if (!("length" in el)) {
+          result.push(clone2 ? cloneNode(el, true) : el);
+          continue;
+        }
+      }
+      result.push(...this._makeDomArray(el, clone2));
+    }
+    return result;
+  }
+  return [clone2 ? cloneNode(elem, true) : elem];
 }
 function _insert(concatenator) {
   return function(...elems) {
@@ -8571,7 +10016,7 @@ function _insert(concatenator) {
   };
 }
 function uniqueSplice(array, spliceIdx, spliceCount, newElems, parent2) {
-  var _a2, _b;
+  var _a5, _b;
   const spliceArgs = [
     spliceIdx,
     spliceCount,
@@ -8585,7 +10030,7 @@ function uniqueSplice(array, spliceIdx, spliceCount, newElems, parent2) {
     if (oldParent) {
       const oldSiblings = oldParent.children;
       const prevIdx = oldSiblings.indexOf(node);
-      if (prevIdx > -1) {
+      if (prevIdx !== -1) {
         oldParent.children.splice(prevIdx, 1);
         if (parent2 === oldParent && spliceIdx > prevIdx) {
           spliceArgs[0]--;
@@ -8594,7 +10039,7 @@ function uniqueSplice(array, spliceIdx, spliceCount, newElems, parent2) {
     }
     node.parent = parent2;
     if (node.prev) {
-      node.prev.next = (_a2 = node.next) !== null && _a2 !== void 0 ? _a2 : null;
+      node.prev.next = (_a5 = node.next) !== null && _a5 !== void 0 ? _a5 : null;
     }
     if (node.next) {
       node.next.prev = (_b = node.prev) !== null && _b !== void 0 ? _b : null;
@@ -8679,13 +10124,14 @@ function wrapAll(wrapper) {
     const wrap2 = this._make(typeof wrapper === "function" ? wrapper.call(el, 0, el) : wrapper).insertBefore(el);
     let elInsertLocation;
     for (let i = 0; i < wrap2.length; i++) {
-      if (wrap2[i].type === "tag")
+      if (wrap2[i].type === esm_exports.Tag) {
         elInsertLocation = wrap2[i];
+      }
     }
     let j = 0;
     while (elInsertLocation && j < elInsertLocation.children.length) {
       const child = elInsertLocation.children[j];
-      if (child.type === "tag") {
+      if (child.type === esm_exports.Tag) {
         elInsertLocation = child;
         j = 0;
       } else {
@@ -8700,17 +10146,16 @@ function wrapAll(wrapper) {
 function after(...elems) {
   const lastIdx = this.length - 1;
   return domEach(this, (el, i) => {
-    const { parent: parent2 } = el;
-    if (!hasChildren(el) || !parent2) {
+    if (!hasChildren(el) || !el.parent) {
       return;
     }
-    const siblings2 = parent2.children;
+    const siblings2 = el.parent.children;
     const index2 = siblings2.indexOf(el);
-    if (index2 < 0)
+    if (index2 === -1)
       return;
     const domSrc = typeof elems[0] === "function" ? elems[0].call(el, i, this._render(el.children)) : elems;
     const dom = this._makeDomArray(domSrc, i < lastIdx);
-    uniqueSplice(siblings2, index2 + 1, 0, dom, parent2);
+    uniqueSplice(siblings2, index2 + 1, 0, dom, el.parent);
   });
 }
 function insertAfter(target) {
@@ -8719,35 +10164,34 @@ function insertAfter(target) {
   }
   this.remove();
   const clones = [];
-  this._makeDomArray(target).forEach((el) => {
+  for (const el of this._makeDomArray(target)) {
     const clonedSelf = this.clone().toArray();
     const { parent: parent2 } = el;
     if (!parent2) {
-      return;
+      continue;
     }
     const siblings2 = parent2.children;
     const index2 = siblings2.indexOf(el);
-    if (index2 < 0)
-      return;
+    if (index2 === -1)
+      continue;
     uniqueSplice(siblings2, index2 + 1, 0, clonedSelf, parent2);
     clones.push(...clonedSelf);
-  });
+  }
   return this._make(clones);
 }
 function before(...elems) {
   const lastIdx = this.length - 1;
   return domEach(this, (el, i) => {
-    const { parent: parent2 } = el;
-    if (!hasChildren(el) || !parent2) {
+    if (!hasChildren(el) || !el.parent) {
       return;
     }
-    const siblings2 = parent2.children;
+    const siblings2 = el.parent.children;
     const index2 = siblings2.indexOf(el);
-    if (index2 < 0)
+    if (index2 === -1)
       return;
     const domSrc = typeof elems[0] === "function" ? elems[0].call(el, i, this._render(el.children)) : elems;
     const dom = this._makeDomArray(domSrc, i < lastIdx);
-    uniqueSplice(siblings2, index2, 0, dom, parent2);
+    uniqueSplice(siblings2, index2, 0, dom, el.parent);
   });
 }
 function insertBefore(target) {
@@ -8762,7 +10206,7 @@ function insertBefore(target) {
     }
     const siblings2 = parent2.children;
     const index2 = siblings2.indexOf(el);
-    if (index2 < 0)
+    if (index2 === -1)
       return;
     uniqueSplice(siblings2, index2, 0, clonedSelf, parent2);
     clones.push(...clonedSelf);
@@ -8798,9 +10242,9 @@ function empty() {
   return domEach(this, (el) => {
     if (!hasChildren(el))
       return;
-    el.children.forEach((child) => {
+    for (const child of el.children) {
       child.next = child.prev = child.parent = null;
-    });
+    }
     el.children.length = 0;
   });
 }
@@ -8814,9 +10258,9 @@ function html2(str) {
   return domEach(this, (el) => {
     if (!hasChildren(el))
       return;
-    el.children.forEach((child) => {
+    for (const child of el.children) {
       child.next = child.prev = child.parent = null;
-    });
+    }
     const content = isCheerio(str) ? str.toArray() : this._parse(`${str}`, this.options, false, el).children;
     update(content, el);
   });
@@ -8834,18 +10278,23 @@ function text2(str) {
   return domEach(this, (el) => {
     if (!hasChildren(el))
       return;
-    el.children.forEach((child) => {
+    for (const child of el.children) {
       child.next = child.prev = child.parent = null;
-    });
+    }
     const textNode = new Text2(`${str}`);
     update(textNode, el);
   });
 }
 function clone() {
-  return this._make(cloneDom(this.get()));
+  const clone2 = Array.prototype.map.call(this.get(), (el) => cloneNode(el, true));
+  const root2 = new Document(clone2);
+  for (const node of clone2) {
+    node.parent = root2;
+  }
+  return this._make(clone2);
 }
 
-// node_modules/cheerio/lib/esm/api/css.js
+// node_modules/cheerio/dist/browser/api/css.js
 var css_exports = {};
 __export(css_exports, {
   css: () => css
@@ -8874,9 +10323,11 @@ function setCss(el, prop2, value, idx) {
     }
     el.attribs["style"] = stringify(styles);
   } else if (typeof prop2 === "object") {
-    Object.keys(prop2).forEach((k, i) => {
+    const keys = Object.keys(prop2);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
       setCss(el, k, prop2[k], i);
-    });
+    }
   }
 }
 function getCss(el, prop2) {
@@ -8888,11 +10339,11 @@ function getCss(el, prop2) {
   }
   if (Array.isArray(prop2)) {
     const newStyles = {};
-    prop2.forEach((item) => {
+    for (const item of prop2) {
       if (styles[item] != null) {
         newStyles[item] = styles[item];
       }
-    });
+    }
     return newStyles;
   }
   return styles;
@@ -8921,7 +10372,7 @@ function parse3(styles) {
   return obj;
 }
 
-// node_modules/cheerio/lib/esm/api/forms.js
+// node_modules/cheerio/dist/browser/api/forms.js
 var forms_exports = {};
 __export(forms_exports, {
   serialize: () => serialize,
@@ -8943,10 +10394,10 @@ function serializeArray() {
     }
     return $elem.filter(submittableSelector).toArray();
   }).filter('[name!=""]:enabled:not(:submit, :button, :image, :reset, :file):matches([checked], :not(:checkbox, :radio))').map((_, elem) => {
-    var _a2;
+    var _a5;
     const $elem = this._make(elem);
     const name = $elem.attr("name");
-    const value = (_a2 = $elem.val()) !== null && _a2 !== void 0 ? _a2 : "";
+    const value = (_a5 = $elem.val()) !== null && _a5 !== void 0 ? _a5 : "";
     if (Array.isArray(value)) {
       return value.map((val2) => ({ name, value: val2.replace(rCRLF, "\r\n") }));
     }
@@ -8954,7 +10405,39 @@ function serializeArray() {
   }).toArray();
 }
 
-// node_modules/cheerio/lib/esm/cheerio.js
+// node_modules/cheerio/dist/browser/api/extract.js
+var extract_exports = {};
+__export(extract_exports, {
+  extract: () => extract2
+});
+function getExtractDescr(descr) {
+  var _a5;
+  if (typeof descr === "string") {
+    return { selector: descr, value: "textContent" };
+  }
+  return {
+    selector: descr.selector,
+    value: (_a5 = descr.value) !== null && _a5 !== void 0 ? _a5 : "textContent"
+  };
+}
+function extract2(map2) {
+  const ret = {};
+  for (const key in map2) {
+    const descr = map2[key];
+    const isArray = Array.isArray(descr);
+    const { selector, value } = getExtractDescr(isArray ? descr[0] : descr);
+    const fn2 = typeof value === "function" ? value : typeof value === "string" ? (el) => this._make(el).prop(value) : (el) => this._make(el).extract(value);
+    if (isArray) {
+      ret[key] = this._findBySelector(selector, Number.POSITIVE_INFINITY).map((_, el) => fn2(el, key, ret)).get();
+    } else {
+      const $2 = this._findBySelector(selector, 1);
+      ret[key] = $2.length > 0 ? fn2($2[0], key, ret) : void 0;
+    }
+  }
+  return ret;
+}
+
+// node_modules/cheerio/dist/browser/cheerio.js
 var Cheerio = class {
   constructor(elements, root2, options) {
     this.length = 0;
@@ -8971,15 +10454,15 @@ var Cheerio = class {
 Cheerio.prototype.cheerio = "[cheerio object]";
 Cheerio.prototype.splice = Array.prototype.splice;
 Cheerio.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-Object.assign(Cheerio.prototype, attributes_exports, traversing_exports, manipulation_exports, css_exports, forms_exports);
+Object.assign(Cheerio.prototype, attributes_exports, traversing_exports, manipulation_exports, css_exports, forms_exports, extract_exports);
 
-// node_modules/cheerio/lib/esm/load.js
+// node_modules/cheerio/dist/browser/load.js
 function getLoad(parse6, render3) {
   return function load2(content, options, isDocument2 = true) {
     if (content == null) {
       throw new Error("cheerio.load() expects a string");
     }
-    const internalOpts = __spreadValues(__spreadValues({}, options_default), flatten(options));
+    const internalOpts = flattenOptions(options);
     const initialRoot = parse6(content, internalOpts, isDocument2, null);
     class LoadedCheerio extends Cheerio {
       _make(selector, context) {
@@ -8997,7 +10480,7 @@ function getLoad(parse6, render3) {
     function initialize(selector, context, root2 = initialRoot, opts) {
       if (selector && isCheerio(selector))
         return selector;
-      const options2 = __spreadValues(__spreadValues({}, internalOpts), flatten(opts));
+      const options2 = flattenOptions(opts, internalOpts);
       const r = typeof root2 === "string" ? [parse6(root2, options2, false, null)] : "length" in root2 ? root2 : [root2];
       const rootInstance = isCheerio(r) ? r : new LoadedCheerio(r, null, options2);
       rootInstance._root = rootInstance;
@@ -9010,10 +10493,10 @@ function getLoad(parse6, render3) {
         return instance;
       }
       if (typeof selector !== "string") {
-        throw new Error("Unexpected type of selector");
+        throw new TypeError("Unexpected type of selector");
       }
       let search = selector;
-      const searchContext = !context ? rootInstance : typeof context === "string" ? isHtml(context) ? new LoadedCheerio([parse6(context, options2, false, null)], rootInstance, options2) : (search = `${context} ${search}`, rootInstance) : isCheerio(context) ? context : new LoadedCheerio(Array.isArray(context) ? context : [context], rootInstance, options2);
+      const searchContext = context ? typeof context === "string" ? isHtml(context) ? new LoadedCheerio([parse6(context, options2, false, null)], rootInstance, options2) : (search = `${context} ${search}`, rootInstance) : isCheerio(context) ? context : new LoadedCheerio(Array.isArray(context) ? context : [context], rootInstance, options2) : rootInstance;
       if (!searchContext)
         return instance;
       return searchContext.find(search);
@@ -9029,7 +10512,7 @@ function getLoad(parse6, render3) {
   };
 }
 function isNode(obj) {
-  return !!obj.name || obj.type === "root" || obj.type === "text" || obj.type === "comment";
+  return !!obj.name || obj.type === esm_exports.Root || obj.type === esm_exports.Text || obj.type === esm_exports.Comment;
 }
 
 // node_modules/parse5/dist/common/unicode.js
@@ -9081,7 +10564,6 @@ var CODE_POINTS;
   CODE_POINTS2[CODE_POINTS2["SPACE"] = 32] = "SPACE";
   CODE_POINTS2[CODE_POINTS2["EXCLAMATION_MARK"] = 33] = "EXCLAMATION_MARK";
   CODE_POINTS2[CODE_POINTS2["QUOTATION_MARK"] = 34] = "QUOTATION_MARK";
-  CODE_POINTS2[CODE_POINTS2["NUMBER_SIGN"] = 35] = "NUMBER_SIGN";
   CODE_POINTS2[CODE_POINTS2["AMPERSAND"] = 38] = "AMPERSAND";
   CODE_POINTS2[CODE_POINTS2["APOSTROPHE"] = 39] = "APOSTROPHE";
   CODE_POINTS2[CODE_POINTS2["HYPHEN_MINUS"] = 45] = "HYPHEN_MINUS";
@@ -9094,17 +10576,12 @@ var CODE_POINTS;
   CODE_POINTS2[CODE_POINTS2["GREATER_THAN_SIGN"] = 62] = "GREATER_THAN_SIGN";
   CODE_POINTS2[CODE_POINTS2["QUESTION_MARK"] = 63] = "QUESTION_MARK";
   CODE_POINTS2[CODE_POINTS2["LATIN_CAPITAL_A"] = 65] = "LATIN_CAPITAL_A";
-  CODE_POINTS2[CODE_POINTS2["LATIN_CAPITAL_F"] = 70] = "LATIN_CAPITAL_F";
-  CODE_POINTS2[CODE_POINTS2["LATIN_CAPITAL_X"] = 88] = "LATIN_CAPITAL_X";
   CODE_POINTS2[CODE_POINTS2["LATIN_CAPITAL_Z"] = 90] = "LATIN_CAPITAL_Z";
   CODE_POINTS2[CODE_POINTS2["RIGHT_SQUARE_BRACKET"] = 93] = "RIGHT_SQUARE_BRACKET";
   CODE_POINTS2[CODE_POINTS2["GRAVE_ACCENT"] = 96] = "GRAVE_ACCENT";
   CODE_POINTS2[CODE_POINTS2["LATIN_SMALL_A"] = 97] = "LATIN_SMALL_A";
-  CODE_POINTS2[CODE_POINTS2["LATIN_SMALL_F"] = 102] = "LATIN_SMALL_F";
-  CODE_POINTS2[CODE_POINTS2["LATIN_SMALL_X"] = 120] = "LATIN_SMALL_X";
   CODE_POINTS2[CODE_POINTS2["LATIN_SMALL_Z"] = 122] = "LATIN_SMALL_Z";
-  CODE_POINTS2[CODE_POINTS2["REPLACEMENT_CHARACTER"] = 65533] = "REPLACEMENT_CHARACTER";
-})(CODE_POINTS = CODE_POINTS || (CODE_POINTS = {}));
+})(CODE_POINTS || (CODE_POINTS = {}));
 var SEQUENCES = {
   DASH_DASH: "--",
   CDATA_START: "[CDATA[",
@@ -9192,7 +10669,7 @@ var ERR;
   ERR2["misplacedStartTagForHeadElement"] = "misplaced-start-tag-for-head-element";
   ERR2["nestedNoscriptInHead"] = "nested-noscript-in-head";
   ERR2["eofInElementThatCanContainOnlyText"] = "eof-in-element-that-can-contain-only-text";
-})(ERR = ERR || (ERR = {}));
+})(ERR || (ERR = {}));
 
 // node_modules/parse5/dist/tokenizer/preprocessor.js
 var DEFAULT_BUFFER_WATERLINE = 1 << 16;
@@ -9219,22 +10696,24 @@ var Preprocessor = class {
   get offset() {
     return this.droppedBufferSize + this.pos;
   }
-  getError(code) {
+  getError(code, cpOffset) {
     const { line, col, offset: offset2 } = this;
+    const startCol = col + cpOffset;
+    const startOffset = offset2 + cpOffset;
     return {
       code,
       startLine: line,
       endLine: line,
-      startCol: col,
-      endCol: col,
-      startOffset: offset2,
-      endOffset: offset2
+      startCol,
+      endCol: startCol,
+      startOffset,
+      endOffset: startOffset
     };
   }
   _err(code) {
     if (this.handler.onParseError && this.lastErrOffset !== this.offset) {
       this.lastErrOffset = this.offset;
-      this.handler.onParseError(this.getError(code));
+      this.handler.onParseError(this.getError(code, 0));
     }
   }
   _addGap() {
@@ -9377,7 +10856,7 @@ var TokenType;
   TokenType2[TokenType2["DOCTYPE"] = 6] = "DOCTYPE";
   TokenType2[TokenType2["EOF"] = 7] = "EOF";
   TokenType2[TokenType2["HIBERNATION"] = 8] = "HIBERNATION";
-})(TokenType = TokenType || (TokenType = {}));
+})(TokenType || (TokenType = {}));
 function getTokenAttr(token, attrName) {
   for (let i = token.attrs.length - 1; i >= 0; i--) {
     if (token.attrs[i].name === attrName) {
@@ -9387,18 +10866,321 @@ function getTokenAttr(token, attrName) {
   return null;
 }
 
+// node_modules/parse5/node_modules/entities/dist/esm/generated/decode-data-html.js
+var htmlDecodeTree2 = /* @__PURE__ */ new Uint16Array(/* @__PURE__ */ '\u1D41<\xD5\u0131\u028A\u049D\u057B\u05D0\u0675\u06DE\u07A2\u07D6\u080F\u0A4A\u0A91\u0DA1\u0E6D\u0F09\u0F26\u10CA\u1228\u12E1\u1415\u149D\u14C3\u14DF\u1525\0\0\0\0\0\0\u156B\u16CD\u198D\u1C12\u1DDD\u1F7E\u2060\u21B0\u228D\u23C0\u23FB\u2442\u2824\u2912\u2D08\u2E48\u2FCE\u3016\u32BA\u3639\u37AC\u38FE\u3A28\u3A71\u3AE0\u3B2E\u0800EMabcfglmnoprstu\\bfms\x7F\x84\x8B\x90\x95\x98\xA6\xB3\xB9\xC8\xCFlig\u803B\xC6\u40C6P\u803B&\u4026cute\u803B\xC1\u40C1reve;\u4102\u0100iyx}rc\u803B\xC2\u40C2;\u4410r;\uC000\u{1D504}rave\u803B\xC0\u40C0pha;\u4391acr;\u4100d;\u6A53\u0100gp\x9D\xA1on;\u4104f;\uC000\u{1D538}plyFunction;\u6061ing\u803B\xC5\u40C5\u0100cs\xBE\xC3r;\uC000\u{1D49C}ign;\u6254ilde\u803B\xC3\u40C3ml\u803B\xC4\u40C4\u0400aceforsu\xE5\xFB\xFE\u0117\u011C\u0122\u0127\u012A\u0100cr\xEA\xF2kslash;\u6216\u0176\xF6\xF8;\u6AE7ed;\u6306y;\u4411\u0180crt\u0105\u010B\u0114ause;\u6235noullis;\u612Ca;\u4392r;\uC000\u{1D505}pf;\uC000\u{1D539}eve;\u42D8c\xF2\u0113mpeq;\u624E\u0700HOacdefhilorsu\u014D\u0151\u0156\u0180\u019E\u01A2\u01B5\u01B7\u01BA\u01DC\u0215\u0273\u0278\u027Ecy;\u4427PY\u803B\xA9\u40A9\u0180cpy\u015D\u0162\u017Aute;\u4106\u0100;i\u0167\u0168\u62D2talDifferentialD;\u6145leys;\u612D\u0200aeio\u0189\u018E\u0194\u0198ron;\u410Cdil\u803B\xC7\u40C7rc;\u4108nint;\u6230ot;\u410A\u0100dn\u01A7\u01ADilla;\u40B8terDot;\u40B7\xF2\u017Fi;\u43A7rcle\u0200DMPT\u01C7\u01CB\u01D1\u01D6ot;\u6299inus;\u6296lus;\u6295imes;\u6297o\u0100cs\u01E2\u01F8kwiseContourIntegral;\u6232eCurly\u0100DQ\u0203\u020FoubleQuote;\u601Duote;\u6019\u0200lnpu\u021E\u0228\u0247\u0255on\u0100;e\u0225\u0226\u6237;\u6A74\u0180git\u022F\u0236\u023Aruent;\u6261nt;\u622FourIntegral;\u622E\u0100fr\u024C\u024E;\u6102oduct;\u6210nterClockwiseContourIntegral;\u6233oss;\u6A2Fcr;\uC000\u{1D49E}p\u0100;C\u0284\u0285\u62D3ap;\u624D\u0580DJSZacefios\u02A0\u02AC\u02B0\u02B4\u02B8\u02CB\u02D7\u02E1\u02E6\u0333\u048D\u0100;o\u0179\u02A5trahd;\u6911cy;\u4402cy;\u4405cy;\u440F\u0180grs\u02BF\u02C4\u02C7ger;\u6021r;\u61A1hv;\u6AE4\u0100ay\u02D0\u02D5ron;\u410E;\u4414l\u0100;t\u02DD\u02DE\u6207a;\u4394r;\uC000\u{1D507}\u0100af\u02EB\u0327\u0100cm\u02F0\u0322ritical\u0200ADGT\u0300\u0306\u0316\u031Ccute;\u40B4o\u0174\u030B\u030D;\u42D9bleAcute;\u42DDrave;\u4060ilde;\u42DCond;\u62C4ferentialD;\u6146\u0470\u033D\0\0\0\u0342\u0354\0\u0405f;\uC000\u{1D53B}\u0180;DE\u0348\u0349\u034D\u40A8ot;\u60DCqual;\u6250ble\u0300CDLRUV\u0363\u0372\u0382\u03CF\u03E2\u03F8ontourIntegra\xEC\u0239o\u0274\u0379\0\0\u037B\xBB\u0349nArrow;\u61D3\u0100eo\u0387\u03A4ft\u0180ART\u0390\u0396\u03A1rrow;\u61D0ightArrow;\u61D4e\xE5\u02CAng\u0100LR\u03AB\u03C4eft\u0100AR\u03B3\u03B9rrow;\u67F8ightArrow;\u67FAightArrow;\u67F9ight\u0100AT\u03D8\u03DErrow;\u61D2ee;\u62A8p\u0241\u03E9\0\0\u03EFrrow;\u61D1ownArrow;\u61D5erticalBar;\u6225n\u0300ABLRTa\u0412\u042A\u0430\u045E\u047F\u037Crrow\u0180;BU\u041D\u041E\u0422\u6193ar;\u6913pArrow;\u61F5reve;\u4311eft\u02D2\u043A\0\u0446\0\u0450ightVector;\u6950eeVector;\u695Eector\u0100;B\u0459\u045A\u61BDar;\u6956ight\u01D4\u0467\0\u0471eeVector;\u695Fector\u0100;B\u047A\u047B\u61C1ar;\u6957ee\u0100;A\u0486\u0487\u62A4rrow;\u61A7\u0100ct\u0492\u0497r;\uC000\u{1D49F}rok;\u4110\u0800NTacdfglmopqstux\u04BD\u04C0\u04C4\u04CB\u04DE\u04E2\u04E7\u04EE\u04F5\u0521\u052F\u0536\u0552\u055D\u0560\u0565G;\u414AH\u803B\xD0\u40D0cute\u803B\xC9\u40C9\u0180aiy\u04D2\u04D7\u04DCron;\u411Arc\u803B\xCA\u40CA;\u442Dot;\u4116r;\uC000\u{1D508}rave\u803B\xC8\u40C8ement;\u6208\u0100ap\u04FA\u04FEcr;\u4112ty\u0253\u0506\0\0\u0512mallSquare;\u65FBerySmallSquare;\u65AB\u0100gp\u0526\u052Aon;\u4118f;\uC000\u{1D53C}silon;\u4395u\u0100ai\u053C\u0549l\u0100;T\u0542\u0543\u6A75ilde;\u6242librium;\u61CC\u0100ci\u0557\u055Ar;\u6130m;\u6A73a;\u4397ml\u803B\xCB\u40CB\u0100ip\u056A\u056Fsts;\u6203onentialE;\u6147\u0280cfios\u0585\u0588\u058D\u05B2\u05CCy;\u4424r;\uC000\u{1D509}lled\u0253\u0597\0\0\u05A3mallSquare;\u65FCerySmallSquare;\u65AA\u0370\u05BA\0\u05BF\0\0\u05C4f;\uC000\u{1D53D}All;\u6200riertrf;\u6131c\xF2\u05CB\u0600JTabcdfgorst\u05E8\u05EC\u05EF\u05FA\u0600\u0612\u0616\u061B\u061D\u0623\u066C\u0672cy;\u4403\u803B>\u403Emma\u0100;d\u05F7\u05F8\u4393;\u43DCreve;\u411E\u0180eiy\u0607\u060C\u0610dil;\u4122rc;\u411C;\u4413ot;\u4120r;\uC000\u{1D50A};\u62D9pf;\uC000\u{1D53E}eater\u0300EFGLST\u0635\u0644\u064E\u0656\u065B\u0666qual\u0100;L\u063E\u063F\u6265ess;\u62DBullEqual;\u6267reater;\u6AA2ess;\u6277lantEqual;\u6A7Eilde;\u6273cr;\uC000\u{1D4A2};\u626B\u0400Aacfiosu\u0685\u068B\u0696\u069B\u069E\u06AA\u06BE\u06CARDcy;\u442A\u0100ct\u0690\u0694ek;\u42C7;\u405Eirc;\u4124r;\u610ClbertSpace;\u610B\u01F0\u06AF\0\u06B2f;\u610DizontalLine;\u6500\u0100ct\u06C3\u06C5\xF2\u06A9rok;\u4126mp\u0144\u06D0\u06D8ownHum\xF0\u012Fqual;\u624F\u0700EJOacdfgmnostu\u06FA\u06FE\u0703\u0707\u070E\u071A\u071E\u0721\u0728\u0744\u0778\u078B\u078F\u0795cy;\u4415lig;\u4132cy;\u4401cute\u803B\xCD\u40CD\u0100iy\u0713\u0718rc\u803B\xCE\u40CE;\u4418ot;\u4130r;\u6111rave\u803B\xCC\u40CC\u0180;ap\u0720\u072F\u073F\u0100cg\u0734\u0737r;\u412AinaryI;\u6148lie\xF3\u03DD\u01F4\u0749\0\u0762\u0100;e\u074D\u074E\u622C\u0100gr\u0753\u0758ral;\u622Bsection;\u62C2isible\u0100CT\u076C\u0772omma;\u6063imes;\u6062\u0180gpt\u077F\u0783\u0788on;\u412Ef;\uC000\u{1D540}a;\u4399cr;\u6110ilde;\u4128\u01EB\u079A\0\u079Ecy;\u4406l\u803B\xCF\u40CF\u0280cfosu\u07AC\u07B7\u07BC\u07C2\u07D0\u0100iy\u07B1\u07B5rc;\u4134;\u4419r;\uC000\u{1D50D}pf;\uC000\u{1D541}\u01E3\u07C7\0\u07CCr;\uC000\u{1D4A5}rcy;\u4408kcy;\u4404\u0380HJacfos\u07E4\u07E8\u07EC\u07F1\u07FD\u0802\u0808cy;\u4425cy;\u440Cppa;\u439A\u0100ey\u07F6\u07FBdil;\u4136;\u441Ar;\uC000\u{1D50E}pf;\uC000\u{1D542}cr;\uC000\u{1D4A6}\u0580JTaceflmost\u0825\u0829\u082C\u0850\u0863\u09B3\u09B8\u09C7\u09CD\u0A37\u0A47cy;\u4409\u803B<\u403C\u0280cmnpr\u0837\u083C\u0841\u0844\u084Dute;\u4139bda;\u439Bg;\u67EAlacetrf;\u6112r;\u619E\u0180aey\u0857\u085C\u0861ron;\u413Ddil;\u413B;\u441B\u0100fs\u0868\u0970t\u0500ACDFRTUVar\u087E\u08A9\u08B1\u08E0\u08E6\u08FC\u092F\u095B\u0390\u096A\u0100nr\u0883\u088FgleBracket;\u67E8row\u0180;BR\u0899\u089A\u089E\u6190ar;\u61E4ightArrow;\u61C6eiling;\u6308o\u01F5\u08B7\0\u08C3bleBracket;\u67E6n\u01D4\u08C8\0\u08D2eeVector;\u6961ector\u0100;B\u08DB\u08DC\u61C3ar;\u6959loor;\u630Aight\u0100AV\u08EF\u08F5rrow;\u6194ector;\u694E\u0100er\u0901\u0917e\u0180;AV\u0909\u090A\u0910\u62A3rrow;\u61A4ector;\u695Aiangle\u0180;BE\u0924\u0925\u0929\u62B2ar;\u69CFqual;\u62B4p\u0180DTV\u0937\u0942\u094CownVector;\u6951eeVector;\u6960ector\u0100;B\u0956\u0957\u61BFar;\u6958ector\u0100;B\u0965\u0966\u61BCar;\u6952ight\xE1\u039Cs\u0300EFGLST\u097E\u098B\u0995\u099D\u09A2\u09ADqualGreater;\u62DAullEqual;\u6266reater;\u6276ess;\u6AA1lantEqual;\u6A7Dilde;\u6272r;\uC000\u{1D50F}\u0100;e\u09BD\u09BE\u62D8ftarrow;\u61DAidot;\u413F\u0180npw\u09D4\u0A16\u0A1Bg\u0200LRlr\u09DE\u09F7\u0A02\u0A10eft\u0100AR\u09E6\u09ECrrow;\u67F5ightArrow;\u67F7ightArrow;\u67F6eft\u0100ar\u03B3\u0A0Aight\xE1\u03BFight\xE1\u03CAf;\uC000\u{1D543}er\u0100LR\u0A22\u0A2CeftArrow;\u6199ightArrow;\u6198\u0180cht\u0A3E\u0A40\u0A42\xF2\u084C;\u61B0rok;\u4141;\u626A\u0400acefiosu\u0A5A\u0A5D\u0A60\u0A77\u0A7C\u0A85\u0A8B\u0A8Ep;\u6905y;\u441C\u0100dl\u0A65\u0A6FiumSpace;\u605Flintrf;\u6133r;\uC000\u{1D510}nusPlus;\u6213pf;\uC000\u{1D544}c\xF2\u0A76;\u439C\u0480Jacefostu\u0AA3\u0AA7\u0AAD\u0AC0\u0B14\u0B19\u0D91\u0D97\u0D9Ecy;\u440Acute;\u4143\u0180aey\u0AB4\u0AB9\u0ABEron;\u4147dil;\u4145;\u441D\u0180gsw\u0AC7\u0AF0\u0B0Eative\u0180MTV\u0AD3\u0ADF\u0AE8ediumSpace;\u600Bhi\u0100cn\u0AE6\u0AD8\xEB\u0AD9eryThi\xEE\u0AD9ted\u0100GL\u0AF8\u0B06reaterGreate\xF2\u0673essLes\xF3\u0A48Line;\u400Ar;\uC000\u{1D511}\u0200Bnpt\u0B22\u0B28\u0B37\u0B3Areak;\u6060BreakingSpace;\u40A0f;\u6115\u0680;CDEGHLNPRSTV\u0B55\u0B56\u0B6A\u0B7C\u0BA1\u0BEB\u0C04\u0C5E\u0C84\u0CA6\u0CD8\u0D61\u0D85\u6AEC\u0100ou\u0B5B\u0B64ngruent;\u6262pCap;\u626DoubleVerticalBar;\u6226\u0180lqx\u0B83\u0B8A\u0B9Bement;\u6209ual\u0100;T\u0B92\u0B93\u6260ilde;\uC000\u2242\u0338ists;\u6204reater\u0380;EFGLST\u0BB6\u0BB7\u0BBD\u0BC9\u0BD3\u0BD8\u0BE5\u626Fqual;\u6271ullEqual;\uC000\u2267\u0338reater;\uC000\u226B\u0338ess;\u6279lantEqual;\uC000\u2A7E\u0338ilde;\u6275ump\u0144\u0BF2\u0BFDownHump;\uC000\u224E\u0338qual;\uC000\u224F\u0338e\u0100fs\u0C0A\u0C27tTriangle\u0180;BE\u0C1A\u0C1B\u0C21\u62EAar;\uC000\u29CF\u0338qual;\u62ECs\u0300;EGLST\u0C35\u0C36\u0C3C\u0C44\u0C4B\u0C58\u626Equal;\u6270reater;\u6278ess;\uC000\u226A\u0338lantEqual;\uC000\u2A7D\u0338ilde;\u6274ested\u0100GL\u0C68\u0C79reaterGreater;\uC000\u2AA2\u0338essLess;\uC000\u2AA1\u0338recedes\u0180;ES\u0C92\u0C93\u0C9B\u6280qual;\uC000\u2AAF\u0338lantEqual;\u62E0\u0100ei\u0CAB\u0CB9verseElement;\u620CghtTriangle\u0180;BE\u0CCB\u0CCC\u0CD2\u62EBar;\uC000\u29D0\u0338qual;\u62ED\u0100qu\u0CDD\u0D0CuareSu\u0100bp\u0CE8\u0CF9set\u0100;E\u0CF0\u0CF3\uC000\u228F\u0338qual;\u62E2erset\u0100;E\u0D03\u0D06\uC000\u2290\u0338qual;\u62E3\u0180bcp\u0D13\u0D24\u0D4Eset\u0100;E\u0D1B\u0D1E\uC000\u2282\u20D2qual;\u6288ceeds\u0200;EST\u0D32\u0D33\u0D3B\u0D46\u6281qual;\uC000\u2AB0\u0338lantEqual;\u62E1ilde;\uC000\u227F\u0338erset\u0100;E\u0D58\u0D5B\uC000\u2283\u20D2qual;\u6289ilde\u0200;EFT\u0D6E\u0D6F\u0D75\u0D7F\u6241qual;\u6244ullEqual;\u6247ilde;\u6249erticalBar;\u6224cr;\uC000\u{1D4A9}ilde\u803B\xD1\u40D1;\u439D\u0700Eacdfgmoprstuv\u0DBD\u0DC2\u0DC9\u0DD5\u0DDB\u0DE0\u0DE7\u0DFC\u0E02\u0E20\u0E22\u0E32\u0E3F\u0E44lig;\u4152cute\u803B\xD3\u40D3\u0100iy\u0DCE\u0DD3rc\u803B\xD4\u40D4;\u441Eblac;\u4150r;\uC000\u{1D512}rave\u803B\xD2\u40D2\u0180aei\u0DEE\u0DF2\u0DF6cr;\u414Cga;\u43A9cron;\u439Fpf;\uC000\u{1D546}enCurly\u0100DQ\u0E0E\u0E1AoubleQuote;\u601Cuote;\u6018;\u6A54\u0100cl\u0E27\u0E2Cr;\uC000\u{1D4AA}ash\u803B\xD8\u40D8i\u016C\u0E37\u0E3Cde\u803B\xD5\u40D5es;\u6A37ml\u803B\xD6\u40D6er\u0100BP\u0E4B\u0E60\u0100ar\u0E50\u0E53r;\u603Eac\u0100ek\u0E5A\u0E5C;\u63DEet;\u63B4arenthesis;\u63DC\u0480acfhilors\u0E7F\u0E87\u0E8A\u0E8F\u0E92\u0E94\u0E9D\u0EB0\u0EFCrtialD;\u6202y;\u441Fr;\uC000\u{1D513}i;\u43A6;\u43A0usMinus;\u40B1\u0100ip\u0EA2\u0EADncareplan\xE5\u069Df;\u6119\u0200;eio\u0EB9\u0EBA\u0EE0\u0EE4\u6ABBcedes\u0200;EST\u0EC8\u0EC9\u0ECF\u0EDA\u627Aqual;\u6AAFlantEqual;\u627Cilde;\u627Eme;\u6033\u0100dp\u0EE9\u0EEEuct;\u620Fortion\u0100;a\u0225\u0EF9l;\u621D\u0100ci\u0F01\u0F06r;\uC000\u{1D4AB};\u43A8\u0200Ufos\u0F11\u0F16\u0F1B\u0F1FOT\u803B"\u4022r;\uC000\u{1D514}pf;\u611Acr;\uC000\u{1D4AC}\u0600BEacefhiorsu\u0F3E\u0F43\u0F47\u0F60\u0F73\u0FA7\u0FAA\u0FAD\u1096\u10A9\u10B4\u10BEarr;\u6910G\u803B\xAE\u40AE\u0180cnr\u0F4E\u0F53\u0F56ute;\u4154g;\u67EBr\u0100;t\u0F5C\u0F5D\u61A0l;\u6916\u0180aey\u0F67\u0F6C\u0F71ron;\u4158dil;\u4156;\u4420\u0100;v\u0F78\u0F79\u611Cerse\u0100EU\u0F82\u0F99\u0100lq\u0F87\u0F8Eement;\u620Builibrium;\u61CBpEquilibrium;\u696Fr\xBB\u0F79o;\u43A1ght\u0400ACDFTUVa\u0FC1\u0FEB\u0FF3\u1022\u1028\u105B\u1087\u03D8\u0100nr\u0FC6\u0FD2gleBracket;\u67E9row\u0180;BL\u0FDC\u0FDD\u0FE1\u6192ar;\u61E5eftArrow;\u61C4eiling;\u6309o\u01F5\u0FF9\0\u1005bleBracket;\u67E7n\u01D4\u100A\0\u1014eeVector;\u695Dector\u0100;B\u101D\u101E\u61C2ar;\u6955loor;\u630B\u0100er\u102D\u1043e\u0180;AV\u1035\u1036\u103C\u62A2rrow;\u61A6ector;\u695Biangle\u0180;BE\u1050\u1051\u1055\u62B3ar;\u69D0qual;\u62B5p\u0180DTV\u1063\u106E\u1078ownVector;\u694FeeVector;\u695Cector\u0100;B\u1082\u1083\u61BEar;\u6954ector\u0100;B\u1091\u1092\u61C0ar;\u6953\u0100pu\u109B\u109Ef;\u611DndImplies;\u6970ightarrow;\u61DB\u0100ch\u10B9\u10BCr;\u611B;\u61B1leDelayed;\u69F4\u0680HOacfhimoqstu\u10E4\u10F1\u10F7\u10FD\u1119\u111E\u1151\u1156\u1161\u1167\u11B5\u11BB\u11BF\u0100Cc\u10E9\u10EEHcy;\u4429y;\u4428FTcy;\u442Ccute;\u415A\u0280;aeiy\u1108\u1109\u110E\u1113\u1117\u6ABCron;\u4160dil;\u415Erc;\u415C;\u4421r;\uC000\u{1D516}ort\u0200DLRU\u112A\u1134\u113E\u1149ownArrow\xBB\u041EeftArrow\xBB\u089AightArrow\xBB\u0FDDpArrow;\u6191gma;\u43A3allCircle;\u6218pf;\uC000\u{1D54A}\u0272\u116D\0\0\u1170t;\u621Aare\u0200;ISU\u117B\u117C\u1189\u11AF\u65A1ntersection;\u6293u\u0100bp\u118F\u119Eset\u0100;E\u1197\u1198\u628Fqual;\u6291erset\u0100;E\u11A8\u11A9\u6290qual;\u6292nion;\u6294cr;\uC000\u{1D4AE}ar;\u62C6\u0200bcmp\u11C8\u11DB\u1209\u120B\u0100;s\u11CD\u11CE\u62D0et\u0100;E\u11CD\u11D5qual;\u6286\u0100ch\u11E0\u1205eeds\u0200;EST\u11ED\u11EE\u11F4\u11FF\u627Bqual;\u6AB0lantEqual;\u627Dilde;\u627FTh\xE1\u0F8C;\u6211\u0180;es\u1212\u1213\u1223\u62D1rset\u0100;E\u121C\u121D\u6283qual;\u6287et\xBB\u1213\u0580HRSacfhiors\u123E\u1244\u1249\u1255\u125E\u1271\u1276\u129F\u12C2\u12C8\u12D1ORN\u803B\xDE\u40DEADE;\u6122\u0100Hc\u124E\u1252cy;\u440By;\u4426\u0100bu\u125A\u125C;\u4009;\u43A4\u0180aey\u1265\u126A\u126Fron;\u4164dil;\u4162;\u4422r;\uC000\u{1D517}\u0100ei\u127B\u1289\u01F2\u1280\0\u1287efore;\u6234a;\u4398\u0100cn\u128E\u1298kSpace;\uC000\u205F\u200ASpace;\u6009lde\u0200;EFT\u12AB\u12AC\u12B2\u12BC\u623Cqual;\u6243ullEqual;\u6245ilde;\u6248pf;\uC000\u{1D54B}ipleDot;\u60DB\u0100ct\u12D6\u12DBr;\uC000\u{1D4AF}rok;\u4166\u0AE1\u12F7\u130E\u131A\u1326\0\u132C\u1331\0\0\0\0\0\u1338\u133D\u1377\u1385\0\u13FF\u1404\u140A\u1410\u0100cr\u12FB\u1301ute\u803B\xDA\u40DAr\u0100;o\u1307\u1308\u619Fcir;\u6949r\u01E3\u1313\0\u1316y;\u440Eve;\u416C\u0100iy\u131E\u1323rc\u803B\xDB\u40DB;\u4423blac;\u4170r;\uC000\u{1D518}rave\u803B\xD9\u40D9acr;\u416A\u0100di\u1341\u1369er\u0100BP\u1348\u135D\u0100ar\u134D\u1350r;\u405Fac\u0100ek\u1357\u1359;\u63DFet;\u63B5arenthesis;\u63DDon\u0100;P\u1370\u1371\u62C3lus;\u628E\u0100gp\u137B\u137Fon;\u4172f;\uC000\u{1D54C}\u0400ADETadps\u1395\u13AE\u13B8\u13C4\u03E8\u13D2\u13D7\u13F3rrow\u0180;BD\u1150\u13A0\u13A4ar;\u6912ownArrow;\u61C5ownArrow;\u6195quilibrium;\u696Eee\u0100;A\u13CB\u13CC\u62A5rrow;\u61A5own\xE1\u03F3er\u0100LR\u13DE\u13E8eftArrow;\u6196ightArrow;\u6197i\u0100;l\u13F9\u13FA\u43D2on;\u43A5ing;\u416Ecr;\uC000\u{1D4B0}ilde;\u4168ml\u803B\xDC\u40DC\u0480Dbcdefosv\u1427\u142C\u1430\u1433\u143E\u1485\u148A\u1490\u1496ash;\u62ABar;\u6AEBy;\u4412ash\u0100;l\u143B\u143C\u62A9;\u6AE6\u0100er\u1443\u1445;\u62C1\u0180bty\u144C\u1450\u147Aar;\u6016\u0100;i\u144F\u1455cal\u0200BLST\u1461\u1465\u146A\u1474ar;\u6223ine;\u407Ceparator;\u6758ilde;\u6240ThinSpace;\u600Ar;\uC000\u{1D519}pf;\uC000\u{1D54D}cr;\uC000\u{1D4B1}dash;\u62AA\u0280cefos\u14A7\u14AC\u14B1\u14B6\u14BCirc;\u4174dge;\u62C0r;\uC000\u{1D51A}pf;\uC000\u{1D54E}cr;\uC000\u{1D4B2}\u0200fios\u14CB\u14D0\u14D2\u14D8r;\uC000\u{1D51B};\u439Epf;\uC000\u{1D54F}cr;\uC000\u{1D4B3}\u0480AIUacfosu\u14F1\u14F5\u14F9\u14FD\u1504\u150F\u1514\u151A\u1520cy;\u442Fcy;\u4407cy;\u442Ecute\u803B\xDD\u40DD\u0100iy\u1509\u150Drc;\u4176;\u442Br;\uC000\u{1D51C}pf;\uC000\u{1D550}cr;\uC000\u{1D4B4}ml;\u4178\u0400Hacdefos\u1535\u1539\u153F\u154B\u154F\u155D\u1560\u1564cy;\u4416cute;\u4179\u0100ay\u1544\u1549ron;\u417D;\u4417ot;\u417B\u01F2\u1554\0\u155BoWidt\xE8\u0AD9a;\u4396r;\u6128pf;\u6124cr;\uC000\u{1D4B5}\u0BE1\u1583\u158A\u1590\0\u15B0\u15B6\u15BF\0\0\0\0\u15C6\u15DB\u15EB\u165F\u166D\0\u1695\u169B\u16B2\u16B9\0\u16BEcute\u803B\xE1\u40E1reve;\u4103\u0300;Ediuy\u159C\u159D\u15A1\u15A3\u15A8\u15AD\u623E;\uC000\u223E\u0333;\u623Frc\u803B\xE2\u40E2te\u80BB\xB4\u0306;\u4430lig\u803B\xE6\u40E6\u0100;r\xB2\u15BA;\uC000\u{1D51E}rave\u803B\xE0\u40E0\u0100ep\u15CA\u15D6\u0100fp\u15CF\u15D4sym;\u6135\xE8\u15D3ha;\u43B1\u0100ap\u15DFc\u0100cl\u15E4\u15E7r;\u4101g;\u6A3F\u0264\u15F0\0\0\u160A\u0280;adsv\u15FA\u15FB\u15FF\u1601\u1607\u6227nd;\u6A55;\u6A5Clope;\u6A58;\u6A5A\u0380;elmrsz\u1618\u1619\u161B\u161E\u163F\u164F\u1659\u6220;\u69A4e\xBB\u1619sd\u0100;a\u1625\u1626\u6221\u0461\u1630\u1632\u1634\u1636\u1638\u163A\u163C\u163E;\u69A8;\u69A9;\u69AA;\u69AB;\u69AC;\u69AD;\u69AE;\u69AFt\u0100;v\u1645\u1646\u621Fb\u0100;d\u164C\u164D\u62BE;\u699D\u0100pt\u1654\u1657h;\u6222\xBB\xB9arr;\u637C\u0100gp\u1663\u1667on;\u4105f;\uC000\u{1D552}\u0380;Eaeiop\u12C1\u167B\u167D\u1682\u1684\u1687\u168A;\u6A70cir;\u6A6F;\u624Ad;\u624Bs;\u4027rox\u0100;e\u12C1\u1692\xF1\u1683ing\u803B\xE5\u40E5\u0180cty\u16A1\u16A6\u16A8r;\uC000\u{1D4B6};\u402Amp\u0100;e\u12C1\u16AF\xF1\u0288ilde\u803B\xE3\u40E3ml\u803B\xE4\u40E4\u0100ci\u16C2\u16C8onin\xF4\u0272nt;\u6A11\u0800Nabcdefiklnoprsu\u16ED\u16F1\u1730\u173C\u1743\u1748\u1778\u177D\u17E0\u17E6\u1839\u1850\u170D\u193D\u1948\u1970ot;\u6AED\u0100cr\u16F6\u171Ek\u0200ceps\u1700\u1705\u170D\u1713ong;\u624Cpsilon;\u43F6rime;\u6035im\u0100;e\u171A\u171B\u623Dq;\u62CD\u0176\u1722\u1726ee;\u62BDed\u0100;g\u172C\u172D\u6305e\xBB\u172Drk\u0100;t\u135C\u1737brk;\u63B6\u0100oy\u1701\u1741;\u4431quo;\u601E\u0280cmprt\u1753\u175B\u1761\u1764\u1768aus\u0100;e\u010A\u0109ptyv;\u69B0s\xE9\u170Cno\xF5\u0113\u0180ahw\u176F\u1771\u1773;\u43B2;\u6136een;\u626Cr;\uC000\u{1D51F}g\u0380costuvw\u178D\u179D\u17B3\u17C1\u17D5\u17DB\u17DE\u0180aiu\u1794\u1796\u179A\xF0\u0760rc;\u65EFp\xBB\u1371\u0180dpt\u17A4\u17A8\u17ADot;\u6A00lus;\u6A01imes;\u6A02\u0271\u17B9\0\0\u17BEcup;\u6A06ar;\u6605riangle\u0100du\u17CD\u17D2own;\u65BDp;\u65B3plus;\u6A04e\xE5\u1444\xE5\u14ADarow;\u690D\u0180ako\u17ED\u1826\u1835\u0100cn\u17F2\u1823k\u0180lst\u17FA\u05AB\u1802ozenge;\u69EBriangle\u0200;dlr\u1812\u1813\u1818\u181D\u65B4own;\u65BEeft;\u65C2ight;\u65B8k;\u6423\u01B1\u182B\0\u1833\u01B2\u182F\0\u1831;\u6592;\u65914;\u6593ck;\u6588\u0100eo\u183E\u184D\u0100;q\u1843\u1846\uC000=\u20E5uiv;\uC000\u2261\u20E5t;\u6310\u0200ptwx\u1859\u185E\u1867\u186Cf;\uC000\u{1D553}\u0100;t\u13CB\u1863om\xBB\u13CCtie;\u62C8\u0600DHUVbdhmptuv\u1885\u1896\u18AA\u18BB\u18D7\u18DB\u18EC\u18FF\u1905\u190A\u1910\u1921\u0200LRlr\u188E\u1890\u1892\u1894;\u6557;\u6554;\u6556;\u6553\u0280;DUdu\u18A1\u18A2\u18A4\u18A6\u18A8\u6550;\u6566;\u6569;\u6564;\u6567\u0200LRlr\u18B3\u18B5\u18B7\u18B9;\u655D;\u655A;\u655C;\u6559\u0380;HLRhlr\u18CA\u18CB\u18CD\u18CF\u18D1\u18D3\u18D5\u6551;\u656C;\u6563;\u6560;\u656B;\u6562;\u655Fox;\u69C9\u0200LRlr\u18E4\u18E6\u18E8\u18EA;\u6555;\u6552;\u6510;\u650C\u0280;DUdu\u06BD\u18F7\u18F9\u18FB\u18FD;\u6565;\u6568;\u652C;\u6534inus;\u629Flus;\u629Eimes;\u62A0\u0200LRlr\u1919\u191B\u191D\u191F;\u655B;\u6558;\u6518;\u6514\u0380;HLRhlr\u1930\u1931\u1933\u1935\u1937\u1939\u193B\u6502;\u656A;\u6561;\u655E;\u653C;\u6524;\u651C\u0100ev\u0123\u1942bar\u803B\xA6\u40A6\u0200ceio\u1951\u1956\u195A\u1960r;\uC000\u{1D4B7}mi;\u604Fm\u0100;e\u171A\u171Cl\u0180;bh\u1968\u1969\u196B\u405C;\u69C5sub;\u67C8\u016C\u1974\u197El\u0100;e\u1979\u197A\u6022t\xBB\u197Ap\u0180;Ee\u012F\u1985\u1987;\u6AAE\u0100;q\u06DC\u06DB\u0CE1\u19A7\0\u19E8\u1A11\u1A15\u1A32\0\u1A37\u1A50\0\0\u1AB4\0\0\u1AC1\0\0\u1B21\u1B2E\u1B4D\u1B52\0\u1BFD\0\u1C0C\u0180cpr\u19AD\u19B2\u19DDute;\u4107\u0300;abcds\u19BF\u19C0\u19C4\u19CA\u19D5\u19D9\u6229nd;\u6A44rcup;\u6A49\u0100au\u19CF\u19D2p;\u6A4Bp;\u6A47ot;\u6A40;\uC000\u2229\uFE00\u0100eo\u19E2\u19E5t;\u6041\xEE\u0693\u0200aeiu\u19F0\u19FB\u1A01\u1A05\u01F0\u19F5\0\u19F8s;\u6A4Don;\u410Ddil\u803B\xE7\u40E7rc;\u4109ps\u0100;s\u1A0C\u1A0D\u6A4Cm;\u6A50ot;\u410B\u0180dmn\u1A1B\u1A20\u1A26il\u80BB\xB8\u01ADptyv;\u69B2t\u8100\xA2;e\u1A2D\u1A2E\u40A2r\xE4\u01B2r;\uC000\u{1D520}\u0180cei\u1A3D\u1A40\u1A4Dy;\u4447ck\u0100;m\u1A47\u1A48\u6713ark\xBB\u1A48;\u43C7r\u0380;Ecefms\u1A5F\u1A60\u1A62\u1A6B\u1AA4\u1AAA\u1AAE\u65CB;\u69C3\u0180;el\u1A69\u1A6A\u1A6D\u42C6q;\u6257e\u0261\u1A74\0\0\u1A88rrow\u0100lr\u1A7C\u1A81eft;\u61BAight;\u61BB\u0280RSacd\u1A92\u1A94\u1A96\u1A9A\u1A9F\xBB\u0F47;\u64C8st;\u629Birc;\u629Aash;\u629Dnint;\u6A10id;\u6AEFcir;\u69C2ubs\u0100;u\u1ABB\u1ABC\u6663it\xBB\u1ABC\u02EC\u1AC7\u1AD4\u1AFA\0\u1B0Aon\u0100;e\u1ACD\u1ACE\u403A\u0100;q\xC7\xC6\u026D\u1AD9\0\0\u1AE2a\u0100;t\u1ADE\u1ADF\u402C;\u4040\u0180;fl\u1AE8\u1AE9\u1AEB\u6201\xEE\u1160e\u0100mx\u1AF1\u1AF6ent\xBB\u1AE9e\xF3\u024D\u01E7\u1AFE\0\u1B07\u0100;d\u12BB\u1B02ot;\u6A6Dn\xF4\u0246\u0180fry\u1B10\u1B14\u1B17;\uC000\u{1D554}o\xE4\u0254\u8100\xA9;s\u0155\u1B1Dr;\u6117\u0100ao\u1B25\u1B29rr;\u61B5ss;\u6717\u0100cu\u1B32\u1B37r;\uC000\u{1D4B8}\u0100bp\u1B3C\u1B44\u0100;e\u1B41\u1B42\u6ACF;\u6AD1\u0100;e\u1B49\u1B4A\u6AD0;\u6AD2dot;\u62EF\u0380delprvw\u1B60\u1B6C\u1B77\u1B82\u1BAC\u1BD4\u1BF9arr\u0100lr\u1B68\u1B6A;\u6938;\u6935\u0270\u1B72\0\0\u1B75r;\u62DEc;\u62DFarr\u0100;p\u1B7F\u1B80\u61B6;\u693D\u0300;bcdos\u1B8F\u1B90\u1B96\u1BA1\u1BA5\u1BA8\u622Arcap;\u6A48\u0100au\u1B9B\u1B9Ep;\u6A46p;\u6A4Aot;\u628Dr;\u6A45;\uC000\u222A\uFE00\u0200alrv\u1BB5\u1BBF\u1BDE\u1BE3rr\u0100;m\u1BBC\u1BBD\u61B7;\u693Cy\u0180evw\u1BC7\u1BD4\u1BD8q\u0270\u1BCE\0\0\u1BD2re\xE3\u1B73u\xE3\u1B75ee;\u62CEedge;\u62CFen\u803B\xA4\u40A4earrow\u0100lr\u1BEE\u1BF3eft\xBB\u1B80ight\xBB\u1BBDe\xE4\u1BDD\u0100ci\u1C01\u1C07onin\xF4\u01F7nt;\u6231lcty;\u632D\u0980AHabcdefhijlorstuwz\u1C38\u1C3B\u1C3F\u1C5D\u1C69\u1C75\u1C8A\u1C9E\u1CAC\u1CB7\u1CFB\u1CFF\u1D0D\u1D7B\u1D91\u1DAB\u1DBB\u1DC6\u1DCDr\xF2\u0381ar;\u6965\u0200glrs\u1C48\u1C4D\u1C52\u1C54ger;\u6020eth;\u6138\xF2\u1133h\u0100;v\u1C5A\u1C5B\u6010\xBB\u090A\u016B\u1C61\u1C67arow;\u690Fa\xE3\u0315\u0100ay\u1C6E\u1C73ron;\u410F;\u4434\u0180;ao\u0332\u1C7C\u1C84\u0100gr\u02BF\u1C81r;\u61CAtseq;\u6A77\u0180glm\u1C91\u1C94\u1C98\u803B\xB0\u40B0ta;\u43B4ptyv;\u69B1\u0100ir\u1CA3\u1CA8sht;\u697F;\uC000\u{1D521}ar\u0100lr\u1CB3\u1CB5\xBB\u08DC\xBB\u101E\u0280aegsv\u1CC2\u0378\u1CD6\u1CDC\u1CE0m\u0180;os\u0326\u1CCA\u1CD4nd\u0100;s\u0326\u1CD1uit;\u6666amma;\u43DDin;\u62F2\u0180;io\u1CE7\u1CE8\u1CF8\u40F7de\u8100\xF7;o\u1CE7\u1CF0ntimes;\u62C7n\xF8\u1CF7cy;\u4452c\u026F\u1D06\0\0\u1D0Arn;\u631Eop;\u630D\u0280lptuw\u1D18\u1D1D\u1D22\u1D49\u1D55lar;\u4024f;\uC000\u{1D555}\u0280;emps\u030B\u1D2D\u1D37\u1D3D\u1D42q\u0100;d\u0352\u1D33ot;\u6251inus;\u6238lus;\u6214quare;\u62A1blebarwedg\xE5\xFAn\u0180adh\u112E\u1D5D\u1D67ownarrow\xF3\u1C83arpoon\u0100lr\u1D72\u1D76ef\xF4\u1CB4igh\xF4\u1CB6\u0162\u1D7F\u1D85karo\xF7\u0F42\u026F\u1D8A\0\0\u1D8Ern;\u631Fop;\u630C\u0180cot\u1D98\u1DA3\u1DA6\u0100ry\u1D9D\u1DA1;\uC000\u{1D4B9};\u4455l;\u69F6rok;\u4111\u0100dr\u1DB0\u1DB4ot;\u62F1i\u0100;f\u1DBA\u1816\u65BF\u0100ah\u1DC0\u1DC3r\xF2\u0429a\xF2\u0FA6angle;\u69A6\u0100ci\u1DD2\u1DD5y;\u445Fgrarr;\u67FF\u0900Dacdefglmnopqrstux\u1E01\u1E09\u1E19\u1E38\u0578\u1E3C\u1E49\u1E61\u1E7E\u1EA5\u1EAF\u1EBD\u1EE1\u1F2A\u1F37\u1F44\u1F4E\u1F5A\u0100Do\u1E06\u1D34o\xF4\u1C89\u0100cs\u1E0E\u1E14ute\u803B\xE9\u40E9ter;\u6A6E\u0200aioy\u1E22\u1E27\u1E31\u1E36ron;\u411Br\u0100;c\u1E2D\u1E2E\u6256\u803B\xEA\u40EAlon;\u6255;\u444Dot;\u4117\u0100Dr\u1E41\u1E45ot;\u6252;\uC000\u{1D522}\u0180;rs\u1E50\u1E51\u1E57\u6A9Aave\u803B\xE8\u40E8\u0100;d\u1E5C\u1E5D\u6A96ot;\u6A98\u0200;ils\u1E6A\u1E6B\u1E72\u1E74\u6A99nters;\u63E7;\u6113\u0100;d\u1E79\u1E7A\u6A95ot;\u6A97\u0180aps\u1E85\u1E89\u1E97cr;\u4113ty\u0180;sv\u1E92\u1E93\u1E95\u6205et\xBB\u1E93p\u01001;\u1E9D\u1EA4\u0133\u1EA1\u1EA3;\u6004;\u6005\u6003\u0100gs\u1EAA\u1EAC;\u414Bp;\u6002\u0100gp\u1EB4\u1EB8on;\u4119f;\uC000\u{1D556}\u0180als\u1EC4\u1ECE\u1ED2r\u0100;s\u1ECA\u1ECB\u62D5l;\u69E3us;\u6A71i\u0180;lv\u1EDA\u1EDB\u1EDF\u43B5on\xBB\u1EDB;\u43F5\u0200csuv\u1EEA\u1EF3\u1F0B\u1F23\u0100io\u1EEF\u1E31rc\xBB\u1E2E\u0269\u1EF9\0\0\u1EFB\xED\u0548ant\u0100gl\u1F02\u1F06tr\xBB\u1E5Dess\xBB\u1E7A\u0180aei\u1F12\u1F16\u1F1Als;\u403Dst;\u625Fv\u0100;D\u0235\u1F20D;\u6A78parsl;\u69E5\u0100Da\u1F2F\u1F33ot;\u6253rr;\u6971\u0180cdi\u1F3E\u1F41\u1EF8r;\u612Fo\xF4\u0352\u0100ah\u1F49\u1F4B;\u43B7\u803B\xF0\u40F0\u0100mr\u1F53\u1F57l\u803B\xEB\u40EBo;\u60AC\u0180cip\u1F61\u1F64\u1F67l;\u4021s\xF4\u056E\u0100eo\u1F6C\u1F74ctatio\xEE\u0559nential\xE5\u0579\u09E1\u1F92\0\u1F9E\0\u1FA1\u1FA7\0\0\u1FC6\u1FCC\0\u1FD3\0\u1FE6\u1FEA\u2000\0\u2008\u205Allingdotse\xF1\u1E44y;\u4444male;\u6640\u0180ilr\u1FAD\u1FB3\u1FC1lig;\u8000\uFB03\u0269\u1FB9\0\0\u1FBDg;\u8000\uFB00ig;\u8000\uFB04;\uC000\u{1D523}lig;\u8000\uFB01lig;\uC000fj\u0180alt\u1FD9\u1FDC\u1FE1t;\u666Dig;\u8000\uFB02ns;\u65B1of;\u4192\u01F0\u1FEE\0\u1FF3f;\uC000\u{1D557}\u0100ak\u05BF\u1FF7\u0100;v\u1FFC\u1FFD\u62D4;\u6AD9artint;\u6A0D\u0100ao\u200C\u2055\u0100cs\u2011\u2052\u03B1\u201A\u2030\u2038\u2045\u2048\0\u2050\u03B2\u2022\u2025\u2027\u202A\u202C\0\u202E\u803B\xBD\u40BD;\u6153\u803B\xBC\u40BC;\u6155;\u6159;\u615B\u01B3\u2034\0\u2036;\u6154;\u6156\u02B4\u203E\u2041\0\0\u2043\u803B\xBE\u40BE;\u6157;\u615C5;\u6158\u01B6\u204C\0\u204E;\u615A;\u615D8;\u615El;\u6044wn;\u6322cr;\uC000\u{1D4BB}\u0880Eabcdefgijlnorstv\u2082\u2089\u209F\u20A5\u20B0\u20B4\u20F0\u20F5\u20FA\u20FF\u2103\u2112\u2138\u0317\u213E\u2152\u219E\u0100;l\u064D\u2087;\u6A8C\u0180cmp\u2090\u2095\u209Dute;\u41F5ma\u0100;d\u209C\u1CDA\u43B3;\u6A86reve;\u411F\u0100iy\u20AA\u20AErc;\u411D;\u4433ot;\u4121\u0200;lqs\u063E\u0642\u20BD\u20C9\u0180;qs\u063E\u064C\u20C4lan\xF4\u0665\u0200;cdl\u0665\u20D2\u20D5\u20E5c;\u6AA9ot\u0100;o\u20DC\u20DD\u6A80\u0100;l\u20E2\u20E3\u6A82;\u6A84\u0100;e\u20EA\u20ED\uC000\u22DB\uFE00s;\u6A94r;\uC000\u{1D524}\u0100;g\u0673\u061Bmel;\u6137cy;\u4453\u0200;Eaj\u065A\u210C\u210E\u2110;\u6A92;\u6AA5;\u6AA4\u0200Eaes\u211B\u211D\u2129\u2134;\u6269p\u0100;p\u2123\u2124\u6A8Arox\xBB\u2124\u0100;q\u212E\u212F\u6A88\u0100;q\u212E\u211Bim;\u62E7pf;\uC000\u{1D558}\u0100ci\u2143\u2146r;\u610Am\u0180;el\u066B\u214E\u2150;\u6A8E;\u6A90\u8300>;cdlqr\u05EE\u2160\u216A\u216E\u2173\u2179\u0100ci\u2165\u2167;\u6AA7r;\u6A7Aot;\u62D7Par;\u6995uest;\u6A7C\u0280adels\u2184\u216A\u2190\u0656\u219B\u01F0\u2189\0\u218Epro\xF8\u209Er;\u6978q\u0100lq\u063F\u2196les\xF3\u2088i\xED\u066B\u0100en\u21A3\u21ADrtneqq;\uC000\u2269\uFE00\xC5\u21AA\u0500Aabcefkosy\u21C4\u21C7\u21F1\u21F5\u21FA\u2218\u221D\u222F\u2268\u227Dr\xF2\u03A0\u0200ilmr\u21D0\u21D4\u21D7\u21DBrs\xF0\u1484f\xBB\u2024il\xF4\u06A9\u0100dr\u21E0\u21E4cy;\u444A\u0180;cw\u08F4\u21EB\u21EFir;\u6948;\u61ADar;\u610Firc;\u4125\u0180alr\u2201\u220E\u2213rts\u0100;u\u2209\u220A\u6665it\xBB\u220Alip;\u6026con;\u62B9r;\uC000\u{1D525}s\u0100ew\u2223\u2229arow;\u6925arow;\u6926\u0280amopr\u223A\u223E\u2243\u225E\u2263rr;\u61FFtht;\u623Bk\u0100lr\u2249\u2253eftarrow;\u61A9ightarrow;\u61AAf;\uC000\u{1D559}bar;\u6015\u0180clt\u226F\u2274\u2278r;\uC000\u{1D4BD}as\xE8\u21F4rok;\u4127\u0100bp\u2282\u2287ull;\u6043hen\xBB\u1C5B\u0AE1\u22A3\0\u22AA\0\u22B8\u22C5\u22CE\0\u22D5\u22F3\0\0\u22F8\u2322\u2367\u2362\u237F\0\u2386\u23AA\u23B4cute\u803B\xED\u40ED\u0180;iy\u0771\u22B0\u22B5rc\u803B\xEE\u40EE;\u4438\u0100cx\u22BC\u22BFy;\u4435cl\u803B\xA1\u40A1\u0100fr\u039F\u22C9;\uC000\u{1D526}rave\u803B\xEC\u40EC\u0200;ino\u073E\u22DD\u22E9\u22EE\u0100in\u22E2\u22E6nt;\u6A0Ct;\u622Dfin;\u69DCta;\u6129lig;\u4133\u0180aop\u22FE\u231A\u231D\u0180cgt\u2305\u2308\u2317r;\u412B\u0180elp\u071F\u230F\u2313in\xE5\u078Ear\xF4\u0720h;\u4131f;\u62B7ed;\u41B5\u0280;cfot\u04F4\u232C\u2331\u233D\u2341are;\u6105in\u0100;t\u2338\u2339\u621Eie;\u69DDdo\xF4\u2319\u0280;celp\u0757\u234C\u2350\u235B\u2361al;\u62BA\u0100gr\u2355\u2359er\xF3\u1563\xE3\u234Darhk;\u6A17rod;\u6A3C\u0200cgpt\u236F\u2372\u2376\u237By;\u4451on;\u412Ff;\uC000\u{1D55A}a;\u43B9uest\u803B\xBF\u40BF\u0100ci\u238A\u238Fr;\uC000\u{1D4BE}n\u0280;Edsv\u04F4\u239B\u239D\u23A1\u04F3;\u62F9ot;\u62F5\u0100;v\u23A6\u23A7\u62F4;\u62F3\u0100;i\u0777\u23AElde;\u4129\u01EB\u23B8\0\u23BCcy;\u4456l\u803B\xEF\u40EF\u0300cfmosu\u23CC\u23D7\u23DC\u23E1\u23E7\u23F5\u0100iy\u23D1\u23D5rc;\u4135;\u4439r;\uC000\u{1D527}ath;\u4237pf;\uC000\u{1D55B}\u01E3\u23EC\0\u23F1r;\uC000\u{1D4BF}rcy;\u4458kcy;\u4454\u0400acfghjos\u240B\u2416\u2422\u2427\u242D\u2431\u2435\u243Bppa\u0100;v\u2413\u2414\u43BA;\u43F0\u0100ey\u241B\u2420dil;\u4137;\u443Ar;\uC000\u{1D528}reen;\u4138cy;\u4445cy;\u445Cpf;\uC000\u{1D55C}cr;\uC000\u{1D4C0}\u0B80ABEHabcdefghjlmnoprstuv\u2470\u2481\u2486\u248D\u2491\u250E\u253D\u255A\u2580\u264E\u265E\u2665\u2679\u267D\u269A\u26B2\u26D8\u275D\u2768\u278B\u27C0\u2801\u2812\u0180art\u2477\u247A\u247Cr\xF2\u09C6\xF2\u0395ail;\u691Barr;\u690E\u0100;g\u0994\u248B;\u6A8Bar;\u6962\u0963\u24A5\0\u24AA\0\u24B1\0\0\0\0\0\u24B5\u24BA\0\u24C6\u24C8\u24CD\0\u24F9ute;\u413Amptyv;\u69B4ra\xEE\u084Cbda;\u43BBg\u0180;dl\u088E\u24C1\u24C3;\u6991\xE5\u088E;\u6A85uo\u803B\xAB\u40ABr\u0400;bfhlpst\u0899\u24DE\u24E6\u24E9\u24EB\u24EE\u24F1\u24F5\u0100;f\u089D\u24E3s;\u691Fs;\u691D\xEB\u2252p;\u61ABl;\u6939im;\u6973l;\u61A2\u0180;ae\u24FF\u2500\u2504\u6AABil;\u6919\u0100;s\u2509\u250A\u6AAD;\uC000\u2AAD\uFE00\u0180abr\u2515\u2519\u251Drr;\u690Crk;\u6772\u0100ak\u2522\u252Cc\u0100ek\u2528\u252A;\u407B;\u405B\u0100es\u2531\u2533;\u698Bl\u0100du\u2539\u253B;\u698F;\u698D\u0200aeuy\u2546\u254B\u2556\u2558ron;\u413E\u0100di\u2550\u2554il;\u413C\xEC\u08B0\xE2\u2529;\u443B\u0200cqrs\u2563\u2566\u256D\u257Da;\u6936uo\u0100;r\u0E19\u1746\u0100du\u2572\u2577har;\u6967shar;\u694Bh;\u61B2\u0280;fgqs\u258B\u258C\u0989\u25F3\u25FF\u6264t\u0280ahlrt\u2598\u25A4\u25B7\u25C2\u25E8rrow\u0100;t\u0899\u25A1a\xE9\u24F6arpoon\u0100du\u25AF\u25B4own\xBB\u045Ap\xBB\u0966eftarrows;\u61C7ight\u0180ahs\u25CD\u25D6\u25DErrow\u0100;s\u08F4\u08A7arpoon\xF3\u0F98quigarro\xF7\u21F0hreetimes;\u62CB\u0180;qs\u258B\u0993\u25FAlan\xF4\u09AC\u0280;cdgs\u09AC\u260A\u260D\u261D\u2628c;\u6AA8ot\u0100;o\u2614\u2615\u6A7F\u0100;r\u261A\u261B\u6A81;\u6A83\u0100;e\u2622\u2625\uC000\u22DA\uFE00s;\u6A93\u0280adegs\u2633\u2639\u263D\u2649\u264Bppro\xF8\u24C6ot;\u62D6q\u0100gq\u2643\u2645\xF4\u0989gt\xF2\u248C\xF4\u099Bi\xED\u09B2\u0180ilr\u2655\u08E1\u265Asht;\u697C;\uC000\u{1D529}\u0100;E\u099C\u2663;\u6A91\u0161\u2669\u2676r\u0100du\u25B2\u266E\u0100;l\u0965\u2673;\u696Alk;\u6584cy;\u4459\u0280;acht\u0A48\u2688\u268B\u2691\u2696r\xF2\u25C1orne\xF2\u1D08ard;\u696Bri;\u65FA\u0100io\u269F\u26A4dot;\u4140ust\u0100;a\u26AC\u26AD\u63B0che\xBB\u26AD\u0200Eaes\u26BB\u26BD\u26C9\u26D4;\u6268p\u0100;p\u26C3\u26C4\u6A89rox\xBB\u26C4\u0100;q\u26CE\u26CF\u6A87\u0100;q\u26CE\u26BBim;\u62E6\u0400abnoptwz\u26E9\u26F4\u26F7\u271A\u272F\u2741\u2747\u2750\u0100nr\u26EE\u26F1g;\u67ECr;\u61FDr\xEB\u08C1g\u0180lmr\u26FF\u270D\u2714eft\u0100ar\u09E6\u2707ight\xE1\u09F2apsto;\u67FCight\xE1\u09FDparrow\u0100lr\u2725\u2729ef\xF4\u24EDight;\u61AC\u0180afl\u2736\u2739\u273Dr;\u6985;\uC000\u{1D55D}us;\u6A2Dimes;\u6A34\u0161\u274B\u274Fst;\u6217\xE1\u134E\u0180;ef\u2757\u2758\u1800\u65CAnge\xBB\u2758ar\u0100;l\u2764\u2765\u4028t;\u6993\u0280achmt\u2773\u2776\u277C\u2785\u2787r\xF2\u08A8orne\xF2\u1D8Car\u0100;d\u0F98\u2783;\u696D;\u600Eri;\u62BF\u0300achiqt\u2798\u279D\u0A40\u27A2\u27AE\u27BBquo;\u6039r;\uC000\u{1D4C1}m\u0180;eg\u09B2\u27AA\u27AC;\u6A8D;\u6A8F\u0100bu\u252A\u27B3o\u0100;r\u0E1F\u27B9;\u601Arok;\u4142\u8400<;cdhilqr\u082B\u27D2\u2639\u27DC\u27E0\u27E5\u27EA\u27F0\u0100ci\u27D7\u27D9;\u6AA6r;\u6A79re\xE5\u25F2mes;\u62C9arr;\u6976uest;\u6A7B\u0100Pi\u27F5\u27F9ar;\u6996\u0180;ef\u2800\u092D\u181B\u65C3r\u0100du\u2807\u280Dshar;\u694Ahar;\u6966\u0100en\u2817\u2821rtneqq;\uC000\u2268\uFE00\xC5\u281E\u0700Dacdefhilnopsu\u2840\u2845\u2882\u288E\u2893\u28A0\u28A5\u28A8\u28DA\u28E2\u28E4\u0A83\u28F3\u2902Dot;\u623A\u0200clpr\u284E\u2852\u2863\u287Dr\u803B\xAF\u40AF\u0100et\u2857\u2859;\u6642\u0100;e\u285E\u285F\u6720se\xBB\u285F\u0100;s\u103B\u2868to\u0200;dlu\u103B\u2873\u2877\u287Bow\xEE\u048Cef\xF4\u090F\xF0\u13D1ker;\u65AE\u0100oy\u2887\u288Cmma;\u6A29;\u443Cash;\u6014asuredangle\xBB\u1626r;\uC000\u{1D52A}o;\u6127\u0180cdn\u28AF\u28B4\u28C9ro\u803B\xB5\u40B5\u0200;acd\u1464\u28BD\u28C0\u28C4s\xF4\u16A7ir;\u6AF0ot\u80BB\xB7\u01B5us\u0180;bd\u28D2\u1903\u28D3\u6212\u0100;u\u1D3C\u28D8;\u6A2A\u0163\u28DE\u28E1p;\u6ADB\xF2\u2212\xF0\u0A81\u0100dp\u28E9\u28EEels;\u62A7f;\uC000\u{1D55E}\u0100ct\u28F8\u28FDr;\uC000\u{1D4C2}pos\xBB\u159D\u0180;lm\u2909\u290A\u290D\u43BCtimap;\u62B8\u0C00GLRVabcdefghijlmoprstuvw\u2942\u2953\u297E\u2989\u2998\u29DA\u29E9\u2A15\u2A1A\u2A58\u2A5D\u2A83\u2A95\u2AA4\u2AA8\u2B04\u2B07\u2B44\u2B7F\u2BAE\u2C34\u2C67\u2C7C\u2CE9\u0100gt\u2947\u294B;\uC000\u22D9\u0338\u0100;v\u2950\u0BCF\uC000\u226B\u20D2\u0180elt\u295A\u2972\u2976ft\u0100ar\u2961\u2967rrow;\u61CDightarrow;\u61CE;\uC000\u22D8\u0338\u0100;v\u297B\u0C47\uC000\u226A\u20D2ightarrow;\u61CF\u0100Dd\u298E\u2993ash;\u62AFash;\u62AE\u0280bcnpt\u29A3\u29A7\u29AC\u29B1\u29CCla\xBB\u02DEute;\u4144g;\uC000\u2220\u20D2\u0280;Eiop\u0D84\u29BC\u29C0\u29C5\u29C8;\uC000\u2A70\u0338d;\uC000\u224B\u0338s;\u4149ro\xF8\u0D84ur\u0100;a\u29D3\u29D4\u666El\u0100;s\u29D3\u0B38\u01F3\u29DF\0\u29E3p\u80BB\xA0\u0B37mp\u0100;e\u0BF9\u0C00\u0280aeouy\u29F4\u29FE\u2A03\u2A10\u2A13\u01F0\u29F9\0\u29FB;\u6A43on;\u4148dil;\u4146ng\u0100;d\u0D7E\u2A0Aot;\uC000\u2A6D\u0338p;\u6A42;\u443Dash;\u6013\u0380;Aadqsx\u0B92\u2A29\u2A2D\u2A3B\u2A41\u2A45\u2A50rr;\u61D7r\u0100hr\u2A33\u2A36k;\u6924\u0100;o\u13F2\u13F0ot;\uC000\u2250\u0338ui\xF6\u0B63\u0100ei\u2A4A\u2A4Ear;\u6928\xED\u0B98ist\u0100;s\u0BA0\u0B9Fr;\uC000\u{1D52B}\u0200Eest\u0BC5\u2A66\u2A79\u2A7C\u0180;qs\u0BBC\u2A6D\u0BE1\u0180;qs\u0BBC\u0BC5\u2A74lan\xF4\u0BE2i\xED\u0BEA\u0100;r\u0BB6\u2A81\xBB\u0BB7\u0180Aap\u2A8A\u2A8D\u2A91r\xF2\u2971rr;\u61AEar;\u6AF2\u0180;sv\u0F8D\u2A9C\u0F8C\u0100;d\u2AA1\u2AA2\u62FC;\u62FAcy;\u445A\u0380AEadest\u2AB7\u2ABA\u2ABE\u2AC2\u2AC5\u2AF6\u2AF9r\xF2\u2966;\uC000\u2266\u0338rr;\u619Ar;\u6025\u0200;fqs\u0C3B\u2ACE\u2AE3\u2AEFt\u0100ar\u2AD4\u2AD9rro\xF7\u2AC1ightarro\xF7\u2A90\u0180;qs\u0C3B\u2ABA\u2AEAlan\xF4\u0C55\u0100;s\u0C55\u2AF4\xBB\u0C36i\xED\u0C5D\u0100;r\u0C35\u2AFEi\u0100;e\u0C1A\u0C25i\xE4\u0D90\u0100pt\u2B0C\u2B11f;\uC000\u{1D55F}\u8180\xAC;in\u2B19\u2B1A\u2B36\u40ACn\u0200;Edv\u0B89\u2B24\u2B28\u2B2E;\uC000\u22F9\u0338ot;\uC000\u22F5\u0338\u01E1\u0B89\u2B33\u2B35;\u62F7;\u62F6i\u0100;v\u0CB8\u2B3C\u01E1\u0CB8\u2B41\u2B43;\u62FE;\u62FD\u0180aor\u2B4B\u2B63\u2B69r\u0200;ast\u0B7B\u2B55\u2B5A\u2B5Flle\xEC\u0B7Bl;\uC000\u2AFD\u20E5;\uC000\u2202\u0338lint;\u6A14\u0180;ce\u0C92\u2B70\u2B73u\xE5\u0CA5\u0100;c\u0C98\u2B78\u0100;e\u0C92\u2B7D\xF1\u0C98\u0200Aait\u2B88\u2B8B\u2B9D\u2BA7r\xF2\u2988rr\u0180;cw\u2B94\u2B95\u2B99\u619B;\uC000\u2933\u0338;\uC000\u219D\u0338ghtarrow\xBB\u2B95ri\u0100;e\u0CCB\u0CD6\u0380chimpqu\u2BBD\u2BCD\u2BD9\u2B04\u0B78\u2BE4\u2BEF\u0200;cer\u0D32\u2BC6\u0D37\u2BC9u\xE5\u0D45;\uC000\u{1D4C3}ort\u026D\u2B05\0\0\u2BD6ar\xE1\u2B56m\u0100;e\u0D6E\u2BDF\u0100;q\u0D74\u0D73su\u0100bp\u2BEB\u2BED\xE5\u0CF8\xE5\u0D0B\u0180bcp\u2BF6\u2C11\u2C19\u0200;Ees\u2BFF\u2C00\u0D22\u2C04\u6284;\uC000\u2AC5\u0338et\u0100;e\u0D1B\u2C0Bq\u0100;q\u0D23\u2C00c\u0100;e\u0D32\u2C17\xF1\u0D38\u0200;Ees\u2C22\u2C23\u0D5F\u2C27\u6285;\uC000\u2AC6\u0338et\u0100;e\u0D58\u2C2Eq\u0100;q\u0D60\u2C23\u0200gilr\u2C3D\u2C3F\u2C45\u2C47\xEC\u0BD7lde\u803B\xF1\u40F1\xE7\u0C43iangle\u0100lr\u2C52\u2C5Ceft\u0100;e\u0C1A\u2C5A\xF1\u0C26ight\u0100;e\u0CCB\u2C65\xF1\u0CD7\u0100;m\u2C6C\u2C6D\u43BD\u0180;es\u2C74\u2C75\u2C79\u4023ro;\u6116p;\u6007\u0480DHadgilrs\u2C8F\u2C94\u2C99\u2C9E\u2CA3\u2CB0\u2CB6\u2CD3\u2CE3ash;\u62ADarr;\u6904p;\uC000\u224D\u20D2ash;\u62AC\u0100et\u2CA8\u2CAC;\uC000\u2265\u20D2;\uC000>\u20D2nfin;\u69DE\u0180Aet\u2CBD\u2CC1\u2CC5rr;\u6902;\uC000\u2264\u20D2\u0100;r\u2CCA\u2CCD\uC000<\u20D2ie;\uC000\u22B4\u20D2\u0100At\u2CD8\u2CDCrr;\u6903rie;\uC000\u22B5\u20D2im;\uC000\u223C\u20D2\u0180Aan\u2CF0\u2CF4\u2D02rr;\u61D6r\u0100hr\u2CFA\u2CFDk;\u6923\u0100;o\u13E7\u13E5ear;\u6927\u1253\u1A95\0\0\0\0\0\0\0\0\0\0\0\0\0\u2D2D\0\u2D38\u2D48\u2D60\u2D65\u2D72\u2D84\u1B07\0\0\u2D8D\u2DAB\0\u2DC8\u2DCE\0\u2DDC\u2E19\u2E2B\u2E3E\u2E43\u0100cs\u2D31\u1A97ute\u803B\xF3\u40F3\u0100iy\u2D3C\u2D45r\u0100;c\u1A9E\u2D42\u803B\xF4\u40F4;\u443E\u0280abios\u1AA0\u2D52\u2D57\u01C8\u2D5Alac;\u4151v;\u6A38old;\u69BClig;\u4153\u0100cr\u2D69\u2D6Dir;\u69BF;\uC000\u{1D52C}\u036F\u2D79\0\0\u2D7C\0\u2D82n;\u42DBave\u803B\xF2\u40F2;\u69C1\u0100bm\u2D88\u0DF4ar;\u69B5\u0200acit\u2D95\u2D98\u2DA5\u2DA8r\xF2\u1A80\u0100ir\u2D9D\u2DA0r;\u69BEoss;\u69BBn\xE5\u0E52;\u69C0\u0180aei\u2DB1\u2DB5\u2DB9cr;\u414Dga;\u43C9\u0180cdn\u2DC0\u2DC5\u01CDron;\u43BF;\u69B6pf;\uC000\u{1D560}\u0180ael\u2DD4\u2DD7\u01D2r;\u69B7rp;\u69B9\u0380;adiosv\u2DEA\u2DEB\u2DEE\u2E08\u2E0D\u2E10\u2E16\u6228r\xF2\u1A86\u0200;efm\u2DF7\u2DF8\u2E02\u2E05\u6A5Dr\u0100;o\u2DFE\u2DFF\u6134f\xBB\u2DFF\u803B\xAA\u40AA\u803B\xBA\u40BAgof;\u62B6r;\u6A56lope;\u6A57;\u6A5B\u0180clo\u2E1F\u2E21\u2E27\xF2\u2E01ash\u803B\xF8\u40F8l;\u6298i\u016C\u2E2F\u2E34de\u803B\xF5\u40F5es\u0100;a\u01DB\u2E3As;\u6A36ml\u803B\xF6\u40F6bar;\u633D\u0AE1\u2E5E\0\u2E7D\0\u2E80\u2E9D\0\u2EA2\u2EB9\0\0\u2ECB\u0E9C\0\u2F13\0\0\u2F2B\u2FBC\0\u2FC8r\u0200;ast\u0403\u2E67\u2E72\u0E85\u8100\xB6;l\u2E6D\u2E6E\u40B6le\xEC\u0403\u0269\u2E78\0\0\u2E7Bm;\u6AF3;\u6AFDy;\u443Fr\u0280cimpt\u2E8B\u2E8F\u2E93\u1865\u2E97nt;\u4025od;\u402Eil;\u6030enk;\u6031r;\uC000\u{1D52D}\u0180imo\u2EA8\u2EB0\u2EB4\u0100;v\u2EAD\u2EAE\u43C6;\u43D5ma\xF4\u0A76ne;\u660E\u0180;tv\u2EBF\u2EC0\u2EC8\u43C0chfork\xBB\u1FFD;\u43D6\u0100au\u2ECF\u2EDFn\u0100ck\u2ED5\u2EDDk\u0100;h\u21F4\u2EDB;\u610E\xF6\u21F4s\u0480;abcdemst\u2EF3\u2EF4\u1908\u2EF9\u2EFD\u2F04\u2F06\u2F0A\u2F0E\u402Bcir;\u6A23ir;\u6A22\u0100ou\u1D40\u2F02;\u6A25;\u6A72n\u80BB\xB1\u0E9Dim;\u6A26wo;\u6A27\u0180ipu\u2F19\u2F20\u2F25ntint;\u6A15f;\uC000\u{1D561}nd\u803B\xA3\u40A3\u0500;Eaceinosu\u0EC8\u2F3F\u2F41\u2F44\u2F47\u2F81\u2F89\u2F92\u2F7E\u2FB6;\u6AB3p;\u6AB7u\xE5\u0ED9\u0100;c\u0ECE\u2F4C\u0300;acens\u0EC8\u2F59\u2F5F\u2F66\u2F68\u2F7Eppro\xF8\u2F43urlye\xF1\u0ED9\xF1\u0ECE\u0180aes\u2F6F\u2F76\u2F7Approx;\u6AB9qq;\u6AB5im;\u62E8i\xED\u0EDFme\u0100;s\u2F88\u0EAE\u6032\u0180Eas\u2F78\u2F90\u2F7A\xF0\u2F75\u0180dfp\u0EEC\u2F99\u2FAF\u0180als\u2FA0\u2FA5\u2FAAlar;\u632Eine;\u6312urf;\u6313\u0100;t\u0EFB\u2FB4\xEF\u0EFBrel;\u62B0\u0100ci\u2FC0\u2FC5r;\uC000\u{1D4C5};\u43C8ncsp;\u6008\u0300fiopsu\u2FDA\u22E2\u2FDF\u2FE5\u2FEB\u2FF1r;\uC000\u{1D52E}pf;\uC000\u{1D562}rime;\u6057cr;\uC000\u{1D4C6}\u0180aeo\u2FF8\u3009\u3013t\u0100ei\u2FFE\u3005rnion\xF3\u06B0nt;\u6A16st\u0100;e\u3010\u3011\u403F\xF1\u1F19\xF4\u0F14\u0A80ABHabcdefhilmnoprstux\u3040\u3051\u3055\u3059\u30E0\u310E\u312B\u3147\u3162\u3172\u318E\u3206\u3215\u3224\u3229\u3258\u326E\u3272\u3290\u32B0\u32B7\u0180art\u3047\u304A\u304Cr\xF2\u10B3\xF2\u03DDail;\u691Car\xF2\u1C65ar;\u6964\u0380cdenqrt\u3068\u3075\u3078\u307F\u308F\u3094\u30CC\u0100eu\u306D\u3071;\uC000\u223D\u0331te;\u4155i\xE3\u116Emptyv;\u69B3g\u0200;del\u0FD1\u3089\u308B\u308D;\u6992;\u69A5\xE5\u0FD1uo\u803B\xBB\u40BBr\u0580;abcfhlpstw\u0FDC\u30AC\u30AF\u30B7\u30B9\u30BC\u30BE\u30C0\u30C3\u30C7\u30CAp;\u6975\u0100;f\u0FE0\u30B4s;\u6920;\u6933s;\u691E\xEB\u225D\xF0\u272El;\u6945im;\u6974l;\u61A3;\u619D\u0100ai\u30D1\u30D5il;\u691Ao\u0100;n\u30DB\u30DC\u6236al\xF3\u0F1E\u0180abr\u30E7\u30EA\u30EEr\xF2\u17E5rk;\u6773\u0100ak\u30F3\u30FDc\u0100ek\u30F9\u30FB;\u407D;\u405D\u0100es\u3102\u3104;\u698Cl\u0100du\u310A\u310C;\u698E;\u6990\u0200aeuy\u3117\u311C\u3127\u3129ron;\u4159\u0100di\u3121\u3125il;\u4157\xEC\u0FF2\xE2\u30FA;\u4440\u0200clqs\u3134\u3137\u313D\u3144a;\u6937dhar;\u6969uo\u0100;r\u020E\u020Dh;\u61B3\u0180acg\u314E\u315F\u0F44l\u0200;ips\u0F78\u3158\u315B\u109Cn\xE5\u10BBar\xF4\u0FA9t;\u65AD\u0180ilr\u3169\u1023\u316Esht;\u697D;\uC000\u{1D52F}\u0100ao\u3177\u3186r\u0100du\u317D\u317F\xBB\u047B\u0100;l\u1091\u3184;\u696C\u0100;v\u318B\u318C\u43C1;\u43F1\u0180gns\u3195\u31F9\u31FCht\u0300ahlrst\u31A4\u31B0\u31C2\u31D8\u31E4\u31EErrow\u0100;t\u0FDC\u31ADa\xE9\u30C8arpoon\u0100du\u31BB\u31BFow\xEE\u317Ep\xBB\u1092eft\u0100ah\u31CA\u31D0rrow\xF3\u0FEAarpoon\xF3\u0551ightarrows;\u61C9quigarro\xF7\u30CBhreetimes;\u62CCg;\u42DAingdotse\xF1\u1F32\u0180ahm\u320D\u3210\u3213r\xF2\u0FEAa\xF2\u0551;\u600Foust\u0100;a\u321E\u321F\u63B1che\xBB\u321Fmid;\u6AEE\u0200abpt\u3232\u323D\u3240\u3252\u0100nr\u3237\u323Ag;\u67EDr;\u61FEr\xEB\u1003\u0180afl\u3247\u324A\u324Er;\u6986;\uC000\u{1D563}us;\u6A2Eimes;\u6A35\u0100ap\u325D\u3267r\u0100;g\u3263\u3264\u4029t;\u6994olint;\u6A12ar\xF2\u31E3\u0200achq\u327B\u3280\u10BC\u3285quo;\u603Ar;\uC000\u{1D4C7}\u0100bu\u30FB\u328Ao\u0100;r\u0214\u0213\u0180hir\u3297\u329B\u32A0re\xE5\u31F8mes;\u62CAi\u0200;efl\u32AA\u1059\u1821\u32AB\u65B9tri;\u69CEluhar;\u6968;\u611E\u0D61\u32D5\u32DB\u32DF\u332C\u3338\u3371\0\u337A\u33A4\0\0\u33EC\u33F0\0\u3428\u3448\u345A\u34AD\u34B1\u34CA\u34F1\0\u3616\0\0\u3633cute;\u415Bqu\xEF\u27BA\u0500;Eaceinpsy\u11ED\u32F3\u32F5\u32FF\u3302\u330B\u330F\u331F\u3326\u3329;\u6AB4\u01F0\u32FA\0\u32FC;\u6AB8on;\u4161u\xE5\u11FE\u0100;d\u11F3\u3307il;\u415Frc;\u415D\u0180Eas\u3316\u3318\u331B;\u6AB6p;\u6ABAim;\u62E9olint;\u6A13i\xED\u1204;\u4441ot\u0180;be\u3334\u1D47\u3335\u62C5;\u6A66\u0380Aacmstx\u3346\u334A\u3357\u335B\u335E\u3363\u336Drr;\u61D8r\u0100hr\u3350\u3352\xEB\u2228\u0100;o\u0A36\u0A34t\u803B\xA7\u40A7i;\u403Bwar;\u6929m\u0100in\u3369\xF0nu\xF3\xF1t;\u6736r\u0100;o\u3376\u2055\uC000\u{1D530}\u0200acoy\u3382\u3386\u3391\u33A0rp;\u666F\u0100hy\u338B\u338Fcy;\u4449;\u4448rt\u026D\u3399\0\0\u339Ci\xE4\u1464ara\xEC\u2E6F\u803B\xAD\u40AD\u0100gm\u33A8\u33B4ma\u0180;fv\u33B1\u33B2\u33B2\u43C3;\u43C2\u0400;deglnpr\u12AB\u33C5\u33C9\u33CE\u33D6\u33DE\u33E1\u33E6ot;\u6A6A\u0100;q\u12B1\u12B0\u0100;E\u33D3\u33D4\u6A9E;\u6AA0\u0100;E\u33DB\u33DC\u6A9D;\u6A9Fe;\u6246lus;\u6A24arr;\u6972ar\xF2\u113D\u0200aeit\u33F8\u3408\u340F\u3417\u0100ls\u33FD\u3404lsetm\xE9\u336Ahp;\u6A33parsl;\u69E4\u0100dl\u1463\u3414e;\u6323\u0100;e\u341C\u341D\u6AAA\u0100;s\u3422\u3423\u6AAC;\uC000\u2AAC\uFE00\u0180flp\u342E\u3433\u3442tcy;\u444C\u0100;b\u3438\u3439\u402F\u0100;a\u343E\u343F\u69C4r;\u633Ff;\uC000\u{1D564}a\u0100dr\u344D\u0402es\u0100;u\u3454\u3455\u6660it\xBB\u3455\u0180csu\u3460\u3479\u349F\u0100au\u3465\u346Fp\u0100;s\u1188\u346B;\uC000\u2293\uFE00p\u0100;s\u11B4\u3475;\uC000\u2294\uFE00u\u0100bp\u347F\u348F\u0180;es\u1197\u119C\u3486et\u0100;e\u1197\u348D\xF1\u119D\u0180;es\u11A8\u11AD\u3496et\u0100;e\u11A8\u349D\xF1\u11AE\u0180;af\u117B\u34A6\u05B0r\u0165\u34AB\u05B1\xBB\u117Car\xF2\u1148\u0200cemt\u34B9\u34BE\u34C2\u34C5r;\uC000\u{1D4C8}tm\xEE\xF1i\xEC\u3415ar\xE6\u11BE\u0100ar\u34CE\u34D5r\u0100;f\u34D4\u17BF\u6606\u0100an\u34DA\u34EDight\u0100ep\u34E3\u34EApsilo\xEE\u1EE0h\xE9\u2EAFs\xBB\u2852\u0280bcmnp\u34FB\u355E\u1209\u358B\u358E\u0480;Edemnprs\u350E\u350F\u3511\u3515\u351E\u3523\u352C\u3531\u3536\u6282;\u6AC5ot;\u6ABD\u0100;d\u11DA\u351Aot;\u6AC3ult;\u6AC1\u0100Ee\u3528\u352A;\u6ACB;\u628Alus;\u6ABFarr;\u6979\u0180eiu\u353D\u3552\u3555t\u0180;en\u350E\u3545\u354Bq\u0100;q\u11DA\u350Feq\u0100;q\u352B\u3528m;\u6AC7\u0100bp\u355A\u355C;\u6AD5;\u6AD3c\u0300;acens\u11ED\u356C\u3572\u3579\u357B\u3326ppro\xF8\u32FAurlye\xF1\u11FE\xF1\u11F3\u0180aes\u3582\u3588\u331Bppro\xF8\u331Aq\xF1\u3317g;\u666A\u0680123;Edehlmnps\u35A9\u35AC\u35AF\u121C\u35B2\u35B4\u35C0\u35C9\u35D5\u35DA\u35DF\u35E8\u35ED\u803B\xB9\u40B9\u803B\xB2\u40B2\u803B\xB3\u40B3;\u6AC6\u0100os\u35B9\u35BCt;\u6ABEub;\u6AD8\u0100;d\u1222\u35C5ot;\u6AC4s\u0100ou\u35CF\u35D2l;\u67C9b;\u6AD7arr;\u697Bult;\u6AC2\u0100Ee\u35E4\u35E6;\u6ACC;\u628Blus;\u6AC0\u0180eiu\u35F4\u3609\u360Ct\u0180;en\u121C\u35FC\u3602q\u0100;q\u1222\u35B2eq\u0100;q\u35E7\u35E4m;\u6AC8\u0100bp\u3611\u3613;\u6AD4;\u6AD6\u0180Aan\u361C\u3620\u362Drr;\u61D9r\u0100hr\u3626\u3628\xEB\u222E\u0100;o\u0A2B\u0A29war;\u692Alig\u803B\xDF\u40DF\u0BE1\u3651\u365D\u3660\u12CE\u3673\u3679\0\u367E\u36C2\0\0\0\0\0\u36DB\u3703\0\u3709\u376C\0\0\0\u3787\u0272\u3656\0\0\u365Bget;\u6316;\u43C4r\xEB\u0E5F\u0180aey\u3666\u366B\u3670ron;\u4165dil;\u4163;\u4442lrec;\u6315r;\uC000\u{1D531}\u0200eiko\u3686\u369D\u36B5\u36BC\u01F2\u368B\0\u3691e\u01004f\u1284\u1281a\u0180;sv\u3698\u3699\u369B\u43B8ym;\u43D1\u0100cn\u36A2\u36B2k\u0100as\u36A8\u36AEppro\xF8\u12C1im\xBB\u12ACs\xF0\u129E\u0100as\u36BA\u36AE\xF0\u12C1rn\u803B\xFE\u40FE\u01EC\u031F\u36C6\u22E7es\u8180\xD7;bd\u36CF\u36D0\u36D8\u40D7\u0100;a\u190F\u36D5r;\u6A31;\u6A30\u0180eps\u36E1\u36E3\u3700\xE1\u2A4D\u0200;bcf\u0486\u36EC\u36F0\u36F4ot;\u6336ir;\u6AF1\u0100;o\u36F9\u36FC\uC000\u{1D565}rk;\u6ADA\xE1\u3362rime;\u6034\u0180aip\u370F\u3712\u3764d\xE5\u1248\u0380adempst\u3721\u374D\u3740\u3751\u3757\u375C\u375Fngle\u0280;dlqr\u3730\u3731\u3736\u3740\u3742\u65B5own\xBB\u1DBBeft\u0100;e\u2800\u373E\xF1\u092E;\u625Cight\u0100;e\u32AA\u374B\xF1\u105Aot;\u65ECinus;\u6A3Alus;\u6A39b;\u69CDime;\u6A3Bezium;\u63E2\u0180cht\u3772\u377D\u3781\u0100ry\u3777\u377B;\uC000\u{1D4C9};\u4446cy;\u445Brok;\u4167\u0100io\u378B\u378Ex\xF4\u1777head\u0100lr\u3797\u37A0eftarro\xF7\u084Fightarrow\xBB\u0F5D\u0900AHabcdfghlmoprstuw\u37D0\u37D3\u37D7\u37E4\u37F0\u37FC\u380E\u381C\u3823\u3834\u3851\u385D\u386B\u38A9\u38CC\u38D2\u38EA\u38F6r\xF2\u03EDar;\u6963\u0100cr\u37DC\u37E2ute\u803B\xFA\u40FA\xF2\u1150r\u01E3\u37EA\0\u37EDy;\u445Eve;\u416D\u0100iy\u37F5\u37FArc\u803B\xFB\u40FB;\u4443\u0180abh\u3803\u3806\u380Br\xF2\u13ADlac;\u4171a\xF2\u13C3\u0100ir\u3813\u3818sht;\u697E;\uC000\u{1D532}rave\u803B\xF9\u40F9\u0161\u3827\u3831r\u0100lr\u382C\u382E\xBB\u0957\xBB\u1083lk;\u6580\u0100ct\u3839\u384D\u026F\u383F\0\0\u384Arn\u0100;e\u3845\u3846\u631Cr\xBB\u3846op;\u630Fri;\u65F8\u0100al\u3856\u385Acr;\u416B\u80BB\xA8\u0349\u0100gp\u3862\u3866on;\u4173f;\uC000\u{1D566}\u0300adhlsu\u114B\u3878\u387D\u1372\u3891\u38A0own\xE1\u13B3arpoon\u0100lr\u3888\u388Cef\xF4\u382Digh\xF4\u382Fi\u0180;hl\u3899\u389A\u389C\u43C5\xBB\u13FAon\xBB\u389Aparrows;\u61C8\u0180cit\u38B0\u38C4\u38C8\u026F\u38B6\0\0\u38C1rn\u0100;e\u38BC\u38BD\u631Dr\xBB\u38BDop;\u630Eng;\u416Fri;\u65F9cr;\uC000\u{1D4CA}\u0180dir\u38D9\u38DD\u38E2ot;\u62F0lde;\u4169i\u0100;f\u3730\u38E8\xBB\u1813\u0100am\u38EF\u38F2r\xF2\u38A8l\u803B\xFC\u40FCangle;\u69A7\u0780ABDacdeflnoprsz\u391C\u391F\u3929\u392D\u39B5\u39B8\u39BD\u39DF\u39E4\u39E8\u39F3\u39F9\u39FD\u3A01\u3A20r\xF2\u03F7ar\u0100;v\u3926\u3927\u6AE8;\u6AE9as\xE8\u03E1\u0100nr\u3932\u3937grt;\u699C\u0380eknprst\u34E3\u3946\u394B\u3952\u395D\u3964\u3996app\xE1\u2415othin\xE7\u1E96\u0180hir\u34EB\u2EC8\u3959op\xF4\u2FB5\u0100;h\u13B7\u3962\xEF\u318D\u0100iu\u3969\u396Dgm\xE1\u33B3\u0100bp\u3972\u3984setneq\u0100;q\u397D\u3980\uC000\u228A\uFE00;\uC000\u2ACB\uFE00setneq\u0100;q\u398F\u3992\uC000\u228B\uFE00;\uC000\u2ACC\uFE00\u0100hr\u399B\u399Fet\xE1\u369Ciangle\u0100lr\u39AA\u39AFeft\xBB\u0925ight\xBB\u1051y;\u4432ash\xBB\u1036\u0180elr\u39C4\u39D2\u39D7\u0180;be\u2DEA\u39CB\u39CFar;\u62BBq;\u625Alip;\u62EE\u0100bt\u39DC\u1468a\xF2\u1469r;\uC000\u{1D533}tr\xE9\u39AEsu\u0100bp\u39EF\u39F1\xBB\u0D1C\xBB\u0D59pf;\uC000\u{1D567}ro\xF0\u0EFBtr\xE9\u39B4\u0100cu\u3A06\u3A0Br;\uC000\u{1D4CB}\u0100bp\u3A10\u3A18n\u0100Ee\u3980\u3A16\xBB\u397En\u0100Ee\u3992\u3A1E\xBB\u3990igzag;\u699A\u0380cefoprs\u3A36\u3A3B\u3A56\u3A5B\u3A54\u3A61\u3A6Airc;\u4175\u0100di\u3A40\u3A51\u0100bg\u3A45\u3A49ar;\u6A5Fe\u0100;q\u15FA\u3A4F;\u6259erp;\u6118r;\uC000\u{1D534}pf;\uC000\u{1D568}\u0100;e\u1479\u3A66at\xE8\u1479cr;\uC000\u{1D4CC}\u0AE3\u178E\u3A87\0\u3A8B\0\u3A90\u3A9B\0\0\u3A9D\u3AA8\u3AAB\u3AAF\0\0\u3AC3\u3ACE\0\u3AD8\u17DC\u17DFtr\xE9\u17D1r;\uC000\u{1D535}\u0100Aa\u3A94\u3A97r\xF2\u03C3r\xF2\u09F6;\u43BE\u0100Aa\u3AA1\u3AA4r\xF2\u03B8r\xF2\u09EBa\xF0\u2713is;\u62FB\u0180dpt\u17A4\u3AB5\u3ABE\u0100fl\u3ABA\u17A9;\uC000\u{1D569}im\xE5\u17B2\u0100Aa\u3AC7\u3ACAr\xF2\u03CEr\xF2\u0A01\u0100cq\u3AD2\u17B8r;\uC000\u{1D4CD}\u0100pt\u17D6\u3ADCr\xE9\u17D4\u0400acefiosu\u3AF0\u3AFD\u3B08\u3B0C\u3B11\u3B15\u3B1B\u3B21c\u0100uy\u3AF6\u3AFBte\u803B\xFD\u40FD;\u444F\u0100iy\u3B02\u3B06rc;\u4177;\u444Bn\u803B\xA5\u40A5r;\uC000\u{1D536}cy;\u4457pf;\uC000\u{1D56A}cr;\uC000\u{1D4CE}\u0100cm\u3B26\u3B29y;\u444El\u803B\xFF\u40FF\u0500acdefhiosw\u3B42\u3B48\u3B54\u3B58\u3B64\u3B69\u3B6D\u3B74\u3B7A\u3B80cute;\u417A\u0100ay\u3B4D\u3B52ron;\u417E;\u4437ot;\u417C\u0100et\u3B5D\u3B61tr\xE6\u155Fa;\u43B6r;\uC000\u{1D537}cy;\u4436grarr;\u61DDpf;\uC000\u{1D56B}cr;\uC000\u{1D4CF}\u0100jn\u3B85\u3B87;\u600Dj;\u600C'.split("").map((c) => c.charCodeAt(0)));
+
+// node_modules/parse5/node_modules/entities/dist/esm/decode-codepoint.js
+var _a4;
+var decodeMap3 = new Map([
+  [0, 65533],
+  [128, 8364],
+  [130, 8218],
+  [131, 402],
+  [132, 8222],
+  [133, 8230],
+  [134, 8224],
+  [135, 8225],
+  [136, 710],
+  [137, 8240],
+  [138, 352],
+  [139, 8249],
+  [140, 338],
+  [142, 381],
+  [145, 8216],
+  [146, 8217],
+  [147, 8220],
+  [148, 8221],
+  [149, 8226],
+  [150, 8211],
+  [151, 8212],
+  [152, 732],
+  [153, 8482],
+  [154, 353],
+  [155, 8250],
+  [156, 339],
+  [158, 382],
+  [159, 376]
+]);
+var fromCodePoint3 = (_a4 = String.fromCodePoint) !== null && _a4 !== void 0 ? _a4 : function(codePoint) {
+  let output = "";
+  if (codePoint > 65535) {
+    codePoint -= 65536;
+    output += String.fromCharCode(codePoint >>> 10 & 1023 | 55296);
+    codePoint = 56320 | codePoint & 1023;
+  }
+  output += String.fromCharCode(codePoint);
+  return output;
+};
+function replaceCodePoint3(codePoint) {
+  var _a5;
+  if (codePoint >= 55296 && codePoint <= 57343 || codePoint > 1114111) {
+    return 65533;
+  }
+  return (_a5 = decodeMap3.get(codePoint)) !== null && _a5 !== void 0 ? _a5 : codePoint;
+}
+
+// node_modules/parse5/node_modules/entities/dist/esm/decode.js
+var CharCodes4;
+(function(CharCodes5) {
+  CharCodes5[CharCodes5["NUM"] = 35] = "NUM";
+  CharCodes5[CharCodes5["SEMI"] = 59] = "SEMI";
+  CharCodes5[CharCodes5["EQUALS"] = 61] = "EQUALS";
+  CharCodes5[CharCodes5["ZERO"] = 48] = "ZERO";
+  CharCodes5[CharCodes5["NINE"] = 57] = "NINE";
+  CharCodes5[CharCodes5["LOWER_A"] = 97] = "LOWER_A";
+  CharCodes5[CharCodes5["LOWER_F"] = 102] = "LOWER_F";
+  CharCodes5[CharCodes5["LOWER_X"] = 120] = "LOWER_X";
+  CharCodes5[CharCodes5["LOWER_Z"] = 122] = "LOWER_Z";
+  CharCodes5[CharCodes5["UPPER_A"] = 65] = "UPPER_A";
+  CharCodes5[CharCodes5["UPPER_F"] = 70] = "UPPER_F";
+  CharCodes5[CharCodes5["UPPER_Z"] = 90] = "UPPER_Z";
+})(CharCodes4 || (CharCodes4 = {}));
+var TO_LOWER_BIT3 = 32;
+var BinTrieFlags3;
+(function(BinTrieFlags4) {
+  BinTrieFlags4[BinTrieFlags4["VALUE_LENGTH"] = 49152] = "VALUE_LENGTH";
+  BinTrieFlags4[BinTrieFlags4["BRANCH_LENGTH"] = 16256] = "BRANCH_LENGTH";
+  BinTrieFlags4[BinTrieFlags4["JUMP_TABLE"] = 127] = "JUMP_TABLE";
+})(BinTrieFlags3 || (BinTrieFlags3 = {}));
+function isNumber3(code) {
+  return code >= CharCodes4.ZERO && code <= CharCodes4.NINE;
+}
+function isHexadecimalCharacter3(code) {
+  return code >= CharCodes4.UPPER_A && code <= CharCodes4.UPPER_F || code >= CharCodes4.LOWER_A && code <= CharCodes4.LOWER_F;
+}
+function isAsciiAlphaNumeric3(code) {
+  return code >= CharCodes4.UPPER_A && code <= CharCodes4.UPPER_Z || code >= CharCodes4.LOWER_A && code <= CharCodes4.LOWER_Z || isNumber3(code);
+}
+function isEntityInAttributeInvalidEnd3(code) {
+  return code === CharCodes4.EQUALS || isAsciiAlphaNumeric3(code);
+}
+var EntityDecoderState3;
+(function(EntityDecoderState4) {
+  EntityDecoderState4[EntityDecoderState4["EntityStart"] = 0] = "EntityStart";
+  EntityDecoderState4[EntityDecoderState4["NumericStart"] = 1] = "NumericStart";
+  EntityDecoderState4[EntityDecoderState4["NumericDecimal"] = 2] = "NumericDecimal";
+  EntityDecoderState4[EntityDecoderState4["NumericHex"] = 3] = "NumericHex";
+  EntityDecoderState4[EntityDecoderState4["NamedEntity"] = 4] = "NamedEntity";
+})(EntityDecoderState3 || (EntityDecoderState3 = {}));
+var DecodingMode3;
+(function(DecodingMode4) {
+  DecodingMode4[DecodingMode4["Legacy"] = 0] = "Legacy";
+  DecodingMode4[DecodingMode4["Strict"] = 1] = "Strict";
+  DecodingMode4[DecodingMode4["Attribute"] = 2] = "Attribute";
+})(DecodingMode3 || (DecodingMode3 = {}));
+var EntityDecoder3 = class {
+  constructor(decodeTree, emitCodePoint, errors) {
+    this.decodeTree = decodeTree;
+    this.emitCodePoint = emitCodePoint;
+    this.errors = errors;
+    this.state = EntityDecoderState3.EntityStart;
+    this.consumed = 1;
+    this.result = 0;
+    this.treeIndex = 0;
+    this.excess = 1;
+    this.decodeMode = DecodingMode3.Strict;
+  }
+  startEntity(decodeMode) {
+    this.decodeMode = decodeMode;
+    this.state = EntityDecoderState3.EntityStart;
+    this.result = 0;
+    this.treeIndex = 0;
+    this.excess = 1;
+    this.consumed = 1;
+  }
+  write(input, offset2) {
+    switch (this.state) {
+      case EntityDecoderState3.EntityStart: {
+        if (input.charCodeAt(offset2) === CharCodes4.NUM) {
+          this.state = EntityDecoderState3.NumericStart;
+          this.consumed += 1;
+          return this.stateNumericStart(input, offset2 + 1);
+        }
+        this.state = EntityDecoderState3.NamedEntity;
+        return this.stateNamedEntity(input, offset2);
+      }
+      case EntityDecoderState3.NumericStart: {
+        return this.stateNumericStart(input, offset2);
+      }
+      case EntityDecoderState3.NumericDecimal: {
+        return this.stateNumericDecimal(input, offset2);
+      }
+      case EntityDecoderState3.NumericHex: {
+        return this.stateNumericHex(input, offset2);
+      }
+      case EntityDecoderState3.NamedEntity: {
+        return this.stateNamedEntity(input, offset2);
+      }
+    }
+  }
+  stateNumericStart(input, offset2) {
+    if (offset2 >= input.length) {
+      return -1;
+    }
+    if ((input.charCodeAt(offset2) | TO_LOWER_BIT3) === CharCodes4.LOWER_X) {
+      this.state = EntityDecoderState3.NumericHex;
+      this.consumed += 1;
+      return this.stateNumericHex(input, offset2 + 1);
+    }
+    this.state = EntityDecoderState3.NumericDecimal;
+    return this.stateNumericDecimal(input, offset2);
+  }
+  addToNumericResult(input, start2, end3, base) {
+    if (start2 !== end3) {
+      const digitCount = end3 - start2;
+      this.result = this.result * Math.pow(base, digitCount) + Number.parseInt(input.substr(start2, digitCount), base);
+      this.consumed += digitCount;
+    }
+  }
+  stateNumericHex(input, offset2) {
+    const startIndex = offset2;
+    while (offset2 < input.length) {
+      const char = input.charCodeAt(offset2);
+      if (isNumber3(char) || isHexadecimalCharacter3(char)) {
+        offset2 += 1;
+      } else {
+        this.addToNumericResult(input, startIndex, offset2, 16);
+        return this.emitNumericEntity(char, 3);
+      }
+    }
+    this.addToNumericResult(input, startIndex, offset2, 16);
+    return -1;
+  }
+  stateNumericDecimal(input, offset2) {
+    const startIndex = offset2;
+    while (offset2 < input.length) {
+      const char = input.charCodeAt(offset2);
+      if (isNumber3(char)) {
+        offset2 += 1;
+      } else {
+        this.addToNumericResult(input, startIndex, offset2, 10);
+        return this.emitNumericEntity(char, 2);
+      }
+    }
+    this.addToNumericResult(input, startIndex, offset2, 10);
+    return -1;
+  }
+  emitNumericEntity(lastCp, expectedLength) {
+    var _a5;
+    if (this.consumed <= expectedLength) {
+      (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.absenceOfDigitsInNumericCharacterReference(this.consumed);
+      return 0;
+    }
+    if (lastCp === CharCodes4.SEMI) {
+      this.consumed += 1;
+    } else if (this.decodeMode === DecodingMode3.Strict) {
+      return 0;
+    }
+    this.emitCodePoint(replaceCodePoint3(this.result), this.consumed);
+    if (this.errors) {
+      if (lastCp !== CharCodes4.SEMI) {
+        this.errors.missingSemicolonAfterCharacterReference();
+      }
+      this.errors.validateNumericCharacterReference(this.result);
+    }
+    return this.consumed;
+  }
+  stateNamedEntity(input, offset2) {
+    const { decodeTree } = this;
+    let current = decodeTree[this.treeIndex];
+    let valueLength = (current & BinTrieFlags3.VALUE_LENGTH) >> 14;
+    for (; offset2 < input.length; offset2++, this.excess++) {
+      const char = input.charCodeAt(offset2);
+      this.treeIndex = determineBranch3(decodeTree, current, this.treeIndex + Math.max(1, valueLength), char);
+      if (this.treeIndex < 0) {
+        return this.result === 0 || this.decodeMode === DecodingMode3.Attribute && (valueLength === 0 || isEntityInAttributeInvalidEnd3(char)) ? 0 : this.emitNotTerminatedNamedEntity();
+      }
+      current = decodeTree[this.treeIndex];
+      valueLength = (current & BinTrieFlags3.VALUE_LENGTH) >> 14;
+      if (valueLength !== 0) {
+        if (char === CharCodes4.SEMI) {
+          return this.emitNamedEntityData(this.treeIndex, valueLength, this.consumed + this.excess);
+        }
+        if (this.decodeMode !== DecodingMode3.Strict) {
+          this.result = this.treeIndex;
+          this.consumed += this.excess;
+          this.excess = 0;
+        }
+      }
+    }
+    return -1;
+  }
+  emitNotTerminatedNamedEntity() {
+    var _a5;
+    const { result, decodeTree } = this;
+    const valueLength = (decodeTree[result] & BinTrieFlags3.VALUE_LENGTH) >> 14;
+    this.emitNamedEntityData(result, valueLength, this.consumed);
+    (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.missingSemicolonAfterCharacterReference();
+    return this.consumed;
+  }
+  emitNamedEntityData(result, valueLength, consumed) {
+    const { decodeTree } = this;
+    this.emitCodePoint(valueLength === 1 ? decodeTree[result] & ~BinTrieFlags3.VALUE_LENGTH : decodeTree[result + 1], consumed);
+    if (valueLength === 3) {
+      this.emitCodePoint(decodeTree[result + 2], consumed);
+    }
+    return consumed;
+  }
+  end() {
+    var _a5;
+    switch (this.state) {
+      case EntityDecoderState3.NamedEntity: {
+        return this.result !== 0 && (this.decodeMode !== DecodingMode3.Attribute || this.result === this.treeIndex) ? this.emitNotTerminatedNamedEntity() : 0;
+      }
+      case EntityDecoderState3.NumericDecimal: {
+        return this.emitNumericEntity(0, 2);
+      }
+      case EntityDecoderState3.NumericHex: {
+        return this.emitNumericEntity(0, 3);
+      }
+      case EntityDecoderState3.NumericStart: {
+        (_a5 = this.errors) === null || _a5 === void 0 ? void 0 : _a5.absenceOfDigitsInNumericCharacterReference(this.consumed);
+        return 0;
+      }
+      case EntityDecoderState3.EntityStart: {
+        return 0;
+      }
+    }
+  }
+};
+function determineBranch3(decodeTree, current, nodeIndex, char) {
+  const branchCount = (current & BinTrieFlags3.BRANCH_LENGTH) >> 7;
+  const jumpOffset = current & BinTrieFlags3.JUMP_TABLE;
+  if (branchCount === 0) {
+    return jumpOffset !== 0 && char === jumpOffset ? nodeIndex : -1;
+  }
+  if (jumpOffset) {
+    const value = char - jumpOffset;
+    return value < 0 || value >= branchCount ? -1 : decodeTree[nodeIndex + value] - 1;
+  }
+  let lo = nodeIndex;
+  let hi = lo + branchCount - 1;
+  while (lo <= hi) {
+    const mid = lo + hi >>> 1;
+    const midValue = decodeTree[mid];
+    if (midValue < char) {
+      lo = mid + 1;
+    } else if (midValue > char) {
+      hi = mid - 1;
+    } else {
+      return decodeTree[mid + branchCount];
+    }
+  }
+  return -1;
+}
+
 // node_modules/parse5/dist/common/html.js
 var html_exports = {};
 __export(html_exports, {
   ATTRS: () => ATTRS,
   DOCUMENT_MODE: () => DOCUMENT_MODE,
   NS: () => NS,
+  NUMBERED_HEADERS: () => NUMBERED_HEADERS,
   SPECIAL_ELEMENTS: () => SPECIAL_ELEMENTS,
   TAG_ID: () => TAG_ID,
   TAG_NAMES: () => TAG_NAMES,
   getTagID: () => getTagID,
-  hasUnescapedText: () => hasUnescapedText,
-  isNumberedHeader: () => isNumberedHeader
+  hasUnescapedText: () => hasUnescapedText
 });
 var NS;
 (function(NS2) {
@@ -9408,7 +11190,7 @@ var NS;
   NS2["XLINK"] = "http://www.w3.org/1999/xlink";
   NS2["XML"] = "http://www.w3.org/XML/1998/namespace";
   NS2["XMLNS"] = "http://www.w3.org/2000/xmlns/";
-})(NS = NS || (NS = {}));
+})(NS || (NS = {}));
 var ATTRS;
 (function(ATTRS2) {
   ATTRS2["TYPE"] = "type";
@@ -9419,13 +11201,13 @@ var ATTRS;
   ATTRS2["COLOR"] = "color";
   ATTRS2["FACE"] = "face";
   ATTRS2["SIZE"] = "size";
-})(ATTRS = ATTRS || (ATTRS = {}));
+})(ATTRS || (ATTRS = {}));
 var DOCUMENT_MODE;
 (function(DOCUMENT_MODE2) {
   DOCUMENT_MODE2["NO_QUIRKS"] = "no-quirks";
   DOCUMENT_MODE2["QUIRKS"] = "quirks";
   DOCUMENT_MODE2["LIMITED_QUIRKS"] = "limited-quirks";
-})(DOCUMENT_MODE = DOCUMENT_MODE || (DOCUMENT_MODE = {}));
+})(DOCUMENT_MODE || (DOCUMENT_MODE = {}));
 var TAG_NAMES;
 (function(TAG_NAMES2) {
   TAG_NAMES2["A"] = "a";
@@ -9521,6 +11303,7 @@ var TAG_NAMES;
   TAG_NAMES2["RUBY"] = "ruby";
   TAG_NAMES2["S"] = "s";
   TAG_NAMES2["SCRIPT"] = "script";
+  TAG_NAMES2["SEARCH"] = "search";
   TAG_NAMES2["SECTION"] = "section";
   TAG_NAMES2["SELECT"] = "select";
   TAG_NAMES2["SOURCE"] = "source";
@@ -9550,7 +11333,7 @@ var TAG_NAMES;
   TAG_NAMES2["VAR"] = "var";
   TAG_NAMES2["WBR"] = "wbr";
   TAG_NAMES2["XMP"] = "xmp";
-})(TAG_NAMES = TAG_NAMES || (TAG_NAMES = {}));
+})(TAG_NAMES || (TAG_NAMES = {}));
 var TAG_ID;
 (function(TAG_ID2) {
   TAG_ID2[TAG_ID2["UNKNOWN"] = 0] = "UNKNOWN";
@@ -9647,36 +11430,37 @@ var TAG_ID;
   TAG_ID2[TAG_ID2["RUBY"] = 91] = "RUBY";
   TAG_ID2[TAG_ID2["S"] = 92] = "S";
   TAG_ID2[TAG_ID2["SCRIPT"] = 93] = "SCRIPT";
-  TAG_ID2[TAG_ID2["SECTION"] = 94] = "SECTION";
-  TAG_ID2[TAG_ID2["SELECT"] = 95] = "SELECT";
-  TAG_ID2[TAG_ID2["SOURCE"] = 96] = "SOURCE";
-  TAG_ID2[TAG_ID2["SMALL"] = 97] = "SMALL";
-  TAG_ID2[TAG_ID2["SPAN"] = 98] = "SPAN";
-  TAG_ID2[TAG_ID2["STRIKE"] = 99] = "STRIKE";
-  TAG_ID2[TAG_ID2["STRONG"] = 100] = "STRONG";
-  TAG_ID2[TAG_ID2["STYLE"] = 101] = "STYLE";
-  TAG_ID2[TAG_ID2["SUB"] = 102] = "SUB";
-  TAG_ID2[TAG_ID2["SUMMARY"] = 103] = "SUMMARY";
-  TAG_ID2[TAG_ID2["SUP"] = 104] = "SUP";
-  TAG_ID2[TAG_ID2["TABLE"] = 105] = "TABLE";
-  TAG_ID2[TAG_ID2["TBODY"] = 106] = "TBODY";
-  TAG_ID2[TAG_ID2["TEMPLATE"] = 107] = "TEMPLATE";
-  TAG_ID2[TAG_ID2["TEXTAREA"] = 108] = "TEXTAREA";
-  TAG_ID2[TAG_ID2["TFOOT"] = 109] = "TFOOT";
-  TAG_ID2[TAG_ID2["TD"] = 110] = "TD";
-  TAG_ID2[TAG_ID2["TH"] = 111] = "TH";
-  TAG_ID2[TAG_ID2["THEAD"] = 112] = "THEAD";
-  TAG_ID2[TAG_ID2["TITLE"] = 113] = "TITLE";
-  TAG_ID2[TAG_ID2["TR"] = 114] = "TR";
-  TAG_ID2[TAG_ID2["TRACK"] = 115] = "TRACK";
-  TAG_ID2[TAG_ID2["TT"] = 116] = "TT";
-  TAG_ID2[TAG_ID2["U"] = 117] = "U";
-  TAG_ID2[TAG_ID2["UL"] = 118] = "UL";
-  TAG_ID2[TAG_ID2["SVG"] = 119] = "SVG";
-  TAG_ID2[TAG_ID2["VAR"] = 120] = "VAR";
-  TAG_ID2[TAG_ID2["WBR"] = 121] = "WBR";
-  TAG_ID2[TAG_ID2["XMP"] = 122] = "XMP";
-})(TAG_ID = TAG_ID || (TAG_ID = {}));
+  TAG_ID2[TAG_ID2["SEARCH"] = 94] = "SEARCH";
+  TAG_ID2[TAG_ID2["SECTION"] = 95] = "SECTION";
+  TAG_ID2[TAG_ID2["SELECT"] = 96] = "SELECT";
+  TAG_ID2[TAG_ID2["SOURCE"] = 97] = "SOURCE";
+  TAG_ID2[TAG_ID2["SMALL"] = 98] = "SMALL";
+  TAG_ID2[TAG_ID2["SPAN"] = 99] = "SPAN";
+  TAG_ID2[TAG_ID2["STRIKE"] = 100] = "STRIKE";
+  TAG_ID2[TAG_ID2["STRONG"] = 101] = "STRONG";
+  TAG_ID2[TAG_ID2["STYLE"] = 102] = "STYLE";
+  TAG_ID2[TAG_ID2["SUB"] = 103] = "SUB";
+  TAG_ID2[TAG_ID2["SUMMARY"] = 104] = "SUMMARY";
+  TAG_ID2[TAG_ID2["SUP"] = 105] = "SUP";
+  TAG_ID2[TAG_ID2["TABLE"] = 106] = "TABLE";
+  TAG_ID2[TAG_ID2["TBODY"] = 107] = "TBODY";
+  TAG_ID2[TAG_ID2["TEMPLATE"] = 108] = "TEMPLATE";
+  TAG_ID2[TAG_ID2["TEXTAREA"] = 109] = "TEXTAREA";
+  TAG_ID2[TAG_ID2["TFOOT"] = 110] = "TFOOT";
+  TAG_ID2[TAG_ID2["TD"] = 111] = "TD";
+  TAG_ID2[TAG_ID2["TH"] = 112] = "TH";
+  TAG_ID2[TAG_ID2["THEAD"] = 113] = "THEAD";
+  TAG_ID2[TAG_ID2["TITLE"] = 114] = "TITLE";
+  TAG_ID2[TAG_ID2["TR"] = 115] = "TR";
+  TAG_ID2[TAG_ID2["TRACK"] = 116] = "TRACK";
+  TAG_ID2[TAG_ID2["TT"] = 117] = "TT";
+  TAG_ID2[TAG_ID2["U"] = 118] = "U";
+  TAG_ID2[TAG_ID2["UL"] = 119] = "UL";
+  TAG_ID2[TAG_ID2["SVG"] = 120] = "SVG";
+  TAG_ID2[TAG_ID2["VAR"] = 121] = "VAR";
+  TAG_ID2[TAG_ID2["WBR"] = 122] = "WBR";
+  TAG_ID2[TAG_ID2["XMP"] = 123] = "XMP";
+})(TAG_ID || (TAG_ID = {}));
 var TAG_NAME_TO_ID = new Map([
   [TAG_NAMES.A, TAG_ID.A],
   [TAG_NAMES.ADDRESS, TAG_ID.ADDRESS],
@@ -9771,6 +11555,7 @@ var TAG_NAME_TO_ID = new Map([
   [TAG_NAMES.RUBY, TAG_ID.RUBY],
   [TAG_NAMES.S, TAG_ID.S],
   [TAG_NAMES.SCRIPT, TAG_ID.SCRIPT],
+  [TAG_NAMES.SEARCH, TAG_ID.SEARCH],
   [TAG_NAMES.SECTION, TAG_ID.SECTION],
   [TAG_NAMES.SELECT, TAG_ID.SELECT],
   [TAG_NAMES.SOURCE, TAG_ID.SOURCE],
@@ -9802,8 +11587,8 @@ var TAG_NAME_TO_ID = new Map([
   [TAG_NAMES.XMP, TAG_ID.XMP]
 ]);
 function getTagID(tagName) {
-  var _a2;
-  return (_a2 = TAG_NAME_TO_ID.get(tagName)) !== null && _a2 !== void 0 ? _a2 : TAG_ID.UNKNOWN;
+  var _a5;
+  return (_a5 = TAG_NAME_TO_ID.get(tagName)) !== null && _a5 !== void 0 ? _a5 : TAG_ID.UNKNOWN;
 }
 var $ = TAG_ID;
 var SPECIAL_ELEMENTS = {
@@ -9896,9 +11681,7 @@ var SPECIAL_ELEMENTS = {
   [NS.XML]: new Set(),
   [NS.XMLNS]: new Set()
 };
-function isNumberedHeader(tn) {
-  return tn === $.H1 || tn === $.H2 || tn === $.H3 || tn === $.H4 || tn === $.H5 || tn === $.H6;
-}
+var NUMBERED_HEADERS = new Set([$.H1, $.H2, $.H3, $.H4, $.H5, $.H6]);
 var UNESCAPED_TEXT = new Set([
   TAG_NAMES.STYLE,
   TAG_NAMES.SCRIPT,
@@ -9913,36 +11696,7 @@ function hasUnescapedText(tn, scriptingEnabled) {
 }
 
 // node_modules/parse5/dist/tokenizer/index.js
-var C1_CONTROLS_REFERENCE_REPLACEMENTS = new Map([
-  [128, 8364],
-  [130, 8218],
-  [131, 402],
-  [132, 8222],
-  [133, 8230],
-  [134, 8224],
-  [135, 8225],
-  [136, 710],
-  [137, 8240],
-  [138, 352],
-  [139, 8249],
-  [140, 338],
-  [142, 381],
-  [145, 8216],
-  [146, 8217],
-  [147, 8220],
-  [148, 8221],
-  [149, 8226],
-  [150, 8211],
-  [151, 8212],
-  [152, 732],
-  [153, 8482],
-  [154, 353],
-  [155, 8250],
-  [156, 339],
-  [158, 382],
-  [159, 376]
-]);
-var State;
+var State2;
 (function(State3) {
   State3[State3["DATA"] = 0] = "DATA";
   State3[State3["RCDATA"] = 1] = "RCDATA";
@@ -10016,21 +11770,15 @@ var State;
   State3[State3["CDATA_SECTION_BRACKET"] = 69] = "CDATA_SECTION_BRACKET";
   State3[State3["CDATA_SECTION_END"] = 70] = "CDATA_SECTION_END";
   State3[State3["CHARACTER_REFERENCE"] = 71] = "CHARACTER_REFERENCE";
-  State3[State3["NAMED_CHARACTER_REFERENCE"] = 72] = "NAMED_CHARACTER_REFERENCE";
-  State3[State3["AMBIGUOUS_AMPERSAND"] = 73] = "AMBIGUOUS_AMPERSAND";
-  State3[State3["NUMERIC_CHARACTER_REFERENCE"] = 74] = "NUMERIC_CHARACTER_REFERENCE";
-  State3[State3["HEXADEMICAL_CHARACTER_REFERENCE_START"] = 75] = "HEXADEMICAL_CHARACTER_REFERENCE_START";
-  State3[State3["HEXADEMICAL_CHARACTER_REFERENCE"] = 76] = "HEXADEMICAL_CHARACTER_REFERENCE";
-  State3[State3["DECIMAL_CHARACTER_REFERENCE"] = 77] = "DECIMAL_CHARACTER_REFERENCE";
-  State3[State3["NUMERIC_CHARACTER_REFERENCE_END"] = 78] = "NUMERIC_CHARACTER_REFERENCE_END";
-})(State || (State = {}));
+  State3[State3["AMBIGUOUS_AMPERSAND"] = 72] = "AMBIGUOUS_AMPERSAND";
+})(State2 || (State2 = {}));
 var TokenizerMode = {
-  DATA: State.DATA,
-  RCDATA: State.RCDATA,
-  RAWTEXT: State.RAWTEXT,
-  SCRIPT_DATA: State.SCRIPT_DATA,
-  PLAINTEXT: State.PLAINTEXT,
-  CDATA_SECTION: State.CDATA_SECTION
+  DATA: State2.DATA,
+  RCDATA: State2.RCDATA,
+  RAWTEXT: State2.RAWTEXT,
+  SCRIPT_DATA: State2.SCRIPT_DATA,
+  PLAINTEXT: State2.PLAINTEXT,
+  CDATA_SECTION: State2.CDATA_SECTION
 };
 function isAsciiDigit(cp) {
   return cp >= CODE_POINTS.DIGIT_0 && cp <= CODE_POINTS.DIGIT_9;
@@ -10044,31 +11792,33 @@ function isAsciiLower(cp) {
 function isAsciiLetter(cp) {
   return isAsciiLower(cp) || isAsciiUpper(cp);
 }
-function isAsciiAlphaNumeric2(cp) {
+function isAsciiAlphaNumeric4(cp) {
   return isAsciiLetter(cp) || isAsciiDigit(cp);
-}
-function isAsciiUpperHexDigit(cp) {
-  return cp >= CODE_POINTS.LATIN_CAPITAL_A && cp <= CODE_POINTS.LATIN_CAPITAL_F;
-}
-function isAsciiLowerHexDigit(cp) {
-  return cp >= CODE_POINTS.LATIN_SMALL_A && cp <= CODE_POINTS.LATIN_SMALL_F;
-}
-function isAsciiHexDigit(cp) {
-  return isAsciiDigit(cp) || isAsciiUpperHexDigit(cp) || isAsciiLowerHexDigit(cp);
 }
 function toAsciiLower(cp) {
   return cp + 32;
 }
-function isWhitespace2(cp) {
+function isWhitespace3(cp) {
   return cp === CODE_POINTS.SPACE || cp === CODE_POINTS.LINE_FEED || cp === CODE_POINTS.TABULATION || cp === CODE_POINTS.FORM_FEED;
 }
-function isEntityInAttributeInvalidEnd2(nextCp) {
-  return nextCp === CODE_POINTS.EQUALS_SIGN || isAsciiAlphaNumeric2(nextCp);
-}
 function isScriptDataDoubleEscapeSequenceEnd(cp) {
-  return isWhitespace2(cp) || cp === CODE_POINTS.SOLIDUS || cp === CODE_POINTS.GREATER_THAN_SIGN;
+  return isWhitespace3(cp) || cp === CODE_POINTS.SOLIDUS || cp === CODE_POINTS.GREATER_THAN_SIGN;
 }
-var Tokenizer = class {
+function getErrorForNumericCharacterReference(code) {
+  if (code === CODE_POINTS.NULL) {
+    return ERR.nullCharacterReference;
+  } else if (code > 1114111) {
+    return ERR.characterReferenceOutsideUnicodeRange;
+  } else if (isSurrogate(code)) {
+    return ERR.surrogateCharacterReference;
+  } else if (isUndefinedCodePoint(code)) {
+    return ERR.noncharacterCharacterReference;
+  } else if (isControlCodePoint(code) || code === CODE_POINTS.CARRIAGE_RETURN) {
+    return ERR.controlCharacterReference;
+  }
+  return null;
+}
+var Tokenizer2 = class {
   constructor(options, handler) {
     this.options = options;
     this.handler = handler;
@@ -10077,19 +11827,35 @@ var Tokenizer = class {
     this.inForeignNode = false;
     this.lastStartTagName = "";
     this.active = false;
-    this.state = State.DATA;
-    this.returnState = State.DATA;
-    this.charRefCode = -1;
+    this.state = State2.DATA;
+    this.returnState = State2.DATA;
+    this.entityStartPos = 0;
     this.consumedAfterSnapshot = -1;
     this.currentCharacterToken = null;
     this.currentToken = null;
     this.currentAttr = { name: "", value: "" };
     this.preprocessor = new Preprocessor(handler);
     this.currentLocation = this.getCurrentLocation(-1);
+    this.entityDecoder = new EntityDecoder3(htmlDecodeTree2, (cp, consumed) => {
+      this.preprocessor.pos = this.entityStartPos + consumed - 1;
+      this._flushCodePointConsumedAsCharacterReference(cp);
+    }, handler.onParseError ? {
+      missingSemicolonAfterCharacterReference: () => {
+        this._err(ERR.missingSemicolonAfterCharacterReference, 1);
+      },
+      absenceOfDigitsInNumericCharacterReference: (consumed) => {
+        this._err(ERR.absenceOfDigitsInNumericCharacterReference, this.entityStartPos - this.preprocessor.pos + consumed);
+      },
+      validateNumericCharacterReference: (code) => {
+        const error = getErrorForNumericCharacterReference(code);
+        if (error)
+          this._err(error, 1);
+      }
+    } : void 0);
   }
-  _err(code) {
-    var _a2, _b;
-    (_b = (_a2 = this.handler).onParseError) === null || _b === void 0 ? void 0 : _b.call(_a2, this.preprocessor.getError(code));
+  _err(code, cpOffset = 0) {
+    var _a5, _b;
+    (_b = (_a5 = this.handler).onParseError) === null || _b === void 0 ? void 0 : _b.call(_a5, this.preprocessor.getError(code, cpOffset));
   }
   getCurrentLocation(offset2) {
     if (!this.options.sourceCodeLocationInfo) {
@@ -10147,7 +11913,8 @@ var Tokenizer = class {
   }
   _ensureHibernation() {
     if (this.preprocessor.endOfChunkHit) {
-      this._unconsume(this.consumedAfterSnapshot);
+      this.preprocessor.retreat(this.consumedAfterSnapshot);
+      this.consumedAfterSnapshot = 0;
       this.active = false;
       return true;
     }
@@ -10156,14 +11923,6 @@ var Tokenizer = class {
   _consume() {
     this.consumedAfterSnapshot++;
     return this.preprocessor.advance();
-  }
-  _unconsume(count) {
-    this.consumedAfterSnapshot -= count;
-    this.preprocessor.retreat(count);
-  }
-  _reconsumeInState(state, cp) {
-    this.state = state;
-    this._callState(cp);
   }
   _advanceBy(count) {
     this.consumedAfterSnapshot += count;
@@ -10232,13 +11991,13 @@ var Tokenizer = class {
     this.currentLocation = this.getCurrentLocation(0);
   }
   _leaveAttrName() {
-    var _a2;
+    var _a5;
     var _b;
     const token = this.currentToken;
     if (getTokenAttr(token, this.currentAttr.name) === null) {
       token.attrs.push(this.currentAttr);
       if (token.location && this.currentLocation) {
-        const attrLocations = (_a2 = (_b = token.location).attrs) !== null && _a2 !== void 0 ? _a2 : _b.attrs = Object.create(null);
+        const attrLocations = (_a5 = (_b = token.location).attrs) !== null && _a5 !== void 0 ? _a5 : _b.attrs = Object.create(null);
         attrLocations[this.currentAttr.name] = this.currentLocation;
         this._leaveAttrValue();
       }
@@ -10328,60 +12087,32 @@ var Tokenizer = class {
   }
   _appendCharToCurrentCharacterToken(type, ch) {
     if (this.currentCharacterToken) {
-      if (this.currentCharacterToken.type !== type) {
+      if (this.currentCharacterToken.type === type) {
+        this.currentCharacterToken.chars += ch;
+        return;
+      } else {
         this.currentLocation = this.getCurrentLocation(0);
         this._emitCurrentCharacterToken(this.currentLocation);
         this.preprocessor.dropParsedChunk();
-      } else {
-        this.currentCharacterToken.chars += ch;
-        return;
       }
     }
     this._createCharacterToken(type, ch);
   }
   _emitCodePoint(cp) {
-    const type = isWhitespace2(cp) ? TokenType.WHITESPACE_CHARACTER : cp === CODE_POINTS.NULL ? TokenType.NULL_CHARACTER : TokenType.CHARACTER;
+    const type = isWhitespace3(cp) ? TokenType.WHITESPACE_CHARACTER : cp === CODE_POINTS.NULL ? TokenType.NULL_CHARACTER : TokenType.CHARACTER;
     this._appendCharToCurrentCharacterToken(type, String.fromCodePoint(cp));
   }
   _emitChars(ch) {
     this._appendCharToCurrentCharacterToken(TokenType.CHARACTER, ch);
   }
-  _matchNamedCharacterReference(cp) {
-    let result = null;
-    let excess = 0;
-    let withoutSemicolon = false;
-    for (let i = 0, current = decode_data_html_default[0]; i >= 0; cp = this._consume()) {
-      i = determineBranch(decode_data_html_default, current, i + 1, cp);
-      if (i < 0)
-        break;
-      excess += 1;
-      current = decode_data_html_default[i];
-      const masked = current & BinTrieFlags.VALUE_LENGTH;
-      if (masked) {
-        const valueLength = (masked >> 14) - 1;
-        if (cp !== CODE_POINTS.SEMICOLON && this._isCharacterReferenceInAttribute() && isEntityInAttributeInvalidEnd2(this.preprocessor.peek(1))) {
-          result = [CODE_POINTS.AMPERSAND];
-          i += valueLength;
-        } else {
-          result = valueLength === 0 ? [decode_data_html_default[i] & ~BinTrieFlags.VALUE_LENGTH] : valueLength === 1 ? [decode_data_html_default[++i]] : [decode_data_html_default[++i], decode_data_html_default[++i]];
-          excess = 0;
-          withoutSemicolon = cp !== CODE_POINTS.SEMICOLON;
-        }
-        if (valueLength === 0) {
-          this._consume();
-          break;
-        }
-      }
-    }
-    this._unconsume(excess);
-    if (withoutSemicolon && !this.preprocessor.endOfChunkHit) {
-      this._err(ERR.missingSemicolonAfterCharacterReference);
-    }
-    this._unconsume(1);
-    return result;
+  _startCharacterReference() {
+    this.returnState = this.state;
+    this.state = State2.CHARACTER_REFERENCE;
+    this.entityStartPos = this.preprocessor.pos;
+    this.entityDecoder.startEntity(this._isCharacterReferenceInAttribute() ? DecodingMode3.Attribute : DecodingMode3.Legacy);
   }
   _isCharacterReferenceInAttribute() {
-    return this.returnState === State.ATTRIBUTE_VALUE_DOUBLE_QUOTED || this.returnState === State.ATTRIBUTE_VALUE_SINGLE_QUOTED || this.returnState === State.ATTRIBUTE_VALUE_UNQUOTED;
+    return this.returnState === State2.ATTRIBUTE_VALUE_DOUBLE_QUOTED || this.returnState === State2.ATTRIBUTE_VALUE_SINGLE_QUOTED || this.returnState === State2.ATTRIBUTE_VALUE_UNQUOTED;
   }
   _flushCodePointConsumedAsCharacterReference(cp) {
     if (this._isCharacterReferenceInAttribute()) {
@@ -10392,320 +12123,296 @@ var Tokenizer = class {
   }
   _callState(cp) {
     switch (this.state) {
-      case State.DATA: {
+      case State2.DATA: {
         this._stateData(cp);
         break;
       }
-      case State.RCDATA: {
+      case State2.RCDATA: {
         this._stateRcdata(cp);
         break;
       }
-      case State.RAWTEXT: {
+      case State2.RAWTEXT: {
         this._stateRawtext(cp);
         break;
       }
-      case State.SCRIPT_DATA: {
+      case State2.SCRIPT_DATA: {
         this._stateScriptData(cp);
         break;
       }
-      case State.PLAINTEXT: {
+      case State2.PLAINTEXT: {
         this._statePlaintext(cp);
         break;
       }
-      case State.TAG_OPEN: {
+      case State2.TAG_OPEN: {
         this._stateTagOpen(cp);
         break;
       }
-      case State.END_TAG_OPEN: {
+      case State2.END_TAG_OPEN: {
         this._stateEndTagOpen(cp);
         break;
       }
-      case State.TAG_NAME: {
+      case State2.TAG_NAME: {
         this._stateTagName(cp);
         break;
       }
-      case State.RCDATA_LESS_THAN_SIGN: {
+      case State2.RCDATA_LESS_THAN_SIGN: {
         this._stateRcdataLessThanSign(cp);
         break;
       }
-      case State.RCDATA_END_TAG_OPEN: {
+      case State2.RCDATA_END_TAG_OPEN: {
         this._stateRcdataEndTagOpen(cp);
         break;
       }
-      case State.RCDATA_END_TAG_NAME: {
+      case State2.RCDATA_END_TAG_NAME: {
         this._stateRcdataEndTagName(cp);
         break;
       }
-      case State.RAWTEXT_LESS_THAN_SIGN: {
+      case State2.RAWTEXT_LESS_THAN_SIGN: {
         this._stateRawtextLessThanSign(cp);
         break;
       }
-      case State.RAWTEXT_END_TAG_OPEN: {
+      case State2.RAWTEXT_END_TAG_OPEN: {
         this._stateRawtextEndTagOpen(cp);
         break;
       }
-      case State.RAWTEXT_END_TAG_NAME: {
+      case State2.RAWTEXT_END_TAG_NAME: {
         this._stateRawtextEndTagName(cp);
         break;
       }
-      case State.SCRIPT_DATA_LESS_THAN_SIGN: {
+      case State2.SCRIPT_DATA_LESS_THAN_SIGN: {
         this._stateScriptDataLessThanSign(cp);
         break;
       }
-      case State.SCRIPT_DATA_END_TAG_OPEN: {
+      case State2.SCRIPT_DATA_END_TAG_OPEN: {
         this._stateScriptDataEndTagOpen(cp);
         break;
       }
-      case State.SCRIPT_DATA_END_TAG_NAME: {
+      case State2.SCRIPT_DATA_END_TAG_NAME: {
         this._stateScriptDataEndTagName(cp);
         break;
       }
-      case State.SCRIPT_DATA_ESCAPE_START: {
+      case State2.SCRIPT_DATA_ESCAPE_START: {
         this._stateScriptDataEscapeStart(cp);
         break;
       }
-      case State.SCRIPT_DATA_ESCAPE_START_DASH: {
+      case State2.SCRIPT_DATA_ESCAPE_START_DASH: {
         this._stateScriptDataEscapeStartDash(cp);
         break;
       }
-      case State.SCRIPT_DATA_ESCAPED: {
+      case State2.SCRIPT_DATA_ESCAPED: {
         this._stateScriptDataEscaped(cp);
         break;
       }
-      case State.SCRIPT_DATA_ESCAPED_DASH: {
+      case State2.SCRIPT_DATA_ESCAPED_DASH: {
         this._stateScriptDataEscapedDash(cp);
         break;
       }
-      case State.SCRIPT_DATA_ESCAPED_DASH_DASH: {
+      case State2.SCRIPT_DATA_ESCAPED_DASH_DASH: {
         this._stateScriptDataEscapedDashDash(cp);
         break;
       }
-      case State.SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN: {
+      case State2.SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN: {
         this._stateScriptDataEscapedLessThanSign(cp);
         break;
       }
-      case State.SCRIPT_DATA_ESCAPED_END_TAG_OPEN: {
+      case State2.SCRIPT_DATA_ESCAPED_END_TAG_OPEN: {
         this._stateScriptDataEscapedEndTagOpen(cp);
         break;
       }
-      case State.SCRIPT_DATA_ESCAPED_END_TAG_NAME: {
+      case State2.SCRIPT_DATA_ESCAPED_END_TAG_NAME: {
         this._stateScriptDataEscapedEndTagName(cp);
         break;
       }
-      case State.SCRIPT_DATA_DOUBLE_ESCAPE_START: {
+      case State2.SCRIPT_DATA_DOUBLE_ESCAPE_START: {
         this._stateScriptDataDoubleEscapeStart(cp);
         break;
       }
-      case State.SCRIPT_DATA_DOUBLE_ESCAPED: {
+      case State2.SCRIPT_DATA_DOUBLE_ESCAPED: {
         this._stateScriptDataDoubleEscaped(cp);
         break;
       }
-      case State.SCRIPT_DATA_DOUBLE_ESCAPED_DASH: {
+      case State2.SCRIPT_DATA_DOUBLE_ESCAPED_DASH: {
         this._stateScriptDataDoubleEscapedDash(cp);
         break;
       }
-      case State.SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH: {
+      case State2.SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH: {
         this._stateScriptDataDoubleEscapedDashDash(cp);
         break;
       }
-      case State.SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN: {
+      case State2.SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN: {
         this._stateScriptDataDoubleEscapedLessThanSign(cp);
         break;
       }
-      case State.SCRIPT_DATA_DOUBLE_ESCAPE_END: {
+      case State2.SCRIPT_DATA_DOUBLE_ESCAPE_END: {
         this._stateScriptDataDoubleEscapeEnd(cp);
         break;
       }
-      case State.BEFORE_ATTRIBUTE_NAME: {
+      case State2.BEFORE_ATTRIBUTE_NAME: {
         this._stateBeforeAttributeName(cp);
         break;
       }
-      case State.ATTRIBUTE_NAME: {
+      case State2.ATTRIBUTE_NAME: {
         this._stateAttributeName(cp);
         break;
       }
-      case State.AFTER_ATTRIBUTE_NAME: {
+      case State2.AFTER_ATTRIBUTE_NAME: {
         this._stateAfterAttributeName(cp);
         break;
       }
-      case State.BEFORE_ATTRIBUTE_VALUE: {
+      case State2.BEFORE_ATTRIBUTE_VALUE: {
         this._stateBeforeAttributeValue(cp);
         break;
       }
-      case State.ATTRIBUTE_VALUE_DOUBLE_QUOTED: {
+      case State2.ATTRIBUTE_VALUE_DOUBLE_QUOTED: {
         this._stateAttributeValueDoubleQuoted(cp);
         break;
       }
-      case State.ATTRIBUTE_VALUE_SINGLE_QUOTED: {
+      case State2.ATTRIBUTE_VALUE_SINGLE_QUOTED: {
         this._stateAttributeValueSingleQuoted(cp);
         break;
       }
-      case State.ATTRIBUTE_VALUE_UNQUOTED: {
+      case State2.ATTRIBUTE_VALUE_UNQUOTED: {
         this._stateAttributeValueUnquoted(cp);
         break;
       }
-      case State.AFTER_ATTRIBUTE_VALUE_QUOTED: {
+      case State2.AFTER_ATTRIBUTE_VALUE_QUOTED: {
         this._stateAfterAttributeValueQuoted(cp);
         break;
       }
-      case State.SELF_CLOSING_START_TAG: {
+      case State2.SELF_CLOSING_START_TAG: {
         this._stateSelfClosingStartTag(cp);
         break;
       }
-      case State.BOGUS_COMMENT: {
+      case State2.BOGUS_COMMENT: {
         this._stateBogusComment(cp);
         break;
       }
-      case State.MARKUP_DECLARATION_OPEN: {
+      case State2.MARKUP_DECLARATION_OPEN: {
         this._stateMarkupDeclarationOpen(cp);
         break;
       }
-      case State.COMMENT_START: {
+      case State2.COMMENT_START: {
         this._stateCommentStart(cp);
         break;
       }
-      case State.COMMENT_START_DASH: {
+      case State2.COMMENT_START_DASH: {
         this._stateCommentStartDash(cp);
         break;
       }
-      case State.COMMENT: {
+      case State2.COMMENT: {
         this._stateComment(cp);
         break;
       }
-      case State.COMMENT_LESS_THAN_SIGN: {
+      case State2.COMMENT_LESS_THAN_SIGN: {
         this._stateCommentLessThanSign(cp);
         break;
       }
-      case State.COMMENT_LESS_THAN_SIGN_BANG: {
+      case State2.COMMENT_LESS_THAN_SIGN_BANG: {
         this._stateCommentLessThanSignBang(cp);
         break;
       }
-      case State.COMMENT_LESS_THAN_SIGN_BANG_DASH: {
+      case State2.COMMENT_LESS_THAN_SIGN_BANG_DASH: {
         this._stateCommentLessThanSignBangDash(cp);
         break;
       }
-      case State.COMMENT_LESS_THAN_SIGN_BANG_DASH_DASH: {
+      case State2.COMMENT_LESS_THAN_SIGN_BANG_DASH_DASH: {
         this._stateCommentLessThanSignBangDashDash(cp);
         break;
       }
-      case State.COMMENT_END_DASH: {
+      case State2.COMMENT_END_DASH: {
         this._stateCommentEndDash(cp);
         break;
       }
-      case State.COMMENT_END: {
+      case State2.COMMENT_END: {
         this._stateCommentEnd(cp);
         break;
       }
-      case State.COMMENT_END_BANG: {
+      case State2.COMMENT_END_BANG: {
         this._stateCommentEndBang(cp);
         break;
       }
-      case State.DOCTYPE: {
+      case State2.DOCTYPE: {
         this._stateDoctype(cp);
         break;
       }
-      case State.BEFORE_DOCTYPE_NAME: {
+      case State2.BEFORE_DOCTYPE_NAME: {
         this._stateBeforeDoctypeName(cp);
         break;
       }
-      case State.DOCTYPE_NAME: {
+      case State2.DOCTYPE_NAME: {
         this._stateDoctypeName(cp);
         break;
       }
-      case State.AFTER_DOCTYPE_NAME: {
+      case State2.AFTER_DOCTYPE_NAME: {
         this._stateAfterDoctypeName(cp);
         break;
       }
-      case State.AFTER_DOCTYPE_PUBLIC_KEYWORD: {
+      case State2.AFTER_DOCTYPE_PUBLIC_KEYWORD: {
         this._stateAfterDoctypePublicKeyword(cp);
         break;
       }
-      case State.BEFORE_DOCTYPE_PUBLIC_IDENTIFIER: {
+      case State2.BEFORE_DOCTYPE_PUBLIC_IDENTIFIER: {
         this._stateBeforeDoctypePublicIdentifier(cp);
         break;
       }
-      case State.DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED: {
+      case State2.DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED: {
         this._stateDoctypePublicIdentifierDoubleQuoted(cp);
         break;
       }
-      case State.DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED: {
+      case State2.DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED: {
         this._stateDoctypePublicIdentifierSingleQuoted(cp);
         break;
       }
-      case State.AFTER_DOCTYPE_PUBLIC_IDENTIFIER: {
+      case State2.AFTER_DOCTYPE_PUBLIC_IDENTIFIER: {
         this._stateAfterDoctypePublicIdentifier(cp);
         break;
       }
-      case State.BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS: {
+      case State2.BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS: {
         this._stateBetweenDoctypePublicAndSystemIdentifiers(cp);
         break;
       }
-      case State.AFTER_DOCTYPE_SYSTEM_KEYWORD: {
+      case State2.AFTER_DOCTYPE_SYSTEM_KEYWORD: {
         this._stateAfterDoctypeSystemKeyword(cp);
         break;
       }
-      case State.BEFORE_DOCTYPE_SYSTEM_IDENTIFIER: {
+      case State2.BEFORE_DOCTYPE_SYSTEM_IDENTIFIER: {
         this._stateBeforeDoctypeSystemIdentifier(cp);
         break;
       }
-      case State.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED: {
+      case State2.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED: {
         this._stateDoctypeSystemIdentifierDoubleQuoted(cp);
         break;
       }
-      case State.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED: {
+      case State2.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED: {
         this._stateDoctypeSystemIdentifierSingleQuoted(cp);
         break;
       }
-      case State.AFTER_DOCTYPE_SYSTEM_IDENTIFIER: {
+      case State2.AFTER_DOCTYPE_SYSTEM_IDENTIFIER: {
         this._stateAfterDoctypeSystemIdentifier(cp);
         break;
       }
-      case State.BOGUS_DOCTYPE: {
+      case State2.BOGUS_DOCTYPE: {
         this._stateBogusDoctype(cp);
         break;
       }
-      case State.CDATA_SECTION: {
+      case State2.CDATA_SECTION: {
         this._stateCdataSection(cp);
         break;
       }
-      case State.CDATA_SECTION_BRACKET: {
+      case State2.CDATA_SECTION_BRACKET: {
         this._stateCdataSectionBracket(cp);
         break;
       }
-      case State.CDATA_SECTION_END: {
+      case State2.CDATA_SECTION_END: {
         this._stateCdataSectionEnd(cp);
         break;
       }
-      case State.CHARACTER_REFERENCE: {
-        this._stateCharacterReference(cp);
+      case State2.CHARACTER_REFERENCE: {
+        this._stateCharacterReference();
         break;
       }
-      case State.NAMED_CHARACTER_REFERENCE: {
-        this._stateNamedCharacterReference(cp);
-        break;
-      }
-      case State.AMBIGUOUS_AMPERSAND: {
+      case State2.AMBIGUOUS_AMPERSAND: {
         this._stateAmbiguousAmpersand(cp);
-        break;
-      }
-      case State.NUMERIC_CHARACTER_REFERENCE: {
-        this._stateNumericCharacterReference(cp);
-        break;
-      }
-      case State.HEXADEMICAL_CHARACTER_REFERENCE_START: {
-        this._stateHexademicalCharacterReferenceStart(cp);
-        break;
-      }
-      case State.HEXADEMICAL_CHARACTER_REFERENCE: {
-        this._stateHexademicalCharacterReference(cp);
-        break;
-      }
-      case State.DECIMAL_CHARACTER_REFERENCE: {
-        this._stateDecimalCharacterReference(cp);
-        break;
-      }
-      case State.NUMERIC_CHARACTER_REFERENCE_END: {
-        this._stateNumericCharacterReferenceEnd(cp);
         break;
       }
       default: {
@@ -10716,12 +12423,11 @@ var Tokenizer = class {
   _stateData(cp) {
     switch (cp) {
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.TAG_OPEN;
+        this.state = State2.TAG_OPEN;
         break;
       }
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.DATA;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.NULL: {
@@ -10741,12 +12447,11 @@ var Tokenizer = class {
   _stateRcdata(cp) {
     switch (cp) {
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.RCDATA;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.RCDATA_LESS_THAN_SIGN;
+        this.state = State2.RCDATA_LESS_THAN_SIGN;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -10766,7 +12471,7 @@ var Tokenizer = class {
   _stateRawtext(cp) {
     switch (cp) {
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.RAWTEXT_LESS_THAN_SIGN;
+        this.state = State2.RAWTEXT_LESS_THAN_SIGN;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -10786,7 +12491,7 @@ var Tokenizer = class {
   _stateScriptData(cp) {
     switch (cp) {
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA_LESS_THAN_SIGN;
+        this.state = State2.SCRIPT_DATA_LESS_THAN_SIGN;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -10822,22 +12527,22 @@ var Tokenizer = class {
   _stateTagOpen(cp) {
     if (isAsciiLetter(cp)) {
       this._createStartTagToken();
-      this.state = State.TAG_NAME;
+      this.state = State2.TAG_NAME;
       this._stateTagName(cp);
     } else
       switch (cp) {
         case CODE_POINTS.EXCLAMATION_MARK: {
-          this.state = State.MARKUP_DECLARATION_OPEN;
+          this.state = State2.MARKUP_DECLARATION_OPEN;
           break;
         }
         case CODE_POINTS.SOLIDUS: {
-          this.state = State.END_TAG_OPEN;
+          this.state = State2.END_TAG_OPEN;
           break;
         }
         case CODE_POINTS.QUESTION_MARK: {
           this._err(ERR.unexpectedQuestionMarkInsteadOfTagName);
           this._createCommentToken(1);
-          this.state = State.BOGUS_COMMENT;
+          this.state = State2.BOGUS_COMMENT;
           this._stateBogusComment(cp);
           break;
         }
@@ -10850,7 +12555,7 @@ var Tokenizer = class {
         default: {
           this._err(ERR.invalidFirstCharacterOfTagName);
           this._emitChars("<");
-          this.state = State.DATA;
+          this.state = State2.DATA;
           this._stateData(cp);
         }
       }
@@ -10858,13 +12563,13 @@ var Tokenizer = class {
   _stateEndTagOpen(cp) {
     if (isAsciiLetter(cp)) {
       this._createEndTagToken();
-      this.state = State.TAG_NAME;
+      this.state = State2.TAG_NAME;
       this._stateTagName(cp);
     } else
       switch (cp) {
         case CODE_POINTS.GREATER_THAN_SIGN: {
           this._err(ERR.missingEndTagName);
-          this.state = State.DATA;
+          this.state = State2.DATA;
           break;
         }
         case CODE_POINTS.EOF: {
@@ -10876,7 +12581,7 @@ var Tokenizer = class {
         default: {
           this._err(ERR.invalidFirstCharacterOfTagName);
           this._createCommentToken(2);
-          this.state = State.BOGUS_COMMENT;
+          this.state = State2.BOGUS_COMMENT;
           this._stateBogusComment(cp);
         }
       }
@@ -10888,15 +12593,15 @@ var Tokenizer = class {
       case CODE_POINTS.LINE_FEED:
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
-        this.state = State.BEFORE_ATTRIBUTE_NAME;
+        this.state = State2.BEFORE_ATTRIBUTE_NAME;
         break;
       }
       case CODE_POINTS.SOLIDUS: {
-        this.state = State.SELF_CLOSING_START_TAG;
+        this.state = State2.SELF_CLOSING_START_TAG;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentTagToken();
         break;
       }
@@ -10917,20 +12622,20 @@ var Tokenizer = class {
   }
   _stateRcdataLessThanSign(cp) {
     if (cp === CODE_POINTS.SOLIDUS) {
-      this.state = State.RCDATA_END_TAG_OPEN;
+      this.state = State2.RCDATA_END_TAG_OPEN;
     } else {
       this._emitChars("<");
-      this.state = State.RCDATA;
+      this.state = State2.RCDATA;
       this._stateRcdata(cp);
     }
   }
   _stateRcdataEndTagOpen(cp) {
     if (isAsciiLetter(cp)) {
-      this.state = State.RCDATA_END_TAG_NAME;
+      this.state = State2.RCDATA_END_TAG_NAME;
       this._stateRcdataEndTagName(cp);
     } else {
       this._emitChars("</");
-      this.state = State.RCDATA;
+      this.state = State2.RCDATA;
       this._stateRcdata(cp);
     }
   }
@@ -10948,18 +12653,18 @@ var Tokenizer = class {
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
         this._advanceBy(this.lastStartTagName.length);
-        this.state = State.BEFORE_ATTRIBUTE_NAME;
+        this.state = State2.BEFORE_ATTRIBUTE_NAME;
         return false;
       }
       case CODE_POINTS.SOLIDUS: {
         this._advanceBy(this.lastStartTagName.length);
-        this.state = State.SELF_CLOSING_START_TAG;
+        this.state = State2.SELF_CLOSING_START_TAG;
         return false;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._advanceBy(this.lastStartTagName.length);
         this.emitCurrentTagToken();
-        this.state = State.DATA;
+        this.state = State2.DATA;
         return false;
       }
       default: {
@@ -10970,98 +12675,98 @@ var Tokenizer = class {
   _stateRcdataEndTagName(cp) {
     if (this.handleSpecialEndTag(cp)) {
       this._emitChars("</");
-      this.state = State.RCDATA;
+      this.state = State2.RCDATA;
       this._stateRcdata(cp);
     }
   }
   _stateRawtextLessThanSign(cp) {
     if (cp === CODE_POINTS.SOLIDUS) {
-      this.state = State.RAWTEXT_END_TAG_OPEN;
+      this.state = State2.RAWTEXT_END_TAG_OPEN;
     } else {
       this._emitChars("<");
-      this.state = State.RAWTEXT;
+      this.state = State2.RAWTEXT;
       this._stateRawtext(cp);
     }
   }
   _stateRawtextEndTagOpen(cp) {
     if (isAsciiLetter(cp)) {
-      this.state = State.RAWTEXT_END_TAG_NAME;
+      this.state = State2.RAWTEXT_END_TAG_NAME;
       this._stateRawtextEndTagName(cp);
     } else {
       this._emitChars("</");
-      this.state = State.RAWTEXT;
+      this.state = State2.RAWTEXT;
       this._stateRawtext(cp);
     }
   }
   _stateRawtextEndTagName(cp) {
     if (this.handleSpecialEndTag(cp)) {
       this._emitChars("</");
-      this.state = State.RAWTEXT;
+      this.state = State2.RAWTEXT;
       this._stateRawtext(cp);
     }
   }
   _stateScriptDataLessThanSign(cp) {
     switch (cp) {
       case CODE_POINTS.SOLIDUS: {
-        this.state = State.SCRIPT_DATA_END_TAG_OPEN;
+        this.state = State2.SCRIPT_DATA_END_TAG_OPEN;
         break;
       }
       case CODE_POINTS.EXCLAMATION_MARK: {
-        this.state = State.SCRIPT_DATA_ESCAPE_START;
+        this.state = State2.SCRIPT_DATA_ESCAPE_START;
         this._emitChars("<!");
         break;
       }
       default: {
         this._emitChars("<");
-        this.state = State.SCRIPT_DATA;
+        this.state = State2.SCRIPT_DATA;
         this._stateScriptData(cp);
       }
     }
   }
   _stateScriptDataEndTagOpen(cp) {
     if (isAsciiLetter(cp)) {
-      this.state = State.SCRIPT_DATA_END_TAG_NAME;
+      this.state = State2.SCRIPT_DATA_END_TAG_NAME;
       this._stateScriptDataEndTagName(cp);
     } else {
       this._emitChars("</");
-      this.state = State.SCRIPT_DATA;
+      this.state = State2.SCRIPT_DATA;
       this._stateScriptData(cp);
     }
   }
   _stateScriptDataEndTagName(cp) {
     if (this.handleSpecialEndTag(cp)) {
       this._emitChars("</");
-      this.state = State.SCRIPT_DATA;
+      this.state = State2.SCRIPT_DATA;
       this._stateScriptData(cp);
     }
   }
   _stateScriptDataEscapeStart(cp) {
     if (cp === CODE_POINTS.HYPHEN_MINUS) {
-      this.state = State.SCRIPT_DATA_ESCAPE_START_DASH;
+      this.state = State2.SCRIPT_DATA_ESCAPE_START_DASH;
       this._emitChars("-");
     } else {
-      this.state = State.SCRIPT_DATA;
+      this.state = State2.SCRIPT_DATA;
       this._stateScriptData(cp);
     }
   }
   _stateScriptDataEscapeStartDash(cp) {
     if (cp === CODE_POINTS.HYPHEN_MINUS) {
-      this.state = State.SCRIPT_DATA_ESCAPED_DASH_DASH;
+      this.state = State2.SCRIPT_DATA_ESCAPED_DASH_DASH;
       this._emitChars("-");
     } else {
-      this.state = State.SCRIPT_DATA;
+      this.state = State2.SCRIPT_DATA;
       this._stateScriptData(cp);
     }
   }
   _stateScriptDataEscaped(cp) {
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
-        this.state = State.SCRIPT_DATA_ESCAPED_DASH;
+        this.state = State2.SCRIPT_DATA_ESCAPED_DASH;
         this._emitChars("-");
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
+        this.state = State2.SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -11082,17 +12787,17 @@ var Tokenizer = class {
   _stateScriptDataEscapedDash(cp) {
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
-        this.state = State.SCRIPT_DATA_ESCAPED_DASH_DASH;
+        this.state = State2.SCRIPT_DATA_ESCAPED_DASH_DASH;
         this._emitChars("-");
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
+        this.state = State2.SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
         break;
       }
       case CODE_POINTS.NULL: {
         this._err(ERR.unexpectedNullCharacter);
-        this.state = State.SCRIPT_DATA_ESCAPED;
+        this.state = State2.SCRIPT_DATA_ESCAPED;
         this._emitChars(REPLACEMENT_CHARACTER);
         break;
       }
@@ -11102,7 +12807,7 @@ var Tokenizer = class {
         break;
       }
       default: {
-        this.state = State.SCRIPT_DATA_ESCAPED;
+        this.state = State2.SCRIPT_DATA_ESCAPED;
         this._emitCodePoint(cp);
       }
     }
@@ -11114,17 +12819,17 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
+        this.state = State2.SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA;
+        this.state = State2.SCRIPT_DATA;
         this._emitChars(">");
         break;
       }
       case CODE_POINTS.NULL: {
         this._err(ERR.unexpectedNullCharacter);
-        this.state = State.SCRIPT_DATA_ESCAPED;
+        this.state = State2.SCRIPT_DATA_ESCAPED;
         this._emitChars(REPLACEMENT_CHARACTER);
         break;
       }
@@ -11134,38 +12839,38 @@ var Tokenizer = class {
         break;
       }
       default: {
-        this.state = State.SCRIPT_DATA_ESCAPED;
+        this.state = State2.SCRIPT_DATA_ESCAPED;
         this._emitCodePoint(cp);
       }
     }
   }
   _stateScriptDataEscapedLessThanSign(cp) {
     if (cp === CODE_POINTS.SOLIDUS) {
-      this.state = State.SCRIPT_DATA_ESCAPED_END_TAG_OPEN;
+      this.state = State2.SCRIPT_DATA_ESCAPED_END_TAG_OPEN;
     } else if (isAsciiLetter(cp)) {
       this._emitChars("<");
-      this.state = State.SCRIPT_DATA_DOUBLE_ESCAPE_START;
+      this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPE_START;
       this._stateScriptDataDoubleEscapeStart(cp);
     } else {
       this._emitChars("<");
-      this.state = State.SCRIPT_DATA_ESCAPED;
+      this.state = State2.SCRIPT_DATA_ESCAPED;
       this._stateScriptDataEscaped(cp);
     }
   }
   _stateScriptDataEscapedEndTagOpen(cp) {
     if (isAsciiLetter(cp)) {
-      this.state = State.SCRIPT_DATA_ESCAPED_END_TAG_NAME;
+      this.state = State2.SCRIPT_DATA_ESCAPED_END_TAG_NAME;
       this._stateScriptDataEscapedEndTagName(cp);
     } else {
       this._emitChars("</");
-      this.state = State.SCRIPT_DATA_ESCAPED;
+      this.state = State2.SCRIPT_DATA_ESCAPED;
       this._stateScriptDataEscaped(cp);
     }
   }
   _stateScriptDataEscapedEndTagName(cp) {
     if (this.handleSpecialEndTag(cp)) {
       this._emitChars("</");
-      this.state = State.SCRIPT_DATA_ESCAPED;
+      this.state = State2.SCRIPT_DATA_ESCAPED;
       this._stateScriptDataEscaped(cp);
     }
   }
@@ -11175,21 +12880,21 @@ var Tokenizer = class {
       for (let i = 0; i < SEQUENCES.SCRIPT.length; i++) {
         this._emitCodePoint(this._consume());
       }
-      this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED;
+      this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED;
     } else if (!this._ensureHibernation()) {
-      this.state = State.SCRIPT_DATA_ESCAPED;
+      this.state = State2.SCRIPT_DATA_ESCAPED;
       this._stateScriptDataEscaped(cp);
     }
   }
   _stateScriptDataDoubleEscaped(cp) {
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED_DASH;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED_DASH;
         this._emitChars("-");
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
         this._emitChars("<");
         break;
       }
@@ -11211,18 +12916,18 @@ var Tokenizer = class {
   _stateScriptDataDoubleEscapedDash(cp) {
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH;
         this._emitChars("-");
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
         this._emitChars("<");
         break;
       }
       case CODE_POINTS.NULL: {
         this._err(ERR.unexpectedNullCharacter);
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED;
         this._emitChars(REPLACEMENT_CHARACTER);
         break;
       }
@@ -11232,7 +12937,7 @@ var Tokenizer = class {
         break;
       }
       default: {
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED;
         this._emitCodePoint(cp);
       }
     }
@@ -11244,18 +12949,18 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
         this._emitChars("<");
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.SCRIPT_DATA;
+        this.state = State2.SCRIPT_DATA;
         this._emitChars(">");
         break;
       }
       case CODE_POINTS.NULL: {
         this._err(ERR.unexpectedNullCharacter);
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED;
         this._emitChars(REPLACEMENT_CHARACTER);
         break;
       }
@@ -11265,17 +12970,17 @@ var Tokenizer = class {
         break;
       }
       default: {
-        this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED;
+        this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED;
         this._emitCodePoint(cp);
       }
     }
   }
   _stateScriptDataDoubleEscapedLessThanSign(cp) {
     if (cp === CODE_POINTS.SOLIDUS) {
-      this.state = State.SCRIPT_DATA_DOUBLE_ESCAPE_END;
+      this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPE_END;
       this._emitChars("/");
     } else {
-      this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED;
+      this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED;
       this._stateScriptDataDoubleEscaped(cp);
     }
   }
@@ -11285,9 +12990,9 @@ var Tokenizer = class {
       for (let i = 0; i < SEQUENCES.SCRIPT.length; i++) {
         this._emitCodePoint(this._consume());
       }
-      this.state = State.SCRIPT_DATA_ESCAPED;
+      this.state = State2.SCRIPT_DATA_ESCAPED;
     } else if (!this._ensureHibernation()) {
-      this.state = State.SCRIPT_DATA_DOUBLE_ESCAPED;
+      this.state = State2.SCRIPT_DATA_DOUBLE_ESCAPED;
       this._stateScriptDataDoubleEscaped(cp);
     }
   }
@@ -11302,19 +13007,19 @@ var Tokenizer = class {
       case CODE_POINTS.SOLIDUS:
       case CODE_POINTS.GREATER_THAN_SIGN:
       case CODE_POINTS.EOF: {
-        this.state = State.AFTER_ATTRIBUTE_NAME;
+        this.state = State2.AFTER_ATTRIBUTE_NAME;
         this._stateAfterAttributeName(cp);
         break;
       }
       case CODE_POINTS.EQUALS_SIGN: {
         this._err(ERR.unexpectedEqualsSignBeforeAttributeName);
         this._createAttr("=");
-        this.state = State.ATTRIBUTE_NAME;
+        this.state = State2.ATTRIBUTE_NAME;
         break;
       }
       default: {
         this._createAttr("");
-        this.state = State.ATTRIBUTE_NAME;
+        this.state = State2.ATTRIBUTE_NAME;
         this._stateAttributeName(cp);
       }
     }
@@ -11329,13 +13034,13 @@ var Tokenizer = class {
       case CODE_POINTS.GREATER_THAN_SIGN:
       case CODE_POINTS.EOF: {
         this._leaveAttrName();
-        this.state = State.AFTER_ATTRIBUTE_NAME;
+        this.state = State2.AFTER_ATTRIBUTE_NAME;
         this._stateAfterAttributeName(cp);
         break;
       }
       case CODE_POINTS.EQUALS_SIGN: {
         this._leaveAttrName();
-        this.state = State.BEFORE_ATTRIBUTE_VALUE;
+        this.state = State2.BEFORE_ATTRIBUTE_VALUE;
         break;
       }
       case CODE_POINTS.QUOTATION_MARK:
@@ -11364,15 +13069,15 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.SOLIDUS: {
-        this.state = State.SELF_CLOSING_START_TAG;
+        this.state = State2.SELF_CLOSING_START_TAG;
         break;
       }
       case CODE_POINTS.EQUALS_SIGN: {
-        this.state = State.BEFORE_ATTRIBUTE_VALUE;
+        this.state = State2.BEFORE_ATTRIBUTE_VALUE;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentTagToken();
         break;
       }
@@ -11383,7 +13088,7 @@ var Tokenizer = class {
       }
       default: {
         this._createAttr("");
-        this.state = State.ATTRIBUTE_NAME;
+        this.state = State2.ATTRIBUTE_NAME;
         this._stateAttributeName(cp);
       }
     }
@@ -11397,21 +13102,21 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.QUOTATION_MARK: {
-        this.state = State.ATTRIBUTE_VALUE_DOUBLE_QUOTED;
+        this.state = State2.ATTRIBUTE_VALUE_DOUBLE_QUOTED;
         break;
       }
       case CODE_POINTS.APOSTROPHE: {
-        this.state = State.ATTRIBUTE_VALUE_SINGLE_QUOTED;
+        this.state = State2.ATTRIBUTE_VALUE_SINGLE_QUOTED;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._err(ERR.missingAttributeValue);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentTagToken();
         break;
       }
       default: {
-        this.state = State.ATTRIBUTE_VALUE_UNQUOTED;
+        this.state = State2.ATTRIBUTE_VALUE_UNQUOTED;
         this._stateAttributeValueUnquoted(cp);
       }
     }
@@ -11419,12 +13124,11 @@ var Tokenizer = class {
   _stateAttributeValueDoubleQuoted(cp) {
     switch (cp) {
       case CODE_POINTS.QUOTATION_MARK: {
-        this.state = State.AFTER_ATTRIBUTE_VALUE_QUOTED;
+        this.state = State2.AFTER_ATTRIBUTE_VALUE_QUOTED;
         break;
       }
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.ATTRIBUTE_VALUE_DOUBLE_QUOTED;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.NULL: {
@@ -11445,12 +13149,11 @@ var Tokenizer = class {
   _stateAttributeValueSingleQuoted(cp) {
     switch (cp) {
       case CODE_POINTS.APOSTROPHE: {
-        this.state = State.AFTER_ATTRIBUTE_VALUE_QUOTED;
+        this.state = State2.AFTER_ATTRIBUTE_VALUE_QUOTED;
         break;
       }
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.ATTRIBUTE_VALUE_SINGLE_QUOTED;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.NULL: {
@@ -11475,17 +13178,16 @@ var Tokenizer = class {
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
         this._leaveAttrValue();
-        this.state = State.BEFORE_ATTRIBUTE_NAME;
+        this.state = State2.BEFORE_ATTRIBUTE_NAME;
         break;
       }
       case CODE_POINTS.AMPERSAND: {
-        this.returnState = State.ATTRIBUTE_VALUE_UNQUOTED;
-        this.state = State.CHARACTER_REFERENCE;
+        this._startCharacterReference();
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._leaveAttrValue();
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentTagToken();
         break;
       }
@@ -11520,17 +13222,17 @@ var Tokenizer = class {
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
         this._leaveAttrValue();
-        this.state = State.BEFORE_ATTRIBUTE_NAME;
+        this.state = State2.BEFORE_ATTRIBUTE_NAME;
         break;
       }
       case CODE_POINTS.SOLIDUS: {
         this._leaveAttrValue();
-        this.state = State.SELF_CLOSING_START_TAG;
+        this.state = State2.SELF_CLOSING_START_TAG;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._leaveAttrValue();
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentTagToken();
         break;
       }
@@ -11541,7 +13243,7 @@ var Tokenizer = class {
       }
       default: {
         this._err(ERR.missingWhitespaceBetweenAttributes);
-        this.state = State.BEFORE_ATTRIBUTE_NAME;
+        this.state = State2.BEFORE_ATTRIBUTE_NAME;
         this._stateBeforeAttributeName(cp);
       }
     }
@@ -11551,7 +13253,7 @@ var Tokenizer = class {
       case CODE_POINTS.GREATER_THAN_SIGN: {
         const token = this.currentToken;
         token.selfClosing = true;
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentTagToken();
         break;
       }
@@ -11562,7 +13264,7 @@ var Tokenizer = class {
       }
       default: {
         this._err(ERR.unexpectedSolidusInTag);
-        this.state = State.BEFORE_ATTRIBUTE_NAME;
+        this.state = State2.BEFORE_ATTRIBUTE_NAME;
         this._stateBeforeAttributeName(cp);
       }
     }
@@ -11571,7 +13273,7 @@ var Tokenizer = class {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentComment(token);
         break;
       }
@@ -11593,41 +13295,41 @@ var Tokenizer = class {
   _stateMarkupDeclarationOpen(cp) {
     if (this._consumeSequenceIfMatch(SEQUENCES.DASH_DASH, true)) {
       this._createCommentToken(SEQUENCES.DASH_DASH.length + 1);
-      this.state = State.COMMENT_START;
+      this.state = State2.COMMENT_START;
     } else if (this._consumeSequenceIfMatch(SEQUENCES.DOCTYPE, false)) {
       this.currentLocation = this.getCurrentLocation(SEQUENCES.DOCTYPE.length + 1);
-      this.state = State.DOCTYPE;
+      this.state = State2.DOCTYPE;
     } else if (this._consumeSequenceIfMatch(SEQUENCES.CDATA_START, true)) {
       if (this.inForeignNode) {
-        this.state = State.CDATA_SECTION;
+        this.state = State2.CDATA_SECTION;
       } else {
         this._err(ERR.cdataInHtmlContent);
         this._createCommentToken(SEQUENCES.CDATA_START.length + 1);
         this.currentToken.data = "[CDATA[";
-        this.state = State.BOGUS_COMMENT;
+        this.state = State2.BOGUS_COMMENT;
       }
     } else if (!this._ensureHibernation()) {
       this._err(ERR.incorrectlyOpenedComment);
       this._createCommentToken(2);
-      this.state = State.BOGUS_COMMENT;
+      this.state = State2.BOGUS_COMMENT;
       this._stateBogusComment(cp);
     }
   }
   _stateCommentStart(cp) {
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
-        this.state = State.COMMENT_START_DASH;
+        this.state = State2.COMMENT_START_DASH;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._err(ERR.abruptClosingOfEmptyComment);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         const token = this.currentToken;
         this.emitCurrentComment(token);
         break;
       }
       default: {
-        this.state = State.COMMENT;
+        this.state = State2.COMMENT;
         this._stateComment(cp);
       }
     }
@@ -11636,12 +13338,12 @@ var Tokenizer = class {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
-        this.state = State.COMMENT_END;
+        this.state = State2.COMMENT_END;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._err(ERR.abruptClosingOfEmptyComment);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentComment(token);
         break;
       }
@@ -11653,7 +13355,7 @@ var Tokenizer = class {
       }
       default: {
         token.data += "-";
-        this.state = State.COMMENT;
+        this.state = State2.COMMENT;
         this._stateComment(cp);
       }
     }
@@ -11662,12 +13364,12 @@ var Tokenizer = class {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
-        this.state = State.COMMENT_END_DASH;
+        this.state = State2.COMMENT_END_DASH;
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
         token.data += "<";
-        this.state = State.COMMENT_LESS_THAN_SIGN;
+        this.state = State2.COMMENT_LESS_THAN_SIGN;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -11691,7 +13393,7 @@ var Tokenizer = class {
     switch (cp) {
       case CODE_POINTS.EXCLAMATION_MARK: {
         token.data += "!";
-        this.state = State.COMMENT_LESS_THAN_SIGN_BANG;
+        this.state = State2.COMMENT_LESS_THAN_SIGN_BANG;
         break;
       }
       case CODE_POINTS.LESS_THAN_SIGN: {
@@ -11699,24 +13401,24 @@ var Tokenizer = class {
         break;
       }
       default: {
-        this.state = State.COMMENT;
+        this.state = State2.COMMENT;
         this._stateComment(cp);
       }
     }
   }
   _stateCommentLessThanSignBang(cp) {
     if (cp === CODE_POINTS.HYPHEN_MINUS) {
-      this.state = State.COMMENT_LESS_THAN_SIGN_BANG_DASH;
+      this.state = State2.COMMENT_LESS_THAN_SIGN_BANG_DASH;
     } else {
-      this.state = State.COMMENT;
+      this.state = State2.COMMENT;
       this._stateComment(cp);
     }
   }
   _stateCommentLessThanSignBangDash(cp) {
     if (cp === CODE_POINTS.HYPHEN_MINUS) {
-      this.state = State.COMMENT_LESS_THAN_SIGN_BANG_DASH_DASH;
+      this.state = State2.COMMENT_LESS_THAN_SIGN_BANG_DASH_DASH;
     } else {
-      this.state = State.COMMENT_END_DASH;
+      this.state = State2.COMMENT_END_DASH;
       this._stateCommentEndDash(cp);
     }
   }
@@ -11724,14 +13426,14 @@ var Tokenizer = class {
     if (cp !== CODE_POINTS.GREATER_THAN_SIGN && cp !== CODE_POINTS.EOF) {
       this._err(ERR.nestedComment);
     }
-    this.state = State.COMMENT_END;
+    this.state = State2.COMMENT_END;
     this._stateCommentEnd(cp);
   }
   _stateCommentEndDash(cp) {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
-        this.state = State.COMMENT_END;
+        this.state = State2.COMMENT_END;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -11742,7 +13444,7 @@ var Tokenizer = class {
       }
       default: {
         token.data += "-";
-        this.state = State.COMMENT;
+        this.state = State2.COMMENT;
         this._stateComment(cp);
       }
     }
@@ -11751,12 +13453,12 @@ var Tokenizer = class {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentComment(token);
         break;
       }
       case CODE_POINTS.EXCLAMATION_MARK: {
-        this.state = State.COMMENT_END_BANG;
+        this.state = State2.COMMENT_END_BANG;
         break;
       }
       case CODE_POINTS.HYPHEN_MINUS: {
@@ -11771,7 +13473,7 @@ var Tokenizer = class {
       }
       default: {
         token.data += "--";
-        this.state = State.COMMENT;
+        this.state = State2.COMMENT;
         this._stateComment(cp);
       }
     }
@@ -11781,12 +13483,12 @@ var Tokenizer = class {
     switch (cp) {
       case CODE_POINTS.HYPHEN_MINUS: {
         token.data += "--!";
-        this.state = State.COMMENT_END_DASH;
+        this.state = State2.COMMENT_END_DASH;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._err(ERR.incorrectlyClosedComment);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentComment(token);
         break;
       }
@@ -11798,7 +13500,7 @@ var Tokenizer = class {
       }
       default: {
         token.data += "--!";
-        this.state = State.COMMENT;
+        this.state = State2.COMMENT;
         this._stateComment(cp);
       }
     }
@@ -11809,11 +13511,11 @@ var Tokenizer = class {
       case CODE_POINTS.LINE_FEED:
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
-        this.state = State.BEFORE_DOCTYPE_NAME;
+        this.state = State2.BEFORE_DOCTYPE_NAME;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.BEFORE_DOCTYPE_NAME;
+        this.state = State2.BEFORE_DOCTYPE_NAME;
         this._stateBeforeDoctypeName(cp);
         break;
       }
@@ -11828,7 +13530,7 @@ var Tokenizer = class {
       }
       default: {
         this._err(ERR.missingWhitespaceBeforeDoctypeName);
-        this.state = State.BEFORE_DOCTYPE_NAME;
+        this.state = State2.BEFORE_DOCTYPE_NAME;
         this._stateBeforeDoctypeName(cp);
       }
     }
@@ -11836,7 +13538,7 @@ var Tokenizer = class {
   _stateBeforeDoctypeName(cp) {
     if (isAsciiUpper(cp)) {
       this._createDoctypeToken(String.fromCharCode(toAsciiLower(cp)));
-      this.state = State.DOCTYPE_NAME;
+      this.state = State2.DOCTYPE_NAME;
     } else
       switch (cp) {
         case CODE_POINTS.SPACE:
@@ -11848,7 +13550,7 @@ var Tokenizer = class {
         case CODE_POINTS.NULL: {
           this._err(ERR.unexpectedNullCharacter);
           this._createDoctypeToken(REPLACEMENT_CHARACTER);
-          this.state = State.DOCTYPE_NAME;
+          this.state = State2.DOCTYPE_NAME;
           break;
         }
         case CODE_POINTS.GREATER_THAN_SIGN: {
@@ -11857,7 +13559,7 @@ var Tokenizer = class {
           const token = this.currentToken;
           token.forceQuirks = true;
           this.emitCurrentDoctype(token);
-          this.state = State.DATA;
+          this.state = State2.DATA;
           break;
         }
         case CODE_POINTS.EOF: {
@@ -11871,7 +13573,7 @@ var Tokenizer = class {
         }
         default: {
           this._createDoctypeToken(String.fromCodePoint(cp));
-          this.state = State.DOCTYPE_NAME;
+          this.state = State2.DOCTYPE_NAME;
         }
       }
   }
@@ -11882,11 +13584,11 @@ var Tokenizer = class {
       case CODE_POINTS.LINE_FEED:
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
-        this.state = State.AFTER_DOCTYPE_NAME;
+        this.state = State2.AFTER_DOCTYPE_NAME;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentDoctype(token);
         break;
       }
@@ -11917,7 +13619,7 @@ var Tokenizer = class {
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentDoctype(token);
         break;
       }
@@ -11930,13 +13632,13 @@ var Tokenizer = class {
       }
       default: {
         if (this._consumeSequenceIfMatch(SEQUENCES.PUBLIC, false)) {
-          this.state = State.AFTER_DOCTYPE_PUBLIC_KEYWORD;
+          this.state = State2.AFTER_DOCTYPE_PUBLIC_KEYWORD;
         } else if (this._consumeSequenceIfMatch(SEQUENCES.SYSTEM, false)) {
-          this.state = State.AFTER_DOCTYPE_SYSTEM_KEYWORD;
+          this.state = State2.AFTER_DOCTYPE_SYSTEM_KEYWORD;
         } else if (!this._ensureHibernation()) {
           this._err(ERR.invalidCharacterSequenceAfterDoctypeName);
           token.forceQuirks = true;
-          this.state = State.BOGUS_DOCTYPE;
+          this.state = State2.BOGUS_DOCTYPE;
           this._stateBogusDoctype(cp);
         }
       }
@@ -11949,25 +13651,25 @@ var Tokenizer = class {
       case CODE_POINTS.LINE_FEED:
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
-        this.state = State.BEFORE_DOCTYPE_PUBLIC_IDENTIFIER;
+        this.state = State2.BEFORE_DOCTYPE_PUBLIC_IDENTIFIER;
         break;
       }
       case CODE_POINTS.QUOTATION_MARK: {
         this._err(ERR.missingWhitespaceAfterDoctypePublicKeyword);
         token.publicId = "";
-        this.state = State.DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
+        this.state = State2.DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
         break;
       }
       case CODE_POINTS.APOSTROPHE: {
         this._err(ERR.missingWhitespaceAfterDoctypePublicKeyword);
         token.publicId = "";
-        this.state = State.DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
+        this.state = State2.DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._err(ERR.missingDoctypePublicIdentifier);
         token.forceQuirks = true;
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentDoctype(token);
         break;
       }
@@ -11981,7 +13683,7 @@ var Tokenizer = class {
       default: {
         this._err(ERR.missingQuoteBeforeDoctypePublicIdentifier);
         token.forceQuirks = true;
-        this.state = State.BOGUS_DOCTYPE;
+        this.state = State2.BOGUS_DOCTYPE;
         this._stateBogusDoctype(cp);
       }
     }
@@ -11997,18 +13699,18 @@ var Tokenizer = class {
       }
       case CODE_POINTS.QUOTATION_MARK: {
         token.publicId = "";
-        this.state = State.DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
+        this.state = State2.DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
         break;
       }
       case CODE_POINTS.APOSTROPHE: {
         token.publicId = "";
-        this.state = State.DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
+        this.state = State2.DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._err(ERR.missingDoctypePublicIdentifier);
         token.forceQuirks = true;
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentDoctype(token);
         break;
       }
@@ -12022,7 +13724,7 @@ var Tokenizer = class {
       default: {
         this._err(ERR.missingQuoteBeforeDoctypePublicIdentifier);
         token.forceQuirks = true;
-        this.state = State.BOGUS_DOCTYPE;
+        this.state = State2.BOGUS_DOCTYPE;
         this._stateBogusDoctype(cp);
       }
     }
@@ -12031,7 +13733,7 @@ var Tokenizer = class {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.QUOTATION_MARK: {
-        this.state = State.AFTER_DOCTYPE_PUBLIC_IDENTIFIER;
+        this.state = State2.AFTER_DOCTYPE_PUBLIC_IDENTIFIER;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -12043,7 +13745,7 @@ var Tokenizer = class {
         this._err(ERR.abruptDoctypePublicIdentifier);
         token.forceQuirks = true;
         this.emitCurrentDoctype(token);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -12062,7 +13764,7 @@ var Tokenizer = class {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.APOSTROPHE: {
-        this.state = State.AFTER_DOCTYPE_PUBLIC_IDENTIFIER;
+        this.state = State2.AFTER_DOCTYPE_PUBLIC_IDENTIFIER;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -12074,7 +13776,7 @@ var Tokenizer = class {
         this._err(ERR.abruptDoctypePublicIdentifier);
         token.forceQuirks = true;
         this.emitCurrentDoctype(token);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -12096,24 +13798,24 @@ var Tokenizer = class {
       case CODE_POINTS.LINE_FEED:
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
-        this.state = State.BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS;
+        this.state = State2.BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentDoctype(token);
         break;
       }
       case CODE_POINTS.QUOTATION_MARK: {
         this._err(ERR.missingWhitespaceBetweenDoctypePublicAndSystemIdentifiers);
         token.systemId = "";
-        this.state = State.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
+        this.state = State2.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
         break;
       }
       case CODE_POINTS.APOSTROPHE: {
         this._err(ERR.missingWhitespaceBetweenDoctypePublicAndSystemIdentifiers);
         token.systemId = "";
-        this.state = State.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
+        this.state = State2.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -12126,7 +13828,7 @@ var Tokenizer = class {
       default: {
         this._err(ERR.missingQuoteBeforeDoctypeSystemIdentifier);
         token.forceQuirks = true;
-        this.state = State.BOGUS_DOCTYPE;
+        this.state = State2.BOGUS_DOCTYPE;
         this._stateBogusDoctype(cp);
       }
     }
@@ -12142,17 +13844,17 @@ var Tokenizer = class {
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this.emitCurrentDoctype(token);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         break;
       }
       case CODE_POINTS.QUOTATION_MARK: {
         token.systemId = "";
-        this.state = State.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
+        this.state = State2.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
         break;
       }
       case CODE_POINTS.APOSTROPHE: {
         token.systemId = "";
-        this.state = State.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
+        this.state = State2.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -12165,7 +13867,7 @@ var Tokenizer = class {
       default: {
         this._err(ERR.missingQuoteBeforeDoctypeSystemIdentifier);
         token.forceQuirks = true;
-        this.state = State.BOGUS_DOCTYPE;
+        this.state = State2.BOGUS_DOCTYPE;
         this._stateBogusDoctype(cp);
       }
     }
@@ -12177,25 +13879,25 @@ var Tokenizer = class {
       case CODE_POINTS.LINE_FEED:
       case CODE_POINTS.TABULATION:
       case CODE_POINTS.FORM_FEED: {
-        this.state = State.BEFORE_DOCTYPE_SYSTEM_IDENTIFIER;
+        this.state = State2.BEFORE_DOCTYPE_SYSTEM_IDENTIFIER;
         break;
       }
       case CODE_POINTS.QUOTATION_MARK: {
         this._err(ERR.missingWhitespaceAfterDoctypeSystemKeyword);
         token.systemId = "";
-        this.state = State.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
+        this.state = State2.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
         break;
       }
       case CODE_POINTS.APOSTROPHE: {
         this._err(ERR.missingWhitespaceAfterDoctypeSystemKeyword);
         token.systemId = "";
-        this.state = State.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
+        this.state = State2.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._err(ERR.missingDoctypeSystemIdentifier);
         token.forceQuirks = true;
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentDoctype(token);
         break;
       }
@@ -12209,7 +13911,7 @@ var Tokenizer = class {
       default: {
         this._err(ERR.missingQuoteBeforeDoctypeSystemIdentifier);
         token.forceQuirks = true;
-        this.state = State.BOGUS_DOCTYPE;
+        this.state = State2.BOGUS_DOCTYPE;
         this._stateBogusDoctype(cp);
       }
     }
@@ -12225,18 +13927,18 @@ var Tokenizer = class {
       }
       case CODE_POINTS.QUOTATION_MARK: {
         token.systemId = "";
-        this.state = State.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
+        this.state = State2.DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
         break;
       }
       case CODE_POINTS.APOSTROPHE: {
         token.systemId = "";
-        this.state = State.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
+        this.state = State2.DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
         break;
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this._err(ERR.missingDoctypeSystemIdentifier);
         token.forceQuirks = true;
-        this.state = State.DATA;
+        this.state = State2.DATA;
         this.emitCurrentDoctype(token);
         break;
       }
@@ -12250,7 +13952,7 @@ var Tokenizer = class {
       default: {
         this._err(ERR.missingQuoteBeforeDoctypeSystemIdentifier);
         token.forceQuirks = true;
-        this.state = State.BOGUS_DOCTYPE;
+        this.state = State2.BOGUS_DOCTYPE;
         this._stateBogusDoctype(cp);
       }
     }
@@ -12259,7 +13961,7 @@ var Tokenizer = class {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.QUOTATION_MARK: {
-        this.state = State.AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
+        this.state = State2.AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -12271,7 +13973,7 @@ var Tokenizer = class {
         this._err(ERR.abruptDoctypeSystemIdentifier);
         token.forceQuirks = true;
         this.emitCurrentDoctype(token);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -12290,7 +13992,7 @@ var Tokenizer = class {
     const token = this.currentToken;
     switch (cp) {
       case CODE_POINTS.APOSTROPHE: {
-        this.state = State.AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
+        this.state = State2.AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -12302,7 +14004,7 @@ var Tokenizer = class {
         this._err(ERR.abruptDoctypeSystemIdentifier);
         token.forceQuirks = true;
         this.emitCurrentDoctype(token);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -12328,7 +14030,7 @@ var Tokenizer = class {
       }
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this.emitCurrentDoctype(token);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -12340,7 +14042,7 @@ var Tokenizer = class {
       }
       default: {
         this._err(ERR.unexpectedCharacterAfterDoctypeSystemIdentifier);
-        this.state = State.BOGUS_DOCTYPE;
+        this.state = State2.BOGUS_DOCTYPE;
         this._stateBogusDoctype(cp);
       }
     }
@@ -12350,7 +14052,7 @@ var Tokenizer = class {
     switch (cp) {
       case CODE_POINTS.GREATER_THAN_SIGN: {
         this.emitCurrentDoctype(token);
-        this.state = State.DATA;
+        this.state = State2.DATA;
         break;
       }
       case CODE_POINTS.NULL: {
@@ -12368,7 +14070,7 @@ var Tokenizer = class {
   _stateCdataSection(cp) {
     switch (cp) {
       case CODE_POINTS.RIGHT_SQUARE_BRACKET: {
-        this.state = State.CDATA_SECTION_BRACKET;
+        this.state = State2.CDATA_SECTION_BRACKET;
         break;
       }
       case CODE_POINTS.EOF: {
@@ -12383,17 +14085,17 @@ var Tokenizer = class {
   }
   _stateCdataSectionBracket(cp) {
     if (cp === CODE_POINTS.RIGHT_SQUARE_BRACKET) {
-      this.state = State.CDATA_SECTION_END;
+      this.state = State2.CDATA_SECTION_END;
     } else {
       this._emitChars("]");
-      this.state = State.CDATA_SECTION;
+      this.state = State2.CDATA_SECTION;
       this._stateCdataSection(cp);
     }
   }
   _stateCdataSectionEnd(cp) {
     switch (cp) {
       case CODE_POINTS.GREATER_THAN_SIGN: {
-        this.state = State.DATA;
+        this.state = State2.DATA;
         break;
       }
       case CODE_POINTS.RIGHT_SQUARE_BRACKET: {
@@ -12402,118 +14104,42 @@ var Tokenizer = class {
       }
       default: {
         this._emitChars("]]");
-        this.state = State.CDATA_SECTION;
+        this.state = State2.CDATA_SECTION;
         this._stateCdataSection(cp);
       }
     }
   }
-  _stateCharacterReference(cp) {
-    if (cp === CODE_POINTS.NUMBER_SIGN) {
-      this.state = State.NUMERIC_CHARACTER_REFERENCE;
-    } else if (isAsciiAlphaNumeric2(cp)) {
-      this.state = State.NAMED_CHARACTER_REFERENCE;
-      this._stateNamedCharacterReference(cp);
-    } else {
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.AMPERSAND);
-      this._reconsumeInState(this.returnState, cp);
-    }
-  }
-  _stateNamedCharacterReference(cp) {
-    const matchResult = this._matchNamedCharacterReference(cp);
-    if (this._ensureHibernation()) {
-    } else if (matchResult) {
-      for (let i = 0; i < matchResult.length; i++) {
-        this._flushCodePointConsumedAsCharacterReference(matchResult[i]);
+  _stateCharacterReference() {
+    let length = this.entityDecoder.write(this.preprocessor.html, this.preprocessor.pos);
+    if (length < 0) {
+      if (this.preprocessor.lastChunkWritten) {
+        length = this.entityDecoder.end();
+      } else {
+        this.active = false;
+        this.preprocessor.pos = this.preprocessor.html.length - 1;
+        this.consumedAfterSnapshot = 0;
+        this.preprocessor.endOfChunkHit = true;
+        return;
       }
-      this.state = this.returnState;
-    } else {
+    }
+    if (length === 0) {
+      this.preprocessor.pos = this.entityStartPos;
       this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.AMPERSAND);
-      this.state = State.AMBIGUOUS_AMPERSAND;
+      this.state = !this._isCharacterReferenceInAttribute() && isAsciiAlphaNumeric4(this.preprocessor.peek(1)) ? State2.AMBIGUOUS_AMPERSAND : this.returnState;
+    } else {
+      this.state = this.returnState;
     }
   }
   _stateAmbiguousAmpersand(cp) {
-    if (isAsciiAlphaNumeric2(cp)) {
+    if (isAsciiAlphaNumeric4(cp)) {
       this._flushCodePointConsumedAsCharacterReference(cp);
     } else {
       if (cp === CODE_POINTS.SEMICOLON) {
         this._err(ERR.unknownNamedCharacterReference);
       }
-      this._reconsumeInState(this.returnState, cp);
-    }
-  }
-  _stateNumericCharacterReference(cp) {
-    this.charRefCode = 0;
-    if (cp === CODE_POINTS.LATIN_SMALL_X || cp === CODE_POINTS.LATIN_CAPITAL_X) {
-      this.state = State.HEXADEMICAL_CHARACTER_REFERENCE_START;
-    } else if (isAsciiDigit(cp)) {
-      this.state = State.DECIMAL_CHARACTER_REFERENCE;
-      this._stateDecimalCharacterReference(cp);
-    } else {
-      this._err(ERR.absenceOfDigitsInNumericCharacterReference);
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.AMPERSAND);
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.NUMBER_SIGN);
-      this._reconsumeInState(this.returnState, cp);
-    }
-  }
-  _stateHexademicalCharacterReferenceStart(cp) {
-    if (isAsciiHexDigit(cp)) {
-      this.state = State.HEXADEMICAL_CHARACTER_REFERENCE;
-      this._stateHexademicalCharacterReference(cp);
-    } else {
-      this._err(ERR.absenceOfDigitsInNumericCharacterReference);
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.AMPERSAND);
-      this._flushCodePointConsumedAsCharacterReference(CODE_POINTS.NUMBER_SIGN);
-      this._unconsume(2);
       this.state = this.returnState;
+      this._callState(cp);
     }
-  }
-  _stateHexademicalCharacterReference(cp) {
-    if (isAsciiUpperHexDigit(cp)) {
-      this.charRefCode = this.charRefCode * 16 + cp - 55;
-    } else if (isAsciiLowerHexDigit(cp)) {
-      this.charRefCode = this.charRefCode * 16 + cp - 87;
-    } else if (isAsciiDigit(cp)) {
-      this.charRefCode = this.charRefCode * 16 + cp - 48;
-    } else if (cp === CODE_POINTS.SEMICOLON) {
-      this.state = State.NUMERIC_CHARACTER_REFERENCE_END;
-    } else {
-      this._err(ERR.missingSemicolonAfterCharacterReference);
-      this.state = State.NUMERIC_CHARACTER_REFERENCE_END;
-      this._stateNumericCharacterReferenceEnd(cp);
-    }
-  }
-  _stateDecimalCharacterReference(cp) {
-    if (isAsciiDigit(cp)) {
-      this.charRefCode = this.charRefCode * 10 + cp - 48;
-    } else if (cp === CODE_POINTS.SEMICOLON) {
-      this.state = State.NUMERIC_CHARACTER_REFERENCE_END;
-    } else {
-      this._err(ERR.missingSemicolonAfterCharacterReference);
-      this.state = State.NUMERIC_CHARACTER_REFERENCE_END;
-      this._stateNumericCharacterReferenceEnd(cp);
-    }
-  }
-  _stateNumericCharacterReferenceEnd(cp) {
-    if (this.charRefCode === CODE_POINTS.NULL) {
-      this._err(ERR.nullCharacterReference);
-      this.charRefCode = CODE_POINTS.REPLACEMENT_CHARACTER;
-    } else if (this.charRefCode > 1114111) {
-      this._err(ERR.characterReferenceOutsideUnicodeRange);
-      this.charRefCode = CODE_POINTS.REPLACEMENT_CHARACTER;
-    } else if (isSurrogate(this.charRefCode)) {
-      this._err(ERR.surrogateCharacterReference);
-      this.charRefCode = CODE_POINTS.REPLACEMENT_CHARACTER;
-    } else if (isUndefinedCodePoint(this.charRefCode)) {
-      this._err(ERR.noncharacterCharacterReference);
-    } else if (isControlCodePoint(this.charRefCode) || this.charRefCode === CODE_POINTS.CARRIAGE_RETURN) {
-      this._err(ERR.controlCharacterReference);
-      const replacement = C1_CONTROLS_REFERENCE_REPLACEMENTS.get(this.charRefCode);
-      if (replacement !== void 0) {
-        this.charRefCode = replacement;
-      }
-    }
-    this._flushCodePointConsumedAsCharacterReference(this.charRefCode);
-    this._reconsumeInState(this.returnState, cp);
   }
 };
 
@@ -12530,31 +14156,25 @@ var IMPLICIT_END_TAG_REQUIRED_THOROUGHLY = new Set([
   TAG_ID.THEAD,
   TAG_ID.TR
 ]);
-var SCOPING_ELEMENT_NS = new Map([
-  [TAG_ID.APPLET, NS.HTML],
-  [TAG_ID.CAPTION, NS.HTML],
-  [TAG_ID.HTML, NS.HTML],
-  [TAG_ID.MARQUEE, NS.HTML],
-  [TAG_ID.OBJECT, NS.HTML],
-  [TAG_ID.TABLE, NS.HTML],
-  [TAG_ID.TD, NS.HTML],
-  [TAG_ID.TEMPLATE, NS.HTML],
-  [TAG_ID.TH, NS.HTML],
-  [TAG_ID.ANNOTATION_XML, NS.MATHML],
-  [TAG_ID.MI, NS.MATHML],
-  [TAG_ID.MN, NS.MATHML],
-  [TAG_ID.MO, NS.MATHML],
-  [TAG_ID.MS, NS.MATHML],
-  [TAG_ID.MTEXT, NS.MATHML],
-  [TAG_ID.DESC, NS.SVG],
-  [TAG_ID.FOREIGN_OBJECT, NS.SVG],
-  [TAG_ID.TITLE, NS.SVG]
+var SCOPING_ELEMENTS_HTML = new Set([
+  TAG_ID.APPLET,
+  TAG_ID.CAPTION,
+  TAG_ID.HTML,
+  TAG_ID.MARQUEE,
+  TAG_ID.OBJECT,
+  TAG_ID.TABLE,
+  TAG_ID.TD,
+  TAG_ID.TEMPLATE,
+  TAG_ID.TH
 ]);
-var NAMED_HEADERS = [TAG_ID.H1, TAG_ID.H2, TAG_ID.H3, TAG_ID.H4, TAG_ID.H5, TAG_ID.H6];
-var TABLE_ROW_CONTEXT = [TAG_ID.TR, TAG_ID.TEMPLATE, TAG_ID.HTML];
-var TABLE_BODY_CONTEXT = [TAG_ID.TBODY, TAG_ID.TFOOT, TAG_ID.THEAD, TAG_ID.TEMPLATE, TAG_ID.HTML];
-var TABLE_CONTEXT = [TAG_ID.TABLE, TAG_ID.TEMPLATE, TAG_ID.HTML];
-var TABLE_CELLS = [TAG_ID.TD, TAG_ID.TH];
+var SCOPING_ELEMENTS_HTML_LIST = new Set([...SCOPING_ELEMENTS_HTML, TAG_ID.OL, TAG_ID.UL]);
+var SCOPING_ELEMENTS_HTML_BUTTON = new Set([...SCOPING_ELEMENTS_HTML, TAG_ID.BUTTON]);
+var SCOPING_ELEMENTS_MATHML = new Set([TAG_ID.ANNOTATION_XML, TAG_ID.MI, TAG_ID.MN, TAG_ID.MO, TAG_ID.MS, TAG_ID.MTEXT]);
+var SCOPING_ELEMENTS_SVG = new Set([TAG_ID.DESC, TAG_ID.FOREIGN_OBJECT, TAG_ID.TITLE]);
+var TABLE_ROW_CONTEXT = new Set([TAG_ID.TR, TAG_ID.TEMPLATE, TAG_ID.HTML]);
+var TABLE_BODY_CONTEXT = new Set([TAG_ID.TBODY, TAG_ID.TFOOT, TAG_ID.THEAD, TAG_ID.TEMPLATE, TAG_ID.HTML]);
+var TABLE_CONTEXT = new Set([TAG_ID.TABLE, TAG_ID.TEMPLATE, TAG_ID.HTML]);
+var TABLE_CELLS = new Set([TAG_ID.TD, TAG_ID.TH]);
 var OpenElementStack = class {
   get currentTmplContentOrNode() {
     return this._isInTemplate() ? this.treeAdapter.getTemplateContent(this.current) : this.current;
@@ -12614,14 +14234,16 @@ var OpenElementStack = class {
     if (insertionIdx === this.stackTop) {
       this._updateCurrentElement();
     }
-    this.handler.onItemPush(this.current, this.currentTagId, insertionIdx === this.stackTop);
+    if (this.current && this.currentTagId !== void 0) {
+      this.handler.onItemPush(this.current, this.currentTagId, insertionIdx === this.stackTop);
+    }
   }
   popUntilTagNamePopped(tagName) {
     let targetIdx = this.stackTop + 1;
     do {
       targetIdx = this.tagIDs.lastIndexOf(tagName, targetIdx - 1);
     } while (targetIdx > 0 && this.treeAdapter.getNamespaceURI(this.items[targetIdx]) !== NS.HTML);
-    this.shortenToLength(targetIdx < 0 ? 0 : targetIdx);
+    this.shortenToLength(Math.max(targetIdx, 0));
   }
   shortenToLength(idx) {
     while (this.stackTop >= idx) {
@@ -12636,14 +14258,14 @@ var OpenElementStack = class {
   }
   popUntilElementPopped(element) {
     const idx = this._indexOf(element);
-    this.shortenToLength(idx < 0 ? 0 : idx);
+    this.shortenToLength(Math.max(idx, 0));
   }
   popUntilPopped(tagNames, targetNS) {
     const idx = this._indexOfTagNames(tagNames, targetNS);
-    this.shortenToLength(idx < 0 ? 0 : idx);
+    this.shortenToLength(Math.max(idx, 0));
   }
   popUntilNumberedHeaderPopped() {
-    this.popUntilPopped(NAMED_HEADERS, NS.HTML);
+    this.popUntilPopped(NUMBERED_HEADERS, NS.HTML);
   }
   popUntilTableCellPopped() {
     this.popUntilPopped(TABLE_CELLS, NS.HTML);
@@ -12654,7 +14276,7 @@ var OpenElementStack = class {
   }
   _indexOfTagNames(tagNames, namespace) {
     for (let i = this.stackTop; i >= 0; i--) {
-      if (tagNames.includes(this.tagIDs[i]) && this.treeAdapter.getNamespaceURI(this.items[i]) === namespace) {
+      if (tagNames.has(this.tagIDs[i]) && this.treeAdapter.getNamespaceURI(this.items[i]) === namespace) {
         return i;
       }
     }
@@ -12700,118 +14322,133 @@ var OpenElementStack = class {
   isRootHtmlElementCurrent() {
     return this.stackTop === 0 && this.tagIDs[0] === TAG_ID.HTML;
   }
-  hasInScope(tagName) {
+  hasInDynamicScope(tagName, htmlScope) {
     for (let i = this.stackTop; i >= 0; i--) {
       const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (tn === tagName && ns === NS.HTML) {
-        return true;
-      }
-      if (SCOPING_ELEMENT_NS.get(tn) === ns) {
-        return false;
+      switch (this.treeAdapter.getNamespaceURI(this.items[i])) {
+        case NS.HTML: {
+          if (tn === tagName)
+            return true;
+          if (htmlScope.has(tn))
+            return false;
+          break;
+        }
+        case NS.SVG: {
+          if (SCOPING_ELEMENTS_SVG.has(tn))
+            return false;
+          break;
+        }
+        case NS.MATHML: {
+          if (SCOPING_ELEMENTS_MATHML.has(tn))
+            return false;
+          break;
+        }
       }
     }
     return true;
+  }
+  hasInScope(tagName) {
+    return this.hasInDynamicScope(tagName, SCOPING_ELEMENTS_HTML);
+  }
+  hasInListItemScope(tagName) {
+    return this.hasInDynamicScope(tagName, SCOPING_ELEMENTS_HTML_LIST);
+  }
+  hasInButtonScope(tagName) {
+    return this.hasInDynamicScope(tagName, SCOPING_ELEMENTS_HTML_BUTTON);
   }
   hasNumberedHeaderInScope() {
     for (let i = this.stackTop; i >= 0; i--) {
       const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (isNumberedHeader(tn) && ns === NS.HTML) {
-        return true;
-      }
-      if (SCOPING_ELEMENT_NS.get(tn) === ns) {
-        return false;
-      }
-    }
-    return true;
-  }
-  hasInListItemScope(tagName) {
-    for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (tn === tagName && ns === NS.HTML) {
-        return true;
-      }
-      if ((tn === TAG_ID.UL || tn === TAG_ID.OL) && ns === NS.HTML || SCOPING_ELEMENT_NS.get(tn) === ns) {
-        return false;
-      }
-    }
-    return true;
-  }
-  hasInButtonScope(tagName) {
-    for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (tn === tagName && ns === NS.HTML) {
-        return true;
-      }
-      if (tn === TAG_ID.BUTTON && ns === NS.HTML || SCOPING_ELEMENT_NS.get(tn) === ns) {
-        return false;
+      switch (this.treeAdapter.getNamespaceURI(this.items[i])) {
+        case NS.HTML: {
+          if (NUMBERED_HEADERS.has(tn))
+            return true;
+          if (SCOPING_ELEMENTS_HTML.has(tn))
+            return false;
+          break;
+        }
+        case NS.SVG: {
+          if (SCOPING_ELEMENTS_SVG.has(tn))
+            return false;
+          break;
+        }
+        case NS.MATHML: {
+          if (SCOPING_ELEMENTS_MATHML.has(tn))
+            return false;
+          break;
+        }
       }
     }
     return true;
   }
   hasInTableScope(tagName) {
     for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (ns !== NS.HTML) {
+      if (this.treeAdapter.getNamespaceURI(this.items[i]) !== NS.HTML) {
         continue;
       }
-      if (tn === tagName) {
-        return true;
-      }
-      if (tn === TAG_ID.TABLE || tn === TAG_ID.TEMPLATE || tn === TAG_ID.HTML) {
-        return false;
+      switch (this.tagIDs[i]) {
+        case tagName: {
+          return true;
+        }
+        case TAG_ID.TABLE:
+        case TAG_ID.HTML: {
+          return false;
+        }
       }
     }
     return true;
   }
   hasTableBodyContextInTableScope() {
     for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (ns !== NS.HTML) {
+      if (this.treeAdapter.getNamespaceURI(this.items[i]) !== NS.HTML) {
         continue;
       }
-      if (tn === TAG_ID.TBODY || tn === TAG_ID.THEAD || tn === TAG_ID.TFOOT) {
-        return true;
-      }
-      if (tn === TAG_ID.TABLE || tn === TAG_ID.HTML) {
-        return false;
+      switch (this.tagIDs[i]) {
+        case TAG_ID.TBODY:
+        case TAG_ID.THEAD:
+        case TAG_ID.TFOOT: {
+          return true;
+        }
+        case TAG_ID.TABLE:
+        case TAG_ID.HTML: {
+          return false;
+        }
       }
     }
     return true;
   }
   hasInSelectScope(tagName) {
     for (let i = this.stackTop; i >= 0; i--) {
-      const tn = this.tagIDs[i];
-      const ns = this.treeAdapter.getNamespaceURI(this.items[i]);
-      if (ns !== NS.HTML) {
+      if (this.treeAdapter.getNamespaceURI(this.items[i]) !== NS.HTML) {
         continue;
       }
-      if (tn === tagName) {
-        return true;
-      }
-      if (tn !== TAG_ID.OPTION && tn !== TAG_ID.OPTGROUP) {
-        return false;
+      switch (this.tagIDs[i]) {
+        case tagName: {
+          return true;
+        }
+        case TAG_ID.OPTION:
+        case TAG_ID.OPTGROUP: {
+          break;
+        }
+        default: {
+          return false;
+        }
       }
     }
     return true;
   }
   generateImpliedEndTags() {
-    while (IMPLICIT_END_TAG_REQUIRED.has(this.currentTagId)) {
+    while (this.currentTagId !== void 0 && IMPLICIT_END_TAG_REQUIRED.has(this.currentTagId)) {
       this.pop();
     }
   }
   generateImpliedEndTagsThoroughly() {
-    while (IMPLICIT_END_TAG_REQUIRED_THOROUGHLY.has(this.currentTagId)) {
+    while (this.currentTagId !== void 0 && IMPLICIT_END_TAG_REQUIRED_THOROUGHLY.has(this.currentTagId)) {
       this.pop();
     }
   }
   generateImpliedEndTagsWithExclusion(exclusionId) {
-    while (this.currentTagId !== exclusionId && IMPLICIT_END_TAG_REQUIRED_THOROUGHLY.has(this.currentTagId)) {
+    while (this.currentTagId !== void 0 && this.currentTagId !== exclusionId && IMPLICIT_END_TAG_REQUIRED_THOROUGHLY.has(this.currentTagId)) {
       this.pop();
     }
   }
@@ -12823,7 +14460,7 @@ var EntryType;
 (function(EntryType2) {
   EntryType2[EntryType2["Marker"] = 0] = "Marker";
   EntryType2[EntryType2["Element"] = 1] = "Element";
-})(EntryType = EntryType || (EntryType = {}));
+})(EntryType || (EntryType = {}));
 var MARKER = { type: EntryType.Marker };
 var FormattingElementList = class {
   constructor(treeAdapter) {
@@ -12891,16 +14528,16 @@ var FormattingElementList = class {
   }
   removeEntry(entry) {
     const entryIndex = this.entries.indexOf(entry);
-    if (entryIndex >= 0) {
+    if (entryIndex !== -1) {
       this.entries.splice(entryIndex, 1);
     }
   }
   clearToLastMarker() {
     const markerIdx = this.entries.indexOf(MARKER);
-    if (markerIdx >= 0) {
-      this.entries.splice(0, markerIdx + 1);
-    } else {
+    if (markerIdx === -1) {
       this.entries.length = 0;
+    } else {
+      this.entries.splice(0, markerIdx + 1);
     }
   }
   getElementEntryInScopeWithTagName(tagName) {
@@ -12913,13 +14550,6 @@ var FormattingElementList = class {
 };
 
 // node_modules/parse5/dist/tree-adapters/default.js
-function createTextNode(value) {
-  return {
-    nodeName: "#text",
-    value,
-    parentNode: null
-  };
-}
 var defaultTreeAdapter = {
   createDocument() {
     return {
@@ -12948,6 +14578,13 @@ var defaultTreeAdapter = {
     return {
       nodeName: "#comment",
       data: data2,
+      parentNode: null
+    };
+  },
+  createTextNode(value) {
+    return {
+      nodeName: "#text",
+      value,
       parentNode: null
     };
   },
@@ -13004,14 +14641,14 @@ var defaultTreeAdapter = {
         return;
       }
     }
-    defaultTreeAdapter.appendChild(parentNode, createTextNode(text3));
+    defaultTreeAdapter.appendChild(parentNode, defaultTreeAdapter.createTextNode(text3));
   },
   insertTextBefore(parentNode, text3, referenceNode) {
     const prevNode = parentNode.childNodes[parentNode.childNodes.indexOf(referenceNode) - 1];
     if (prevNode && defaultTreeAdapter.isTextNode(prevNode)) {
       prevNode.value += text3;
     } else {
-      defaultTreeAdapter.insertBefore(parentNode, createTextNode(text3), referenceNode);
+      defaultTreeAdapter.insertBefore(parentNode, defaultTreeAdapter.createTextNode(text3), referenceNode);
     }
   },
   adoptAttributes(recipient, attrs) {
@@ -13272,7 +14909,6 @@ var XML_ATTRS_ADJUSTMENT_MAP = new Map([
   ["xlink:show", { prefix: "xlink", name: "show", namespace: NS.XLINK }],
   ["xlink:title", { prefix: "xlink", name: "title", namespace: NS.XLINK }],
   ["xlink:type", { prefix: "xlink", name: "type", namespace: NS.XLINK }],
-  ["xml:base", { prefix: "xml", name: "base", namespace: NS.XML }],
   ["xml:lang", { prefix: "xml", name: "lang", namespace: NS.XML }],
   ["xml:space", { prefix: "xml", name: "space", namespace: NS.XML }],
   ["xmlns", { prefix: "", name: "xmlns", namespace: NS.XMLNS }],
@@ -13463,7 +15099,7 @@ var defaultParserOptions = {
   treeAdapter: defaultTreeAdapter,
   onParseError: null
 };
-var Parser = class {
+var Parser2 = class {
   constructor(options, document2, fragmentContext = null, scriptHandler = null) {
     this.fragmentContext = fragmentContext;
     this.scriptHandler = scriptHandler;
@@ -13487,7 +15123,7 @@ var Parser = class {
       this.options.sourceCodeLocationInfo = true;
     }
     this.document = document2 !== null && document2 !== void 0 ? document2 : this.treeAdapter.createDocument();
-    this.tokenizer = new Tokenizer(this.options, this);
+    this.tokenizer = new Tokenizer2(this.options, this);
     this.activeFormattingElements = new FormattingElementList(this.treeAdapter);
     this.fragmentContextID = fragmentContext ? getTagID(this.treeAdapter.getTagName(fragmentContext)) : TAG_ID.UNKNOWN;
     this._setContextModes(fragmentContext !== null && fragmentContext !== void 0 ? fragmentContext : this.document, this.fragmentContextID);
@@ -13519,10 +15155,10 @@ var Parser = class {
     return fragment;
   }
   _err(token, code, beforeToken) {
-    var _a2;
+    var _a5;
     if (!this.onParseError)
       return;
-    const loc = (_a2 = token.location) !== null && _a2 !== void 0 ? _a2 : BASE_LOC;
+    const loc = (_a5 = token.location) !== null && _a5 !== void 0 ? _a5 : BASE_LOC;
     const err = {
       code,
       startLine: loc.startLine,
@@ -13535,17 +15171,17 @@ var Parser = class {
     this.onParseError(err);
   }
   onItemPush(node, tid, isTop) {
-    var _a2, _b;
-    (_b = (_a2 = this.treeAdapter).onItemPush) === null || _b === void 0 ? void 0 : _b.call(_a2, node);
+    var _a5, _b;
+    (_b = (_a5 = this.treeAdapter).onItemPush) === null || _b === void 0 ? void 0 : _b.call(_a5, node);
     if (isTop && this.openElements.stackTop > 0)
       this._setContextModes(node, tid);
   }
   onItemPop(node, isTop) {
-    var _a2, _b;
+    var _a5, _b;
     if (this.options.sourceCodeLocationInfo) {
       this._setEndLocation(node, this.currentToken);
     }
-    (_b = (_a2 = this.treeAdapter).onItemPop) === null || _b === void 0 ? void 0 : _b.call(_a2, node, this.openElements.current);
+    (_b = (_a5 = this.treeAdapter).onItemPop) === null || _b === void 0 ? void 0 : _b.call(_a5, node, this.openElements.current);
     if (isTop) {
       let current;
       let currentTagId;
@@ -13559,9 +15195,9 @@ var Parser = class {
     }
   }
   _setContextModes(current, tid) {
-    const isHTML = current === this.document || this.treeAdapter.getNamespaceURI(current) === NS.HTML;
+    const isHTML = current === this.document || current && this.treeAdapter.getNamespaceURI(current) === NS.HTML;
     this.currentNotInHTML = !isHTML;
-    this.tokenizer.inForeignNode = !isHTML && !this._isIntegrationPoint(tid, current);
+    this.tokenizer.inForeignNode = !isHTML && current !== void 0 && tid !== void 0 && !this._isIntegrationPoint(tid, current);
   }
   _switchToTextParsing(currentToken, nextTokenizerState) {
     this._insertElement(currentToken, NS.HTML);
@@ -13641,7 +15277,7 @@ var Parser = class {
       this._fosterParentElement(element);
     } else {
       const parent2 = this.openElements.currentTmplContentOrNode;
-      this.treeAdapter.appendChild(parent2, element);
+      this.treeAdapter.appendChild(parent2 !== null && parent2 !== void 0 ? parent2 : this.document, element);
     }
   }
   _appendElement(token, namespaceURI) {
@@ -13745,7 +15381,7 @@ var Parser = class {
     if (token.tagID === TAG_ID.SVG && this.treeAdapter.getTagName(current) === TAG_NAMES.ANNOTATION_XML && this.treeAdapter.getNamespaceURI(current) === NS.MATHML) {
       return false;
     }
-    return this.tokenizer.inForeignNode || (token.tagID === TAG_ID.MGLYPH || token.tagID === TAG_ID.MALIGNMARK) && !this._isIntegrationPoint(currentTagId, current, NS.HTML);
+    return this.tokenizer.inForeignNode || (token.tagID === TAG_ID.MGLYPH || token.tagID === TAG_ID.MALIGNMARK) && currentTagId !== void 0 && !this._isIntegrationPoint(currentTagId, current, NS.HTML);
   }
   _processToken(token) {
     switch (token.type) {
@@ -13792,7 +15428,7 @@ var Parser = class {
     const listLength = this.activeFormattingElements.entries.length;
     if (listLength) {
       const endIndex = this.activeFormattingElements.entries.findIndex((entry) => entry.type === EntryType.Marker || this.openElements.contains(entry.element));
-      const unopenIdx = endIndex < 0 ? listLength - 1 : endIndex - 1;
+      const unopenIdx = endIndex === -1 ? listLength - 1 : endIndex - 1;
       for (let i = unopenIdx; i >= 0; i--) {
         const entry = this.activeFormattingElements.entries[i];
         this._insertElement(entry.token, this.treeAdapter.getNamespaceURI(entry.element));
@@ -13892,7 +15528,7 @@ var Parser = class {
     return TABLE_STRUCTURE_TAGS.has(tn);
   }
   _shouldFosterParentOnInsertion() {
-    return this.fosterParentingEnabled && this._isElementCausesFosterParenting(this.openElements.currentTagId);
+    return this.fosterParentingEnabled && this.openElements.currentTagId !== void 0 && this._isElementCausesFosterParenting(this.openElements.currentTagId);
   }
   _findFosterParentingLocation() {
     for (let i = this.openElements.stackTop; i >= 0; i--) {
@@ -14467,7 +16103,7 @@ function aaObtainFurthestBlock(p, formattingElementEntry) {
     }
   }
   if (!furthestBlock) {
-    p.openElements.shortenToLength(idx < 0 ? 0 : idx);
+    p.openElements.shortenToLength(Math.max(idx, 0));
     p.activeFormattingElements.removeEntry(formattingElementEntry);
   }
   return furthestBlock;
@@ -14920,7 +16556,7 @@ function numberedHeaderStartTagInBody(p, token) {
   if (p.openElements.hasInButtonScope(TAG_ID.P)) {
     p._closePElement();
   }
-  if (isNumberedHeader(p.openElements.currentTagId)) {
+  if (p.openElements.currentTagId !== void 0 && NUMBERED_HEADERS.has(p.openElements.currentTagId)) {
     p.openElements.pop();
   }
   p._insertElement(token, NS.HTML);
@@ -15074,7 +16710,7 @@ function iframeStartTagInBody(p, token) {
   p.framesetOk = false;
   p._switchToTextParsing(token, TokenizerMode.RAWTEXT);
 }
-function noembedStartTagInBody(p, token) {
+function rawTextStartTagInBody(p, token) {
   p._switchToTextParsing(token, TokenizerMode.RAWTEXT);
 }
 function selectStartTagInBody(p, token) {
@@ -15177,6 +16813,7 @@ function startTagInBody(p, token) {
     case TAG_ID.DETAILS:
     case TAG_ID.ADDRESS:
     case TAG_ID.ARTICLE:
+    case TAG_ID.SEARCH:
     case TAG_ID.SECTION:
     case TAG_ID.SUMMARY:
     case TAG_ID.FIELDSET:
@@ -15300,8 +16937,9 @@ function startTagInBody(p, token) {
       optgroupStartTagInBody(p, token);
       break;
     }
-    case TAG_ID.NOEMBED: {
-      noembedStartTagInBody(p, token);
+    case TAG_ID.NOEMBED:
+    case TAG_ID.NOFRAMES: {
+      rawTextStartTagInBody(p, token);
       break;
     }
     case TAG_ID.FRAMESET: {
@@ -15314,7 +16952,7 @@ function startTagInBody(p, token) {
     }
     case TAG_ID.NOSCRIPT: {
       if (p.options.scriptingEnabled) {
-        noembedStartTagInBody(p, token);
+        rawTextStartTagInBody(p, token);
       } else {
         genericStartTagInBody(p, token);
       }
@@ -15480,6 +17118,7 @@ function endTagInBody(p, token) {
     case TAG_ID.ADDRESS:
     case TAG_ID.ARTICLE:
     case TAG_ID.DETAILS:
+    case TAG_ID.SEARCH:
     case TAG_ID.SECTION:
     case TAG_ID.SUMMARY:
     case TAG_ID.LISTING:
@@ -15546,9 +17185,9 @@ function eofInBody(p, token) {
   }
 }
 function endTagInText(p, token) {
-  var _a2;
+  var _a5;
   if (token.tagID === TAG_ID.SCRIPT) {
-    (_a2 = p.scriptHandler) === null || _a2 === void 0 ? void 0 : _a2.call(p, p.openElements.current);
+    (_a5 = p.scriptHandler) === null || _a5 === void 0 ? void 0 : _a5.call(p, p.openElements.current);
   }
   p.openElements.pop();
   p.insertionMode = p.originalInsertionMode;
@@ -15560,7 +17199,7 @@ function eofInText(p, token) {
   p.onEof(token);
 }
 function characterInTable(p, token) {
-  if (TABLE_STRUCTURE_TAGS.has(p.openElements.currentTagId)) {
+  if (p.openElements.currentTagId !== void 0 && TABLE_STRUCTURE_TAGS.has(p.openElements.currentTagId)) {
     p.pendingCharacterTokens.length = 0;
     p.hasNonWhitespacePendingCharacterToken = false;
     p.originalInsertionMode = p.insertionMode;
@@ -16048,6 +17687,17 @@ function startTagInSelect(p, token) {
       p._insertElement(token, NS.HTML);
       break;
     }
+    case TAG_ID.HR: {
+      if (p.openElements.currentTagId === TAG_ID.OPTION) {
+        p.openElements.pop();
+      }
+      if (p.openElements.currentTagId === TAG_ID.OPTGROUP) {
+        p.openElements.pop();
+      }
+      p._appendElement(token, NS.HTML);
+      token.ackSelfClosing = true;
+      break;
+    }
     case TAG_ID.INPUT:
     case TAG_ID.KEYGEN:
     case TAG_ID.TEXTAREA:
@@ -16197,7 +17847,7 @@ function startTagAfterBody(p, token) {
   }
 }
 function endTagAfterBody(p, token) {
-  var _a2;
+  var _a5;
   if (token.tagID === TAG_ID.HTML) {
     if (!p.fragmentContext) {
       p.insertionMode = InsertionMode.AFTER_AFTER_BODY;
@@ -16205,7 +17855,7 @@ function endTagAfterBody(p, token) {
     if (p.options.sourceCodeLocationInfo && p.openElements.tagIDs[0] === TAG_ID.HTML) {
       p._setEndLocation(p.openElements.items[0], token);
       const bodyElement = p.openElements.items[1];
-      if (bodyElement && !((_a2 = p.treeAdapter.getNodeSourceCodeLocation(bodyElement)) === null || _a2 === void 0 ? void 0 : _a2.endTag)) {
+      if (bodyElement && !((_a5 = p.treeAdapter.getNodeSourceCodeLocation(bodyElement)) === null || _a5 === void 0 ? void 0 : _a5.endTag)) {
         p._setEndLocation(bodyElement, token);
       }
     }
@@ -16298,7 +17948,7 @@ function characterInForeignContent(p, token) {
   p.framesetOk = false;
 }
 function popUntilHtmlOrIntegrationPoint(p) {
-  while (p.treeAdapter.getNamespaceURI(p.openElements.current) !== NS.HTML && !p._isIntegrationPoint(p.openElements.currentTagId, p.openElements.current)) {
+  while (p.treeAdapter.getNamespaceURI(p.openElements.current) !== NS.HTML && p.openElements.currentTagId !== void 0 && !p._isIntegrationPoint(p.openElements.currentTagId, p.openElements.current)) {
     p.openElements.pop();
   }
 }
@@ -16344,6 +17994,42 @@ function endTagInForeignContent(p, token) {
     }
   }
 }
+
+// node_modules/parse5/node_modules/entities/dist/esm/escape.js
+var xmlCodeMap2 = new Map([
+  [34, "&quot;"],
+  [38, "&amp;"],
+  [39, "&apos;"],
+  [60, "&lt;"],
+  [62, "&gt;"]
+]);
+var getCodePoint2 = String.prototype.codePointAt == null ? (c, index2) => (c.charCodeAt(index2) & 64512) === 55296 ? (c.charCodeAt(index2) - 55296) * 1024 + c.charCodeAt(index2 + 1) - 56320 + 65536 : c.charCodeAt(index2) : (input, index2) => input.codePointAt(index2);
+function getEscaper2(regex, map2) {
+  return function escape2(data2) {
+    let match;
+    let lastIndex = 0;
+    let result = "";
+    while (match = regex.exec(data2)) {
+      if (lastIndex !== match.index) {
+        result += data2.substring(lastIndex, match.index);
+      }
+      result += map2.get(match[0].charCodeAt(0));
+      lastIndex = match.index + 1;
+    }
+    return result + data2.substring(lastIndex);
+  };
+}
+var escapeAttribute2 = /* @__PURE__ */ getEscaper2(/["&\u00A0]/g, new Map([
+  [34, "&quot;"],
+  [38, "&amp;"],
+  [160, "&nbsp;"]
+]));
+var escapeText2 = /* @__PURE__ */ getEscaper2(/[&<>\u00A0]/g, new Map([
+  [38, "&amp;"],
+  [60, "&lt;"],
+  [62, "&gt;"],
+  [160, "&nbsp;"]
+]));
 
 // node_modules/parse5/dist/serializer/index.js
 var VOID_ELEMENTS = new Set([
@@ -16408,9 +18094,7 @@ function serializeAttributes(node, { treeAdapter }) {
   let html3 = "";
   for (const attr2 of treeAdapter.getAttrList(node)) {
     html3 += " ";
-    if (!attr2.namespace) {
-      html3 += attr2.name;
-    } else
+    if (attr2.namespace) {
       switch (attr2.namespace) {
         case NS.XML: {
           html3 += `xml:${attr2.name}`;
@@ -16431,7 +18115,10 @@ function serializeAttributes(node, { treeAdapter }) {
           html3 += `${attr2.prefix}:${attr2.name}`;
         }
       }
-    html3 += `="${escapeAttribute(attr2.value)}"`;
+    } else {
+      html3 += attr2.name;
+    }
+    html3 += `="${escapeAttribute2(attr2.value)}"`;
   }
   return html3;
 }
@@ -16440,7 +18127,7 @@ function serializeTextNode(node, options) {
   const content = treeAdapter.getTextNodeContent(node);
   const parent2 = treeAdapter.getParentNode(node);
   const parentTn = parent2 && treeAdapter.isElementNode(parent2) && treeAdapter.getTagName(parent2);
-  return parentTn && treeAdapter.getNamespaceURI(parent2) === NS.HTML && hasUnescapedText(parentTn, options.scriptingEnabled) ? content : escapeText(content);
+  return parentTn && treeAdapter.getNamespaceURI(parent2) === NS.HTML && hasUnescapedText(parentTn, options.scriptingEnabled) ? content : escapeText2(content);
 }
 function serializeCommentNode(node, { treeAdapter }) {
   return `<!--${treeAdapter.getCommentNodeContent(node)}-->`;
@@ -16451,7 +18138,7 @@ function serializeDocumentTypeNode(node, { treeAdapter }) {
 
 // node_modules/parse5/dist/index.js
 function parse4(html3, options) {
-  return Parser.parse(html3, options);
+  return Parser2.parse(html3, options);
 }
 function parseFragment(fragmentContext, html3, options) {
   if (typeof fragmentContext === "string") {
@@ -16459,15 +18146,12 @@ function parseFragment(fragmentContext, html3, options) {
     html3 = fragmentContext;
     fragmentContext = null;
   }
-  const parser = Parser.getFragmentParser(fragmentContext, options);
+  const parser = Parser2.getFragmentParser(fragmentContext, options);
   parser.tokenizer.write(html3, true);
   return parser.getFragment();
 }
 
 // node_modules/parse5-htmlparser2-tree-adapter/dist/index.js
-function createTextNode2(value) {
-  return new Text2(value);
-}
 function enquoteDoctypeId(id) {
   const quote = id.includes('"') ? "'" : '"';
   return quote + id + quote;
@@ -16518,6 +18202,9 @@ var adapter = {
   createCommentNode(data2) {
     return new Comment2(data2);
   },
+  createTextNode(value) {
+    return new Text2(value);
+  },
   appendChild(parentNode, newNode) {
     const prev2 = parentNode.children[parentNode.children.length - 1];
     if (prev2) {
@@ -16554,9 +18241,9 @@ var adapter = {
       doctypeNode = new ProcessingInstruction("!doctype", data2);
       adapter.appendChild(document2, doctypeNode);
     }
-    doctypeNode["x-name"] = name !== null && name !== void 0 ? name : void 0;
-    doctypeNode["x-publicId"] = publicId !== null && publicId !== void 0 ? publicId : void 0;
-    doctypeNode["x-systemId"] = systemId !== null && systemId !== void 0 ? systemId : void 0;
+    doctypeNode["x-name"] = name;
+    doctypeNode["x-publicId"] = publicId;
+    doctypeNode["x-systemId"] = systemId;
   },
   setDocumentMode(document2, mode) {
     document2["x-mode"] = mode;
@@ -16585,7 +18272,7 @@ var adapter = {
     if (lastChild && isText(lastChild)) {
       lastChild.data += text3;
     } else {
-      adapter.appendChild(parentNode, createTextNode2(text3));
+      adapter.appendChild(parentNode, adapter.createTextNode(text3));
     }
   },
   insertTextBefore(parentNode, text3, referenceNode) {
@@ -16593,13 +18280,13 @@ var adapter = {
     if (prevNode && isText(prevNode)) {
       prevNode.data += text3;
     } else {
-      adapter.insertBefore(parentNode, createTextNode2(text3), referenceNode);
+      adapter.insertBefore(parentNode, adapter.createTextNode(text3), referenceNode);
     }
   },
   adoptAttributes(recipient, attrs) {
     for (let i = 0; i < attrs.length; i++) {
       const attrName = attrs[i].name;
-      if (typeof recipient.attribs[attrName] === "undefined") {
+      if (recipient.attribs[attrName] === void 0) {
         recipient.attribs[attrName] = attrs[i].value;
         recipient["x-attribsNamespace"][attrName] = attrs[i].namespace;
         recipient["x-attribsPrefix"][attrName] = attrs[i].prefix;
@@ -16631,16 +18318,16 @@ var adapter = {
     return commentNode.data;
   },
   getDocumentTypeNodeName(doctypeNode) {
-    var _a2;
-    return (_a2 = doctypeNode["x-name"]) !== null && _a2 !== void 0 ? _a2 : "";
+    var _a5;
+    return (_a5 = doctypeNode["x-name"]) !== null && _a5 !== void 0 ? _a5 : "";
   },
   getDocumentTypeNodePublicId(doctypeNode) {
-    var _a2;
-    return (_a2 = doctypeNode["x-publicId"]) !== null && _a2 !== void 0 ? _a2 : "";
+    var _a5;
+    return (_a5 = doctypeNode["x-publicId"]) !== null && _a5 !== void 0 ? _a5 : "";
   },
   getDocumentTypeNodeSystemId(doctypeNode) {
-    var _a2;
-    return (_a2 = doctypeNode["x-systemId"]) !== null && _a2 !== void 0 ? _a2 : "";
+    var _a5;
+    return (_a5 = doctypeNode["x-systemId"]) !== null && _a5 !== void 0 ? _a5 : "";
   },
   isDocumentTypeNode(node) {
     return isDirective(node) && node.name === "!doctype";
@@ -16662,14 +18349,14 @@ var adapter = {
   }
 };
 
-// node_modules/cheerio/lib/esm/parsers/parse5-adapter.js
+// node_modules/cheerio/dist/browser/parsers/parse5-adapter.js
 function parseWithParse5(content, options, isDocument2, context) {
-  const opts = {
-    scriptingEnabled: typeof options.scriptingEnabled === "boolean" ? options.scriptingEnabled : true,
-    treeAdapter: adapter,
-    sourceCodeLocationInfo: options.sourceCodeLocationInfo
-  };
-  return isDocument2 ? parse4(content, opts) : parseFragment(context, content, opts);
+  var _a5;
+  (_a5 = options.treeAdapter) !== null && _a5 !== void 0 ? _a5 : options.treeAdapter = adapter;
+  if (options.scriptingEnabled !== false) {
+    options.scriptingEnabled = true;
+  }
+  return isDocument2 ? parse4(content, options) : parseFragment(context, content, options);
 }
 var renderOpts = { treeAdapter: adapter };
 function renderWithParse5(dom) {
@@ -16688,1157 +18375,9 @@ function renderWithParse5(dom) {
   return result;
 }
 
-// node_modules/htmlparser2/lib/esm/Tokenizer.js
-var CharCodes2;
-(function(CharCodes3) {
-  CharCodes3[CharCodes3["Tab"] = 9] = "Tab";
-  CharCodes3[CharCodes3["NewLine"] = 10] = "NewLine";
-  CharCodes3[CharCodes3["FormFeed"] = 12] = "FormFeed";
-  CharCodes3[CharCodes3["CarriageReturn"] = 13] = "CarriageReturn";
-  CharCodes3[CharCodes3["Space"] = 32] = "Space";
-  CharCodes3[CharCodes3["ExclamationMark"] = 33] = "ExclamationMark";
-  CharCodes3[CharCodes3["Number"] = 35] = "Number";
-  CharCodes3[CharCodes3["Amp"] = 38] = "Amp";
-  CharCodes3[CharCodes3["SingleQuote"] = 39] = "SingleQuote";
-  CharCodes3[CharCodes3["DoubleQuote"] = 34] = "DoubleQuote";
-  CharCodes3[CharCodes3["Dash"] = 45] = "Dash";
-  CharCodes3[CharCodes3["Slash"] = 47] = "Slash";
-  CharCodes3[CharCodes3["Zero"] = 48] = "Zero";
-  CharCodes3[CharCodes3["Nine"] = 57] = "Nine";
-  CharCodes3[CharCodes3["Semi"] = 59] = "Semi";
-  CharCodes3[CharCodes3["Lt"] = 60] = "Lt";
-  CharCodes3[CharCodes3["Eq"] = 61] = "Eq";
-  CharCodes3[CharCodes3["Gt"] = 62] = "Gt";
-  CharCodes3[CharCodes3["Questionmark"] = 63] = "Questionmark";
-  CharCodes3[CharCodes3["UpperA"] = 65] = "UpperA";
-  CharCodes3[CharCodes3["LowerA"] = 97] = "LowerA";
-  CharCodes3[CharCodes3["UpperF"] = 70] = "UpperF";
-  CharCodes3[CharCodes3["LowerF"] = 102] = "LowerF";
-  CharCodes3[CharCodes3["UpperZ"] = 90] = "UpperZ";
-  CharCodes3[CharCodes3["LowerZ"] = 122] = "LowerZ";
-  CharCodes3[CharCodes3["LowerX"] = 120] = "LowerX";
-  CharCodes3[CharCodes3["OpeningSquareBracket"] = 91] = "OpeningSquareBracket";
-})(CharCodes2 || (CharCodes2 = {}));
-var State2;
-(function(State3) {
-  State3[State3["Text"] = 1] = "Text";
-  State3[State3["BeforeTagName"] = 2] = "BeforeTagName";
-  State3[State3["InTagName"] = 3] = "InTagName";
-  State3[State3["InSelfClosingTag"] = 4] = "InSelfClosingTag";
-  State3[State3["BeforeClosingTagName"] = 5] = "BeforeClosingTagName";
-  State3[State3["InClosingTagName"] = 6] = "InClosingTagName";
-  State3[State3["AfterClosingTagName"] = 7] = "AfterClosingTagName";
-  State3[State3["BeforeAttributeName"] = 8] = "BeforeAttributeName";
-  State3[State3["InAttributeName"] = 9] = "InAttributeName";
-  State3[State3["AfterAttributeName"] = 10] = "AfterAttributeName";
-  State3[State3["BeforeAttributeValue"] = 11] = "BeforeAttributeValue";
-  State3[State3["InAttributeValueDq"] = 12] = "InAttributeValueDq";
-  State3[State3["InAttributeValueSq"] = 13] = "InAttributeValueSq";
-  State3[State3["InAttributeValueNq"] = 14] = "InAttributeValueNq";
-  State3[State3["BeforeDeclaration"] = 15] = "BeforeDeclaration";
-  State3[State3["InDeclaration"] = 16] = "InDeclaration";
-  State3[State3["InProcessingInstruction"] = 17] = "InProcessingInstruction";
-  State3[State3["BeforeComment"] = 18] = "BeforeComment";
-  State3[State3["CDATASequence"] = 19] = "CDATASequence";
-  State3[State3["InSpecialComment"] = 20] = "InSpecialComment";
-  State3[State3["InCommentLike"] = 21] = "InCommentLike";
-  State3[State3["BeforeSpecialS"] = 22] = "BeforeSpecialS";
-  State3[State3["SpecialStartSequence"] = 23] = "SpecialStartSequence";
-  State3[State3["InSpecialTag"] = 24] = "InSpecialTag";
-  State3[State3["BeforeEntity"] = 25] = "BeforeEntity";
-  State3[State3["BeforeNumericEntity"] = 26] = "BeforeNumericEntity";
-  State3[State3["InNamedEntity"] = 27] = "InNamedEntity";
-  State3[State3["InNumericEntity"] = 28] = "InNumericEntity";
-  State3[State3["InHexEntity"] = 29] = "InHexEntity";
-})(State2 || (State2 = {}));
-function isWhitespace3(c) {
-  return c === CharCodes2.Space || c === CharCodes2.NewLine || c === CharCodes2.Tab || c === CharCodes2.FormFeed || c === CharCodes2.CarriageReturn;
-}
-function isEndOfTagSection(c) {
-  return c === CharCodes2.Slash || c === CharCodes2.Gt || isWhitespace3(c);
-}
-function isNumber2(c) {
-  return c >= CharCodes2.Zero && c <= CharCodes2.Nine;
-}
-function isASCIIAlpha(c) {
-  return c >= CharCodes2.LowerA && c <= CharCodes2.LowerZ || c >= CharCodes2.UpperA && c <= CharCodes2.UpperZ;
-}
-function isHexDigit(c) {
-  return c >= CharCodes2.UpperA && c <= CharCodes2.UpperF || c >= CharCodes2.LowerA && c <= CharCodes2.LowerF;
-}
-var QuoteType;
-(function(QuoteType2) {
-  QuoteType2[QuoteType2["NoValue"] = 0] = "NoValue";
-  QuoteType2[QuoteType2["Unquoted"] = 1] = "Unquoted";
-  QuoteType2[QuoteType2["Single"] = 2] = "Single";
-  QuoteType2[QuoteType2["Double"] = 3] = "Double";
-})(QuoteType || (QuoteType = {}));
-var Sequences = {
-  Cdata: new Uint8Array([67, 68, 65, 84, 65, 91]),
-  CdataEnd: new Uint8Array([93, 93, 62]),
-  CommentEnd: new Uint8Array([45, 45, 62]),
-  ScriptEnd: new Uint8Array([60, 47, 115, 99, 114, 105, 112, 116]),
-  StyleEnd: new Uint8Array([60, 47, 115, 116, 121, 108, 101]),
-  TitleEnd: new Uint8Array([60, 47, 116, 105, 116, 108, 101])
-};
-var Tokenizer2 = class {
-  constructor({ xmlMode = false, decodeEntities = true }, cbs) {
-    this.cbs = cbs;
-    this.state = State2.Text;
-    this.buffer = "";
-    this.sectionStart = 0;
-    this.index = 0;
-    this.baseState = State2.Text;
-    this.isSpecial = false;
-    this.running = true;
-    this.offset = 0;
-    this.currentSequence = void 0;
-    this.sequenceIndex = 0;
-    this.trieIndex = 0;
-    this.trieCurrent = 0;
-    this.entityResult = 0;
-    this.entityExcess = 0;
-    this.xmlMode = xmlMode;
-    this.decodeEntities = decodeEntities;
-    this.entityTrie = xmlMode ? decode_data_xml_default : decode_data_html_default;
-  }
-  reset() {
-    this.state = State2.Text;
-    this.buffer = "";
-    this.sectionStart = 0;
-    this.index = 0;
-    this.baseState = State2.Text;
-    this.currentSequence = void 0;
-    this.running = true;
-    this.offset = 0;
-  }
-  write(chunk) {
-    this.offset += this.buffer.length;
-    this.buffer = chunk;
-    this.parse();
-  }
-  end() {
-    if (this.running)
-      this.finish();
-  }
-  pause() {
-    this.running = false;
-  }
-  resume() {
-    this.running = true;
-    if (this.index < this.buffer.length + this.offset) {
-      this.parse();
-    }
-  }
-  getIndex() {
-    return this.index;
-  }
-  getSectionStart() {
-    return this.sectionStart;
-  }
-  stateText(c) {
-    if (c === CharCodes2.Lt || !this.decodeEntities && this.fastForwardTo(CharCodes2.Lt)) {
-      if (this.index > this.sectionStart) {
-        this.cbs.ontext(this.sectionStart, this.index);
-      }
-      this.state = State2.BeforeTagName;
-      this.sectionStart = this.index;
-    } else if (this.decodeEntities && c === CharCodes2.Amp) {
-      this.state = State2.BeforeEntity;
-    }
-  }
-  stateSpecialStartSequence(c) {
-    const isEnd = this.sequenceIndex === this.currentSequence.length;
-    const isMatch = isEnd ? isEndOfTagSection(c) : (c | 32) === this.currentSequence[this.sequenceIndex];
-    if (!isMatch) {
-      this.isSpecial = false;
-    } else if (!isEnd) {
-      this.sequenceIndex++;
-      return;
-    }
-    this.sequenceIndex = 0;
-    this.state = State2.InTagName;
-    this.stateInTagName(c);
-  }
-  stateInSpecialTag(c) {
-    if (this.sequenceIndex === this.currentSequence.length) {
-      if (c === CharCodes2.Gt || isWhitespace3(c)) {
-        const endOfText = this.index - this.currentSequence.length;
-        if (this.sectionStart < endOfText) {
-          const actualIndex = this.index;
-          this.index = endOfText;
-          this.cbs.ontext(this.sectionStart, endOfText);
-          this.index = actualIndex;
-        }
-        this.isSpecial = false;
-        this.sectionStart = endOfText + 2;
-        this.stateInClosingTagName(c);
-        return;
-      }
-      this.sequenceIndex = 0;
-    }
-    if ((c | 32) === this.currentSequence[this.sequenceIndex]) {
-      this.sequenceIndex += 1;
-    } else if (this.sequenceIndex === 0) {
-      if (this.currentSequence === Sequences.TitleEnd) {
-        if (this.decodeEntities && c === CharCodes2.Amp) {
-          this.state = State2.BeforeEntity;
-        }
-      } else if (this.fastForwardTo(CharCodes2.Lt)) {
-        this.sequenceIndex = 1;
-      }
-    } else {
-      this.sequenceIndex = Number(c === CharCodes2.Lt);
-    }
-  }
-  stateCDATASequence(c) {
-    if (c === Sequences.Cdata[this.sequenceIndex]) {
-      if (++this.sequenceIndex === Sequences.Cdata.length) {
-        this.state = State2.InCommentLike;
-        this.currentSequence = Sequences.CdataEnd;
-        this.sequenceIndex = 0;
-        this.sectionStart = this.index + 1;
-      }
-    } else {
-      this.sequenceIndex = 0;
-      this.state = State2.InDeclaration;
-      this.stateInDeclaration(c);
-    }
-  }
-  fastForwardTo(c) {
-    while (++this.index < this.buffer.length + this.offset) {
-      if (this.buffer.charCodeAt(this.index - this.offset) === c) {
-        return true;
-      }
-    }
-    this.index = this.buffer.length + this.offset - 1;
-    return false;
-  }
-  stateInCommentLike(c) {
-    if (c === this.currentSequence[this.sequenceIndex]) {
-      if (++this.sequenceIndex === this.currentSequence.length) {
-        if (this.currentSequence === Sequences.CdataEnd) {
-          this.cbs.oncdata(this.sectionStart, this.index, 2);
-        } else {
-          this.cbs.oncomment(this.sectionStart, this.index, 2);
-        }
-        this.sequenceIndex = 0;
-        this.sectionStart = this.index + 1;
-        this.state = State2.Text;
-      }
-    } else if (this.sequenceIndex === 0) {
-      if (this.fastForwardTo(this.currentSequence[0])) {
-        this.sequenceIndex = 1;
-      }
-    } else if (c !== this.currentSequence[this.sequenceIndex - 1]) {
-      this.sequenceIndex = 0;
-    }
-  }
-  isTagStartChar(c) {
-    return this.xmlMode ? !isEndOfTagSection(c) : isASCIIAlpha(c);
-  }
-  startSpecial(sequence, offset2) {
-    this.isSpecial = true;
-    this.currentSequence = sequence;
-    this.sequenceIndex = offset2;
-    this.state = State2.SpecialStartSequence;
-  }
-  stateBeforeTagName(c) {
-    if (c === CharCodes2.ExclamationMark) {
-      this.state = State2.BeforeDeclaration;
-      this.sectionStart = this.index + 1;
-    } else if (c === CharCodes2.Questionmark) {
-      this.state = State2.InProcessingInstruction;
-      this.sectionStart = this.index + 1;
-    } else if (this.isTagStartChar(c)) {
-      const lower = c | 32;
-      this.sectionStart = this.index;
-      if (!this.xmlMode && lower === Sequences.TitleEnd[2]) {
-        this.startSpecial(Sequences.TitleEnd, 3);
-      } else {
-        this.state = !this.xmlMode && lower === Sequences.ScriptEnd[2] ? State2.BeforeSpecialS : State2.InTagName;
-      }
-    } else if (c === CharCodes2.Slash) {
-      this.state = State2.BeforeClosingTagName;
-    } else {
-      this.state = State2.Text;
-      this.stateText(c);
-    }
-  }
-  stateInTagName(c) {
-    if (isEndOfTagSection(c)) {
-      this.cbs.onopentagname(this.sectionStart, this.index);
-      this.sectionStart = -1;
-      this.state = State2.BeforeAttributeName;
-      this.stateBeforeAttributeName(c);
-    }
-  }
-  stateBeforeClosingTagName(c) {
-    if (isWhitespace3(c)) {
-    } else if (c === CharCodes2.Gt) {
-      this.state = State2.Text;
-    } else {
-      this.state = this.isTagStartChar(c) ? State2.InClosingTagName : State2.InSpecialComment;
-      this.sectionStart = this.index;
-    }
-  }
-  stateInClosingTagName(c) {
-    if (c === CharCodes2.Gt || isWhitespace3(c)) {
-      this.cbs.onclosetag(this.sectionStart, this.index);
-      this.sectionStart = -1;
-      this.state = State2.AfterClosingTagName;
-      this.stateAfterClosingTagName(c);
-    }
-  }
-  stateAfterClosingTagName(c) {
-    if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
-      this.state = State2.Text;
-      this.baseState = State2.Text;
-      this.sectionStart = this.index + 1;
-    }
-  }
-  stateBeforeAttributeName(c) {
-    if (c === CharCodes2.Gt) {
-      this.cbs.onopentagend(this.index);
-      if (this.isSpecial) {
-        this.state = State2.InSpecialTag;
-        this.sequenceIndex = 0;
-      } else {
-        this.state = State2.Text;
-      }
-      this.baseState = this.state;
-      this.sectionStart = this.index + 1;
-    } else if (c === CharCodes2.Slash) {
-      this.state = State2.InSelfClosingTag;
-    } else if (!isWhitespace3(c)) {
-      this.state = State2.InAttributeName;
-      this.sectionStart = this.index;
-    }
-  }
-  stateInSelfClosingTag(c) {
-    if (c === CharCodes2.Gt) {
-      this.cbs.onselfclosingtag(this.index);
-      this.state = State2.Text;
-      this.baseState = State2.Text;
-      this.sectionStart = this.index + 1;
-      this.isSpecial = false;
-    } else if (!isWhitespace3(c)) {
-      this.state = State2.BeforeAttributeName;
-      this.stateBeforeAttributeName(c);
-    }
-  }
-  stateInAttributeName(c) {
-    if (c === CharCodes2.Eq || isEndOfTagSection(c)) {
-      this.cbs.onattribname(this.sectionStart, this.index);
-      this.sectionStart = -1;
-      this.state = State2.AfterAttributeName;
-      this.stateAfterAttributeName(c);
-    }
-  }
-  stateAfterAttributeName(c) {
-    if (c === CharCodes2.Eq) {
-      this.state = State2.BeforeAttributeValue;
-    } else if (c === CharCodes2.Slash || c === CharCodes2.Gt) {
-      this.cbs.onattribend(QuoteType.NoValue, this.index);
-      this.state = State2.BeforeAttributeName;
-      this.stateBeforeAttributeName(c);
-    } else if (!isWhitespace3(c)) {
-      this.cbs.onattribend(QuoteType.NoValue, this.index);
-      this.state = State2.InAttributeName;
-      this.sectionStart = this.index;
-    }
-  }
-  stateBeforeAttributeValue(c) {
-    if (c === CharCodes2.DoubleQuote) {
-      this.state = State2.InAttributeValueDq;
-      this.sectionStart = this.index + 1;
-    } else if (c === CharCodes2.SingleQuote) {
-      this.state = State2.InAttributeValueSq;
-      this.sectionStart = this.index + 1;
-    } else if (!isWhitespace3(c)) {
-      this.sectionStart = this.index;
-      this.state = State2.InAttributeValueNq;
-      this.stateInAttributeValueNoQuotes(c);
-    }
-  }
-  handleInAttributeValue(c, quote) {
-    if (c === quote || !this.decodeEntities && this.fastForwardTo(quote)) {
-      this.cbs.onattribdata(this.sectionStart, this.index);
-      this.sectionStart = -1;
-      this.cbs.onattribend(quote === CharCodes2.DoubleQuote ? QuoteType.Double : QuoteType.Single, this.index);
-      this.state = State2.BeforeAttributeName;
-    } else if (this.decodeEntities && c === CharCodes2.Amp) {
-      this.baseState = this.state;
-      this.state = State2.BeforeEntity;
-    }
-  }
-  stateInAttributeValueDoubleQuotes(c) {
-    this.handleInAttributeValue(c, CharCodes2.DoubleQuote);
-  }
-  stateInAttributeValueSingleQuotes(c) {
-    this.handleInAttributeValue(c, CharCodes2.SingleQuote);
-  }
-  stateInAttributeValueNoQuotes(c) {
-    if (isWhitespace3(c) || c === CharCodes2.Gt) {
-      this.cbs.onattribdata(this.sectionStart, this.index);
-      this.sectionStart = -1;
-      this.cbs.onattribend(QuoteType.Unquoted, this.index);
-      this.state = State2.BeforeAttributeName;
-      this.stateBeforeAttributeName(c);
-    } else if (this.decodeEntities && c === CharCodes2.Amp) {
-      this.baseState = this.state;
-      this.state = State2.BeforeEntity;
-    }
-  }
-  stateBeforeDeclaration(c) {
-    if (c === CharCodes2.OpeningSquareBracket) {
-      this.state = State2.CDATASequence;
-      this.sequenceIndex = 0;
-    } else {
-      this.state = c === CharCodes2.Dash ? State2.BeforeComment : State2.InDeclaration;
-    }
-  }
-  stateInDeclaration(c) {
-    if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
-      this.cbs.ondeclaration(this.sectionStart, this.index);
-      this.state = State2.Text;
-      this.sectionStart = this.index + 1;
-    }
-  }
-  stateInProcessingInstruction(c) {
-    if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
-      this.cbs.onprocessinginstruction(this.sectionStart, this.index);
-      this.state = State2.Text;
-      this.sectionStart = this.index + 1;
-    }
-  }
-  stateBeforeComment(c) {
-    if (c === CharCodes2.Dash) {
-      this.state = State2.InCommentLike;
-      this.currentSequence = Sequences.CommentEnd;
-      this.sequenceIndex = 2;
-      this.sectionStart = this.index + 1;
-    } else {
-      this.state = State2.InDeclaration;
-    }
-  }
-  stateInSpecialComment(c) {
-    if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
-      this.cbs.oncomment(this.sectionStart, this.index, 0);
-      this.state = State2.Text;
-      this.sectionStart = this.index + 1;
-    }
-  }
-  stateBeforeSpecialS(c) {
-    const lower = c | 32;
-    if (lower === Sequences.ScriptEnd[3]) {
-      this.startSpecial(Sequences.ScriptEnd, 4);
-    } else if (lower === Sequences.StyleEnd[3]) {
-      this.startSpecial(Sequences.StyleEnd, 4);
-    } else {
-      this.state = State2.InTagName;
-      this.stateInTagName(c);
-    }
-  }
-  stateBeforeEntity(c) {
-    this.entityExcess = 1;
-    this.entityResult = 0;
-    if (c === CharCodes2.Number) {
-      this.state = State2.BeforeNumericEntity;
-    } else if (c === CharCodes2.Amp) {
-    } else {
-      this.trieIndex = 0;
-      this.trieCurrent = this.entityTrie[0];
-      this.state = State2.InNamedEntity;
-      this.stateInNamedEntity(c);
-    }
-  }
-  stateInNamedEntity(c) {
-    this.entityExcess += 1;
-    this.trieIndex = determineBranch(this.entityTrie, this.trieCurrent, this.trieIndex + 1, c);
-    if (this.trieIndex < 0) {
-      this.emitNamedEntity();
-      this.index--;
-      return;
-    }
-    this.trieCurrent = this.entityTrie[this.trieIndex];
-    const masked = this.trieCurrent & BinTrieFlags.VALUE_LENGTH;
-    if (masked) {
-      const valueLength = (masked >> 14) - 1;
-      if (!this.allowLegacyEntity() && c !== CharCodes2.Semi) {
-        this.trieIndex += valueLength;
-      } else {
-        const entityStart = this.index - this.entityExcess + 1;
-        if (entityStart > this.sectionStart) {
-          this.emitPartial(this.sectionStart, entityStart);
-        }
-        this.entityResult = this.trieIndex;
-        this.trieIndex += valueLength;
-        this.entityExcess = 0;
-        this.sectionStart = this.index + 1;
-        if (valueLength === 0) {
-          this.emitNamedEntity();
-        }
-      }
-    }
-  }
-  emitNamedEntity() {
-    this.state = this.baseState;
-    if (this.entityResult === 0) {
-      return;
-    }
-    const valueLength = (this.entityTrie[this.entityResult] & BinTrieFlags.VALUE_LENGTH) >> 14;
-    switch (valueLength) {
-      case 1: {
-        this.emitCodePoint(this.entityTrie[this.entityResult] & ~BinTrieFlags.VALUE_LENGTH);
-        break;
-      }
-      case 2: {
-        this.emitCodePoint(this.entityTrie[this.entityResult + 1]);
-        break;
-      }
-      case 3: {
-        this.emitCodePoint(this.entityTrie[this.entityResult + 1]);
-        this.emitCodePoint(this.entityTrie[this.entityResult + 2]);
-      }
-    }
-  }
-  stateBeforeNumericEntity(c) {
-    if ((c | 32) === CharCodes2.LowerX) {
-      this.entityExcess++;
-      this.state = State2.InHexEntity;
-    } else {
-      this.state = State2.InNumericEntity;
-      this.stateInNumericEntity(c);
-    }
-  }
-  emitNumericEntity(strict) {
-    const entityStart = this.index - this.entityExcess - 1;
-    const numberStart = entityStart + 2 + Number(this.state === State2.InHexEntity);
-    if (numberStart !== this.index) {
-      if (entityStart > this.sectionStart) {
-        this.emitPartial(this.sectionStart, entityStart);
-      }
-      this.sectionStart = this.index + Number(strict);
-      this.emitCodePoint(replaceCodePoint(this.entityResult));
-    }
-    this.state = this.baseState;
-  }
-  stateInNumericEntity(c) {
-    if (c === CharCodes2.Semi) {
-      this.emitNumericEntity(true);
-    } else if (isNumber2(c)) {
-      this.entityResult = this.entityResult * 10 + (c - CharCodes2.Zero);
-      this.entityExcess++;
-    } else {
-      if (this.allowLegacyEntity()) {
-        this.emitNumericEntity(false);
-      } else {
-        this.state = this.baseState;
-      }
-      this.index--;
-    }
-  }
-  stateInHexEntity(c) {
-    if (c === CharCodes2.Semi) {
-      this.emitNumericEntity(true);
-    } else if (isNumber2(c)) {
-      this.entityResult = this.entityResult * 16 + (c - CharCodes2.Zero);
-      this.entityExcess++;
-    } else if (isHexDigit(c)) {
-      this.entityResult = this.entityResult * 16 + ((c | 32) - CharCodes2.LowerA + 10);
-      this.entityExcess++;
-    } else {
-      if (this.allowLegacyEntity()) {
-        this.emitNumericEntity(false);
-      } else {
-        this.state = this.baseState;
-      }
-      this.index--;
-    }
-  }
-  allowLegacyEntity() {
-    return !this.xmlMode && (this.baseState === State2.Text || this.baseState === State2.InSpecialTag);
-  }
-  cleanup() {
-    if (this.running && this.sectionStart !== this.index) {
-      if (this.state === State2.Text || this.state === State2.InSpecialTag && this.sequenceIndex === 0) {
-        this.cbs.ontext(this.sectionStart, this.index);
-        this.sectionStart = this.index;
-      } else if (this.state === State2.InAttributeValueDq || this.state === State2.InAttributeValueSq || this.state === State2.InAttributeValueNq) {
-        this.cbs.onattribdata(this.sectionStart, this.index);
-        this.sectionStart = this.index;
-      }
-    }
-  }
-  shouldContinue() {
-    return this.index < this.buffer.length + this.offset && this.running;
-  }
-  parse() {
-    while (this.shouldContinue()) {
-      const c = this.buffer.charCodeAt(this.index - this.offset);
-      switch (this.state) {
-        case State2.Text: {
-          this.stateText(c);
-          break;
-        }
-        case State2.SpecialStartSequence: {
-          this.stateSpecialStartSequence(c);
-          break;
-        }
-        case State2.InSpecialTag: {
-          this.stateInSpecialTag(c);
-          break;
-        }
-        case State2.CDATASequence: {
-          this.stateCDATASequence(c);
-          break;
-        }
-        case State2.InAttributeValueDq: {
-          this.stateInAttributeValueDoubleQuotes(c);
-          break;
-        }
-        case State2.InAttributeName: {
-          this.stateInAttributeName(c);
-          break;
-        }
-        case State2.InCommentLike: {
-          this.stateInCommentLike(c);
-          break;
-        }
-        case State2.InSpecialComment: {
-          this.stateInSpecialComment(c);
-          break;
-        }
-        case State2.BeforeAttributeName: {
-          this.stateBeforeAttributeName(c);
-          break;
-        }
-        case State2.InTagName: {
-          this.stateInTagName(c);
-          break;
-        }
-        case State2.InClosingTagName: {
-          this.stateInClosingTagName(c);
-          break;
-        }
-        case State2.BeforeTagName: {
-          this.stateBeforeTagName(c);
-          break;
-        }
-        case State2.AfterAttributeName: {
-          this.stateAfterAttributeName(c);
-          break;
-        }
-        case State2.InAttributeValueSq: {
-          this.stateInAttributeValueSingleQuotes(c);
-          break;
-        }
-        case State2.BeforeAttributeValue: {
-          this.stateBeforeAttributeValue(c);
-          break;
-        }
-        case State2.BeforeClosingTagName: {
-          this.stateBeforeClosingTagName(c);
-          break;
-        }
-        case State2.AfterClosingTagName: {
-          this.stateAfterClosingTagName(c);
-          break;
-        }
-        case State2.BeforeSpecialS: {
-          this.stateBeforeSpecialS(c);
-          break;
-        }
-        case State2.InAttributeValueNq: {
-          this.stateInAttributeValueNoQuotes(c);
-          break;
-        }
-        case State2.InSelfClosingTag: {
-          this.stateInSelfClosingTag(c);
-          break;
-        }
-        case State2.InDeclaration: {
-          this.stateInDeclaration(c);
-          break;
-        }
-        case State2.BeforeDeclaration: {
-          this.stateBeforeDeclaration(c);
-          break;
-        }
-        case State2.BeforeComment: {
-          this.stateBeforeComment(c);
-          break;
-        }
-        case State2.InProcessingInstruction: {
-          this.stateInProcessingInstruction(c);
-          break;
-        }
-        case State2.InNamedEntity: {
-          this.stateInNamedEntity(c);
-          break;
-        }
-        case State2.BeforeEntity: {
-          this.stateBeforeEntity(c);
-          break;
-        }
-        case State2.InHexEntity: {
-          this.stateInHexEntity(c);
-          break;
-        }
-        case State2.InNumericEntity: {
-          this.stateInNumericEntity(c);
-          break;
-        }
-        default: {
-          this.stateBeforeNumericEntity(c);
-        }
-      }
-      this.index++;
-    }
-    this.cleanup();
-  }
-  finish() {
-    if (this.state === State2.InNamedEntity) {
-      this.emitNamedEntity();
-    }
-    if (this.sectionStart < this.index) {
-      this.handleTrailingData();
-    }
-    this.cbs.onend();
-  }
-  handleTrailingData() {
-    const endIndex = this.buffer.length + this.offset;
-    if (this.state === State2.InCommentLike) {
-      if (this.currentSequence === Sequences.CdataEnd) {
-        this.cbs.oncdata(this.sectionStart, endIndex, 0);
-      } else {
-        this.cbs.oncomment(this.sectionStart, endIndex, 0);
-      }
-    } else if (this.state === State2.InNumericEntity && this.allowLegacyEntity()) {
-      this.emitNumericEntity(false);
-    } else if (this.state === State2.InHexEntity && this.allowLegacyEntity()) {
-      this.emitNumericEntity(false);
-    } else if (this.state === State2.InTagName || this.state === State2.BeforeAttributeName || this.state === State2.BeforeAttributeValue || this.state === State2.AfterAttributeName || this.state === State2.InAttributeName || this.state === State2.InAttributeValueSq || this.state === State2.InAttributeValueDq || this.state === State2.InAttributeValueNq || this.state === State2.InClosingTagName) {
-    } else {
-      this.cbs.ontext(this.sectionStart, endIndex);
-    }
-  }
-  emitPartial(start2, endIndex) {
-    if (this.baseState !== State2.Text && this.baseState !== State2.InSpecialTag) {
-      this.cbs.onattribdata(start2, endIndex);
-    } else {
-      this.cbs.ontext(start2, endIndex);
-    }
-  }
-  emitCodePoint(cp) {
-    if (this.baseState !== State2.Text && this.baseState !== State2.InSpecialTag) {
-      this.cbs.onattribentity(cp);
-    } else {
-      this.cbs.ontextentity(cp);
-    }
-  }
-};
-
-// node_modules/htmlparser2/lib/esm/Parser.js
-var formTags = new Set([
-  "input",
-  "option",
-  "optgroup",
-  "select",
-  "button",
-  "datalist",
-  "textarea"
-]);
-var pTag = new Set(["p"]);
-var tableSectionTags = new Set(["thead", "tbody"]);
-var ddtTags = new Set(["dd", "dt"]);
-var rtpTags = new Set(["rt", "rp"]);
-var openImpliesClose = new Map([
-  ["tr", new Set(["tr", "th", "td"])],
-  ["th", new Set(["th"])],
-  ["td", new Set(["thead", "th", "td"])],
-  ["body", new Set(["head", "link", "script"])],
-  ["li", new Set(["li"])],
-  ["p", pTag],
-  ["h1", pTag],
-  ["h2", pTag],
-  ["h3", pTag],
-  ["h4", pTag],
-  ["h5", pTag],
-  ["h6", pTag],
-  ["select", formTags],
-  ["input", formTags],
-  ["output", formTags],
-  ["button", formTags],
-  ["datalist", formTags],
-  ["textarea", formTags],
-  ["option", new Set(["option"])],
-  ["optgroup", new Set(["optgroup", "option"])],
-  ["dd", ddtTags],
-  ["dt", ddtTags],
-  ["address", pTag],
-  ["article", pTag],
-  ["aside", pTag],
-  ["blockquote", pTag],
-  ["details", pTag],
-  ["div", pTag],
-  ["dl", pTag],
-  ["fieldset", pTag],
-  ["figcaption", pTag],
-  ["figure", pTag],
-  ["footer", pTag],
-  ["form", pTag],
-  ["header", pTag],
-  ["hr", pTag],
-  ["main", pTag],
-  ["nav", pTag],
-  ["ol", pTag],
-  ["pre", pTag],
-  ["section", pTag],
-  ["table", pTag],
-  ["ul", pTag],
-  ["rt", rtpTags],
-  ["rp", rtpTags],
-  ["tbody", tableSectionTags],
-  ["tfoot", tableSectionTags]
-]);
-var voidElements = new Set([
-  "area",
-  "base",
-  "basefont",
-  "br",
-  "col",
-  "command",
-  "embed",
-  "frame",
-  "hr",
-  "img",
-  "input",
-  "isindex",
-  "keygen",
-  "link",
-  "meta",
-  "param",
-  "source",
-  "track",
-  "wbr"
-]);
-var foreignContextElements = new Set(["math", "svg"]);
-var htmlIntegrationElements = new Set([
-  "mi",
-  "mo",
-  "mn",
-  "ms",
-  "mtext",
-  "annotation-xml",
-  "foreignobject",
-  "desc",
-  "title"
-]);
-var reNameEnd = /\s|\//;
-var Parser2 = class {
-  constructor(cbs, options = {}) {
-    var _a2, _b, _c, _d, _e;
-    this.options = options;
-    this.startIndex = 0;
-    this.endIndex = 0;
-    this.openTagStart = 0;
-    this.tagname = "";
-    this.attribname = "";
-    this.attribvalue = "";
-    this.attribs = null;
-    this.stack = [];
-    this.foreignContext = [];
-    this.buffers = [];
-    this.bufferOffset = 0;
-    this.writeIndex = 0;
-    this.ended = false;
-    this.cbs = cbs !== null && cbs !== void 0 ? cbs : {};
-    this.lowerCaseTagNames = (_a2 = options.lowerCaseTags) !== null && _a2 !== void 0 ? _a2 : !options.xmlMode;
-    this.lowerCaseAttributeNames = (_b = options.lowerCaseAttributeNames) !== null && _b !== void 0 ? _b : !options.xmlMode;
-    this.tokenizer = new ((_c = options.Tokenizer) !== null && _c !== void 0 ? _c : Tokenizer2)(this.options, this);
-    (_e = (_d = this.cbs).onparserinit) === null || _e === void 0 ? void 0 : _e.call(_d, this);
-  }
-  ontext(start2, endIndex) {
-    var _a2, _b;
-    const data2 = this.getSlice(start2, endIndex);
-    this.endIndex = endIndex - 1;
-    (_b = (_a2 = this.cbs).ontext) === null || _b === void 0 ? void 0 : _b.call(_a2, data2);
-    this.startIndex = endIndex;
-  }
-  ontextentity(cp) {
-    var _a2, _b;
-    const index2 = this.tokenizer.getSectionStart();
-    this.endIndex = index2 - 1;
-    (_b = (_a2 = this.cbs).ontext) === null || _b === void 0 ? void 0 : _b.call(_a2, fromCodePoint(cp));
-    this.startIndex = index2;
-  }
-  isVoidElement(name) {
-    return !this.options.xmlMode && voidElements.has(name);
-  }
-  onopentagname(start2, endIndex) {
-    this.endIndex = endIndex;
-    let name = this.getSlice(start2, endIndex);
-    if (this.lowerCaseTagNames) {
-      name = name.toLowerCase();
-    }
-    this.emitOpenTag(name);
-  }
-  emitOpenTag(name) {
-    var _a2, _b, _c, _d;
-    this.openTagStart = this.startIndex;
-    this.tagname = name;
-    const impliesClose = !this.options.xmlMode && openImpliesClose.get(name);
-    if (impliesClose) {
-      while (this.stack.length > 0 && impliesClose.has(this.stack[this.stack.length - 1])) {
-        const element = this.stack.pop();
-        (_b = (_a2 = this.cbs).onclosetag) === null || _b === void 0 ? void 0 : _b.call(_a2, element, true);
-      }
-    }
-    if (!this.isVoidElement(name)) {
-      this.stack.push(name);
-      if (foreignContextElements.has(name)) {
-        this.foreignContext.push(true);
-      } else if (htmlIntegrationElements.has(name)) {
-        this.foreignContext.push(false);
-      }
-    }
-    (_d = (_c = this.cbs).onopentagname) === null || _d === void 0 ? void 0 : _d.call(_c, name);
-    if (this.cbs.onopentag)
-      this.attribs = {};
-  }
-  endOpenTag(isImplied) {
-    var _a2, _b;
-    this.startIndex = this.openTagStart;
-    if (this.attribs) {
-      (_b = (_a2 = this.cbs).onopentag) === null || _b === void 0 ? void 0 : _b.call(_a2, this.tagname, this.attribs, isImplied);
-      this.attribs = null;
-    }
-    if (this.cbs.onclosetag && this.isVoidElement(this.tagname)) {
-      this.cbs.onclosetag(this.tagname, true);
-    }
-    this.tagname = "";
-  }
-  onopentagend(endIndex) {
-    this.endIndex = endIndex;
-    this.endOpenTag(false);
-    this.startIndex = endIndex + 1;
-  }
-  onclosetag(start2, endIndex) {
-    var _a2, _b, _c, _d, _e, _f;
-    this.endIndex = endIndex;
-    let name = this.getSlice(start2, endIndex);
-    if (this.lowerCaseTagNames) {
-      name = name.toLowerCase();
-    }
-    if (foreignContextElements.has(name) || htmlIntegrationElements.has(name)) {
-      this.foreignContext.pop();
-    }
-    if (!this.isVoidElement(name)) {
-      const pos = this.stack.lastIndexOf(name);
-      if (pos !== -1) {
-        if (this.cbs.onclosetag) {
-          let count = this.stack.length - pos;
-          while (count--) {
-            this.cbs.onclosetag(this.stack.pop(), count !== 0);
-          }
-        } else
-          this.stack.length = pos;
-      } else if (!this.options.xmlMode && name === "p") {
-        this.emitOpenTag("p");
-        this.closeCurrentTag(true);
-      }
-    } else if (!this.options.xmlMode && name === "br") {
-      (_b = (_a2 = this.cbs).onopentagname) === null || _b === void 0 ? void 0 : _b.call(_a2, "br");
-      (_d = (_c = this.cbs).onopentag) === null || _d === void 0 ? void 0 : _d.call(_c, "br", {}, true);
-      (_f = (_e = this.cbs).onclosetag) === null || _f === void 0 ? void 0 : _f.call(_e, "br", false);
-    }
-    this.startIndex = endIndex + 1;
-  }
-  onselfclosingtag(endIndex) {
-    this.endIndex = endIndex;
-    if (this.options.xmlMode || this.options.recognizeSelfClosing || this.foreignContext[this.foreignContext.length - 1]) {
-      this.closeCurrentTag(false);
-      this.startIndex = endIndex + 1;
-    } else {
-      this.onopentagend(endIndex);
-    }
-  }
-  closeCurrentTag(isOpenImplied) {
-    var _a2, _b;
-    const name = this.tagname;
-    this.endOpenTag(isOpenImplied);
-    if (this.stack[this.stack.length - 1] === name) {
-      (_b = (_a2 = this.cbs).onclosetag) === null || _b === void 0 ? void 0 : _b.call(_a2, name, !isOpenImplied);
-      this.stack.pop();
-    }
-  }
-  onattribname(start2, endIndex) {
-    this.startIndex = start2;
-    const name = this.getSlice(start2, endIndex);
-    this.attribname = this.lowerCaseAttributeNames ? name.toLowerCase() : name;
-  }
-  onattribdata(start2, endIndex) {
-    this.attribvalue += this.getSlice(start2, endIndex);
-  }
-  onattribentity(cp) {
-    this.attribvalue += fromCodePoint(cp);
-  }
-  onattribend(quote, endIndex) {
-    var _a2, _b;
-    this.endIndex = endIndex;
-    (_b = (_a2 = this.cbs).onattribute) === null || _b === void 0 ? void 0 : _b.call(_a2, this.attribname, this.attribvalue, quote === QuoteType.Double ? '"' : quote === QuoteType.Single ? "'" : quote === QuoteType.NoValue ? void 0 : null);
-    if (this.attribs && !Object.prototype.hasOwnProperty.call(this.attribs, this.attribname)) {
-      this.attribs[this.attribname] = this.attribvalue;
-    }
-    this.attribvalue = "";
-  }
-  getInstructionName(value) {
-    const index2 = value.search(reNameEnd);
-    let name = index2 < 0 ? value : value.substr(0, index2);
-    if (this.lowerCaseTagNames) {
-      name = name.toLowerCase();
-    }
-    return name;
-  }
-  ondeclaration(start2, endIndex) {
-    this.endIndex = endIndex;
-    const value = this.getSlice(start2, endIndex);
-    if (this.cbs.onprocessinginstruction) {
-      const name = this.getInstructionName(value);
-      this.cbs.onprocessinginstruction(`!${name}`, `!${value}`);
-    }
-    this.startIndex = endIndex + 1;
-  }
-  onprocessinginstruction(start2, endIndex) {
-    this.endIndex = endIndex;
-    const value = this.getSlice(start2, endIndex);
-    if (this.cbs.onprocessinginstruction) {
-      const name = this.getInstructionName(value);
-      this.cbs.onprocessinginstruction(`?${name}`, `?${value}`);
-    }
-    this.startIndex = endIndex + 1;
-  }
-  oncomment(start2, endIndex, offset2) {
-    var _a2, _b, _c, _d;
-    this.endIndex = endIndex;
-    (_b = (_a2 = this.cbs).oncomment) === null || _b === void 0 ? void 0 : _b.call(_a2, this.getSlice(start2, endIndex - offset2));
-    (_d = (_c = this.cbs).oncommentend) === null || _d === void 0 ? void 0 : _d.call(_c);
-    this.startIndex = endIndex + 1;
-  }
-  oncdata(start2, endIndex, offset2) {
-    var _a2, _b, _c, _d, _e, _f, _g, _h, _j, _k;
-    this.endIndex = endIndex;
-    const value = this.getSlice(start2, endIndex - offset2);
-    if (this.options.xmlMode || this.options.recognizeCDATA) {
-      (_b = (_a2 = this.cbs).oncdatastart) === null || _b === void 0 ? void 0 : _b.call(_a2);
-      (_d = (_c = this.cbs).ontext) === null || _d === void 0 ? void 0 : _d.call(_c, value);
-      (_f = (_e = this.cbs).oncdataend) === null || _f === void 0 ? void 0 : _f.call(_e);
-    } else {
-      (_h = (_g = this.cbs).oncomment) === null || _h === void 0 ? void 0 : _h.call(_g, `[CDATA[${value}]]`);
-      (_k = (_j = this.cbs).oncommentend) === null || _k === void 0 ? void 0 : _k.call(_j);
-    }
-    this.startIndex = endIndex + 1;
-  }
-  onend() {
-    var _a2, _b;
-    if (this.cbs.onclosetag) {
-      this.endIndex = this.startIndex;
-      for (let index2 = this.stack.length; index2 > 0; this.cbs.onclosetag(this.stack[--index2], true))
-        ;
-    }
-    (_b = (_a2 = this.cbs).onend) === null || _b === void 0 ? void 0 : _b.call(_a2);
-  }
-  reset() {
-    var _a2, _b, _c, _d;
-    (_b = (_a2 = this.cbs).onreset) === null || _b === void 0 ? void 0 : _b.call(_a2);
-    this.tokenizer.reset();
-    this.tagname = "";
-    this.attribname = "";
-    this.attribs = null;
-    this.stack.length = 0;
-    this.startIndex = 0;
-    this.endIndex = 0;
-    (_d = (_c = this.cbs).onparserinit) === null || _d === void 0 ? void 0 : _d.call(_c, this);
-    this.buffers.length = 0;
-    this.bufferOffset = 0;
-    this.writeIndex = 0;
-    this.ended = false;
-  }
-  parseComplete(data2) {
-    this.reset();
-    this.end(data2);
-  }
-  getSlice(start2, end3) {
-    while (start2 - this.bufferOffset >= this.buffers[0].length) {
-      this.shiftBuffer();
-    }
-    let slice2 = this.buffers[0].slice(start2 - this.bufferOffset, end3 - this.bufferOffset);
-    while (end3 - this.bufferOffset > this.buffers[0].length) {
-      this.shiftBuffer();
-      slice2 += this.buffers[0].slice(0, end3 - this.bufferOffset);
-    }
-    return slice2;
-  }
-  shiftBuffer() {
-    this.bufferOffset += this.buffers[0].length;
-    this.writeIndex--;
-    this.buffers.shift();
-  }
-  write(chunk) {
-    var _a2, _b;
-    if (this.ended) {
-      (_b = (_a2 = this.cbs).onerror) === null || _b === void 0 ? void 0 : _b.call(_a2, new Error(".write() after done!"));
-      return;
-    }
-    this.buffers.push(chunk);
-    if (this.tokenizer.running) {
-      this.tokenizer.write(chunk);
-      this.writeIndex++;
-    }
-  }
-  end(chunk) {
-    var _a2, _b;
-    if (this.ended) {
-      (_b = (_a2 = this.cbs).onerror) === null || _b === void 0 ? void 0 : _b.call(_a2, new Error(".end() after done!"));
-      return;
-    }
-    if (chunk)
-      this.write(chunk);
-    this.ended = true;
-    this.tokenizer.end();
-  }
-  pause() {
-    this.tokenizer.pause();
-  }
-  resume() {
-    this.tokenizer.resume();
-    while (this.tokenizer.running && this.writeIndex < this.buffers.length) {
-      this.tokenizer.write(this.buffers[this.writeIndex++]);
-    }
-    if (this.ended)
-      this.tokenizer.end();
-  }
-  parseChunk(chunk) {
-    this.write(chunk);
-  }
-  done(chunk) {
-    this.end(chunk);
-  }
-};
-
-// node_modules/htmlparser2/lib/esm/index.js
-function parseDocument(data2, options) {
-  const handler = new DomHandler(void 0, options);
-  new Parser2(handler, options).end(data2);
-  return handler.root;
-}
-
-// node_modules/cheerio/lib/esm/index.js
-var parse5 = getParse((content, options, isDocument2, context) => options.xmlMode || options._useHtmlParser2 ? parseDocument(content, options) : parseWithParse5(content, options, isDocument2, context));
-var load = getLoad(parse5, (dom, options) => options.xmlMode || options._useHtmlParser2 ? esm_default(dom, options) : renderWithParse5(dom));
-var esm_default2 = load([]);
+// node_modules/cheerio/dist/browser/load-parse.js
+var parse5 = getParse((content, options, isDocument2, context) => options._useHtmlParser2 ? parseDocument(content, options) : parseWithParse5(content, options, isDocument2, context));
+var load = getLoad(parse5, (dom, options) => options._useHtmlParser2 ? esm_default(dom, options) : renderWithParse5(dom));
 
 // src/org/wanxp/douban/data/search/SearchParser.ts
 var SearchParserHandler = class {
@@ -17960,7 +18499,7 @@ var SearcherV2 = class {
 // src/org/wanxp/douban/data/search/DoubanSearchFuzzySuggestModal.ts
 var DoubanFuzzySuggester = class extends import_obsidian6.FuzzySuggestModal {
   constructor(plugin, context, searchItem) {
-    super(app);
+    super(plugin.app);
     this.plugin = plugin;
     this.context = context;
     this.searchItem = searchItem;
@@ -18095,7 +18634,7 @@ var DoubanParameterName = {
 };
 
 // src/org/wanxp/douban/data/handler/DoubanAbstractLoadHandler.ts
-var import_obsidian7 = __toModule(require("obsidian"));
+var import_obsidian8 = __toModule(require("obsidian"));
 
 // src/org/wanxp/constant/DefaultTemplateContent.ts
 var DEFAULT_TEMPLATE_CONTENT = {
@@ -18176,6 +18715,10 @@ desc: {{desc}}
 ---
 
 ![image]({{image}})
+
+---
+Menu:
+{{menu}}
 `,
   noteTemplateFileContent: `---
 doubanId: {{id}}
@@ -18338,8 +18881,12 @@ desc: {{desc}}
 
 ![image]({{image}})
 
-Comment: 
 ---
+Menu:
+{{menu}}
+
+---
+Comment: 
 {{myComment}}
 
 `,
@@ -18574,7 +19121,10 @@ var DoubanSubjectStateRecords_KEY_WORD_TYPE = new Map([
   ["\u6211\u73A9\u8FC7\u8FD9\u4E2A\u6E38\u620F", SupportType.game],
   ["\u6211\u60F3\u73A9\u8FD9\u4E2A\u6E38\u620F", SupportType.game],
   ["\u6211\u5728\u73A9\u8FD9\u4E2A\u6E38\u620F", SupportType.game],
-  ["\u6211\u6700\u8FD1\u5728\u73A9\u8FD9\u4E2A\u6E38\u620F", SupportType.game]
+  ["\u6211\u6700\u8FD1\u5728\u73A9\u8FD9\u4E2A\u6E38\u620F", SupportType.game],
+  ["\u6211\u6700\u8FD1\u770B\u8FC7\u8FD9\u90E8\u7535\u5F71", SupportType.movie],
+  ["\u6211\u770B\u8FC7\u8FD9\u90E8\u7535\u5F71", SupportType.movie],
+  ["\u6211\u60F3\u770B\u8FD9\u90E8\u7535\u5F71", SupportType.movie]
 ]);
 
 // src/org/wanxp/utils/HtmlUtil.ts
@@ -18624,12 +19174,19 @@ var YamlUtil = class {
   static handleSpecialChar(text3) {
     return '"' + text3 + '"';
   }
-  static handleText(text3) {
-    return YamlUtil.hasSpecialChar(text3) ? YamlUtil.handleSpecialChar(text3.replaceAll('"', '\\"')).replaceAll(/\s+/g, " ").replaceAll("\n", "\u3002").replaceAll("\u3002\u3002", "\u3002").replace(/^" /, '"').replace(/ "$/, '"') : text3;
+  static handleText(text3, dataField = null) {
+    if (YamlUtil.hasSpecialChar(text3)) {
+      text3 = text3.replaceAll('"', '\\"').replaceAll(/\s+/g, " ").replaceAll("\n", "\u3002").replaceAll("\u3002\u3002", "\u3002").replace(/^" /, '"').replace(/ "$/, '"');
+      if (dataField && dataField.type === DataValueType.date) {
+        return text3;
+      }
+      YamlUtil.handleSpecialChar(text3);
+    }
+    return text3;
   }
 };
 var SPECIAL_CHAR_REG = /[{}\[\]&*#?|\-<>=!%@:"`,\n]/;
-var TITLE_ALIASES_SPECIAL_CHAR_REG_G = /[{}\[\]&*#?|\-<>=!%@:"`,， \n]/g;
+var TITLE_ALIASES_SPECIAL_CHAR_REG_G = /[{}\[\]&*#?|\-<>=!%@:"`,，\n]/g;
 var SPECIAL_CHAR_REG_REPLACE = new Map([
   ["{", "\\{"]
 ]);
@@ -18652,9 +19209,34 @@ var FieldVariable = class {
   }
 };
 
+// src/org/wanxp/utils/FileUtil.ts
+var import_obsidian7 = __toModule(require("obsidian"));
+var FileUtil = {
+  parse(pathString) {
+    const regex = /(?<dir>([^/\\]+[/\\])*)(?<name>[^/\\]*$)/;
+    const match = String(pathString).match(regex);
+    const { dir, name } = match && match.groups;
+    const nameWithoutSpChar = this.replaceSpecialCharactersForFileName(name);
+    return { dir, name: nameWithoutSpChar || "Untitled_" + new Date().getTime(), extension: "md" };
+  },
+  join(...strings) {
+    const parts = strings.map((s) => String(s).trim()).filter((s) => s != null);
+    return (0, import_obsidian7.normalizePath)(parts.join("/"));
+  },
+  replaceSpecialCharactersForFileName(fileNameInput) {
+    let fileName = fileNameInput.replaceAll(/[\\/:*?"<>|]/g, "_");
+    fileName = fileName.replaceAll(/[\n\r\t]/g, "_");
+    fileName = fileName.replaceAll(/\s+/g, "_");
+    fileName = fileName.replaceAll(/^\.+/g, "_");
+    fileName = fileName.replaceAll(/\.+$/g, "_");
+    fileName = fileName.replaceAll(/_+/g, "_");
+    return fileName;
+  }
+};
+
 // src/org/wanxp/utils/VariableUtil.ts
 var VariableUtil = class {
-  static replaceSubject(obj, content, subjectType, settingManager) {
+  static replaceSubject(obj, content, subjectType, settingManager, targetType) {
     if (!content || !obj) {
       return content;
     }
@@ -18663,16 +19245,16 @@ var VariableUtil = class {
       return content;
     }
     if (obj instanceof Map) {
-      this.handleCustomVariable(subjectType, obj, settingManager);
-      content = this.replaceMap(obj, allVariables, content, settingManager);
+      this.handleCustomVariable(subjectType, obj, settingManager, "text");
+      content = this.replaceMap(obj, allVariables, content, settingManager, targetType);
     } else {
       const map2 = this.objToMap(obj);
-      this.handleCustomVariable(subjectType, map2, settingManager);
-      content = this.replaceMap(map2, allVariables, content, settingManager);
+      this.handleCustomVariable(subjectType, map2, settingManager, "text");
+      content = this.replaceMap(map2, allVariables, content, settingManager, targetType);
     }
     return content;
   }
-  static replace(obj, content, settingManager) {
+  static replace(obj, content, settingManager, targetType) {
     if (!content || !obj) {
       return content;
     }
@@ -18681,27 +19263,27 @@ var VariableUtil = class {
       return content;
     }
     if (obj instanceof Map) {
-      content = this.replaceMap(obj, allVariables, content, settingManager);
+      content = this.replaceMap(obj, allVariables, content, settingManager, targetType);
     } else {
       const map2 = this.objToMap(obj);
-      content = this.replaceMap(map2, allVariables, content, settingManager);
+      content = this.replaceMap(map2, allVariables, content, settingManager, targetType);
     }
     return content;
   }
-  static replaceVariable(variable, value, content, settingManager) {
+  static replaceVariable(variable, value, content, settingManager, targetType) {
     if (!content) {
       return content;
     }
     if (value instanceof Array) {
-      content = this.replaceArray(variable, value, content, settingManager);
+      content = this.replaceArray(variable, value, content, settingManager, targetType);
     } else if (value instanceof DataField) {
-      content = this.replaceDataField(variable, value, content, settingManager);
+      content = this.replaceDataField(variable, value, content, settingManager, targetType);
     } else {
-      content = this.replaceString(variable, value, content, settingManager);
+      content = this.replaceString(variable, value, value, content, settingManager, targetType);
     }
     return content;
   }
-  static replaceArray(variable, value, content, settingManager) {
+  static replaceArray(variable, value, content, settingManager, targetType) {
     if (!content) {
       return content;
     }
@@ -18721,7 +19303,7 @@ var VariableUtil = class {
       } else {
         return v ? v.toString() : null;
       }
-    }).filter((v) => v).map((v) => YamlUtil.handleText(v));
+    }).filter((v) => v).map((v) => this.handleText(v, targetType));
     const arrayValue = StringUtil.handleArray(strValues, arraySettings);
     content = content.replaceAll(variableStr, arrayValue);
     return content;
@@ -18729,13 +19311,12 @@ var VariableUtil = class {
   static keyToVariable(key) {
     return `{{${key}}}`;
   }
-  static replaceString(variable, value, content, settingManager) {
+  static replaceString(variable, valueField, value, content, settingManager, targetType) {
     if (!content) {
       return content;
     }
     let strValue = value ? value.toString() : "";
-    strValue = YamlUtil.handleText(strValue);
-    return content.replaceAll(variable.variable, strValue);
+    return content.replaceAll(variable.variable, this.handleText(strValue, targetType, valueField));
   }
   static getAllVariables(content, settingManager) {
     const reg = /\{\{[a-zA-Z-0-9_.]+([(a-zA-Z-0-9)]+)?}}/g;
@@ -18762,10 +19343,10 @@ var VariableUtil = class {
       return settingManager.getArraySetting(outTypeName);
     }
   }
-  static replaceMap(obj, allVariables, content, settingManager) {
+  static replaceMap(obj, allVariables, content, settingManager, targetType) {
     allVariables.forEach((variable) => {
       const value = obj.get(variable.key);
-      content = this.replaceVariable(variable, value, content, settingManager);
+      content = this.replaceVariable(variable, value, content, settingManager, targetType);
     });
     return content;
   }
@@ -18787,7 +19368,7 @@ var VariableUtil = class {
       return DataValueType.string;
     }
   }
-  static replaceDataField(variable, value, content, settingManager) {
+  static replaceDataField(variable, value, content, settingManager, targetType) {
     if (!content) {
       return content;
     }
@@ -18797,24 +19378,24 @@ var VariableUtil = class {
     }
     switch (value.type) {
       case DataValueType.string:
-        content = this.replaceString(variable, value.value, content, settingManager);
+        content = this.replaceString(variable, value, value.value, content, settingManager, targetType);
         break;
       case DataValueType.number:
-        content = content.replaceAll(variableStr, value.value.toString());
+        content = content.replaceAll(variableStr, this.handleText(value.value.toString(), targetType, value));
         break;
       case DataValueType.date:
-        content = content.replaceAll(variableStr, value.value);
+        content = content.replaceAll(variableStr, this.handleText(value.value, targetType, value));
         break;
       case DataValueType.array:
-        content = this.replaceArray(variable, value.value, content, settingManager);
+        content = this.replaceArray(variable, value.value, content, settingManager, targetType);
         break;
       default:
-        content = content.replaceAll(variableStr, value.value);
+        content = content.replaceAll(variableStr, this.handleText(value.value, targetType, value));
         break;
     }
     return content;
   }
-  static handleCustomVariable(subjectType, variableMap, settingMananger) {
+  static handleCustomVariable(subjectType, variableMap, settingMananger, targetType) {
     const customProperties = settingMananger.getSetting("customProperties");
     if (!customProperties) {
       return;
@@ -18824,7 +19405,7 @@ var VariableUtil = class {
       customPropertiesMap.set(customProperty.name, customProperty.value);
     });
     customPropertiesMap.forEach((value, key) => {
-      variableMap.set(key, new DataField(key, DataValueType.string, value, VariableUtil.replace(variableMap, value, settingMananger)));
+      variableMap.set(key, new DataField(key, DataValueType.string, value, VariableUtil.replace(variableMap, value, settingMananger, targetType)));
     });
   }
   static objToMap(obj) {
@@ -18833,6 +19414,17 @@ var VariableUtil = class {
       map2.set(key, obj[key]);
     });
     return map2;
+  }
+  static handleText(v, targetType, dataField = null) {
+    if (targetType === "yml_text") {
+      return YamlUtil.handleText(v, dataField);
+    }
+    if (targetType === "text") {
+      return v;
+    }
+    if (targetType === "path") {
+      return FileUtil.replaceSpecialCharactersForFileName(v);
+    }
   }
 };
 
@@ -18882,10 +19474,13 @@ var DoubanAbstractLoadHandler = class {
   constructor(doubanPlugin) {
     this.doubanPlugin = doubanPlugin;
   }
-  parse(extract, context) {
+  parse(extract3, context) {
     return __async(this, null, function* () {
-      const template = yield this.getTemplate(extract, context);
-      yield this.saveImage(extract, context);
+      const template = yield this.getTemplate(extract3, context);
+      const variableMap = this.buildVariableMap(extract3, context);
+      this.parseUserInfo(template, variableMap, extract3, context);
+      this.parseVariable(template, variableMap, extract3, context);
+      yield this.saveImage(extract3, context, variableMap);
       const frontMatterStart = template.indexOf(BasicConst.YAML_FRONT_MATTER_SYMBOL, 0);
       const frontMatterEnd = template.indexOf(BasicConst.YAML_FRONT_MATTER_SYMBOL, frontMatterStart + 1);
       let frontMatter = "";
@@ -18897,23 +19492,27 @@ var DoubanAbstractLoadHandler = class {
         frontMatter = template.substring(frontMatterStart, frontMatterEnd + 3);
         frontMatterAfter = template.substring(frontMatterEnd + 3);
         if (frontMatterBefore.length > 0) {
-          frontMatterBefore = this.parsePartText(frontMatterBefore, extract, context);
+          frontMatterBefore = this.parsePartText(frontMatterBefore, extract3, context, variableMap);
         }
         if (frontMatterAfter.length > 0) {
-          frontMatterAfter = this.parsePartText(frontMatterAfter, extract, context);
+          frontMatterAfter = this.parsePartText(frontMatterAfter, extract3, context, variableMap);
         }
         if (frontMatter.length > 0) {
-          frontMatter = this.parsePartText(frontMatter, extract, context, TemplateTextMode.YAML);
+          frontMatter = this.parsePartYml(frontMatter, extract3, context, variableMap);
         }
         result = frontMatterBefore + frontMatter + frontMatterAfter;
       } else {
-        result = this.parsePartText(template, extract, context);
+        result = this.parsePartText(template, extract3, context, variableMap);
+      }
+      let filePath = "";
+      if (SearchHandleMode.FOR_CREATE == context.mode) {
+        filePath = this.parsePartPath(this.getFilePath(context), extract3, context, variableMap);
       }
       let fileName = "";
       if (SearchHandleMode.FOR_CREATE == context.mode) {
-        fileName = this.parsePartText(this.getFileName(context), extract, context);
+        fileName = this.parsePartPath(this.getFileName(context), extract3, context, variableMap);
       }
-      return { content: result, fileName, subject: extract };
+      return { content: result, filePath, fileName, subject: extract3 };
     });
   }
   getFileName(context) {
@@ -18923,6 +19522,14 @@ var DoubanAbstractLoadHandler = class {
     }
     const { dataFileNamePath } = context.settings;
     return dataFileNamePath ? dataFileNamePath : DEFAULT_SETTINGS.dataFileNamePath;
+  }
+  getFilePath(context) {
+    const { syncConfig } = context;
+    if (syncConfig) {
+      return syncConfig.dataFilePath;
+    }
+    const { dataFilePath } = context.settings;
+    return dataFilePath ? dataFilePath : DEFAULT_SETTINGS.dataFilePath;
   }
   handle(id, context) {
     return __async(this, null, function* () {
@@ -18963,10 +19570,10 @@ var DoubanAbstractLoadHandler = class {
     }
     return null;
   }
-  toEditor(context, extract) {
+  toEditor(context, extract3) {
     return __async(this, null, function* () {
-      yield this.doubanPlugin.putToObsidian(context, extract);
-      return extract;
+      yield this.doubanPlugin.putToObsidian(context, extract3);
+      return extract3;
     });
   }
   getPersonName(name, context) {
@@ -19045,9 +19652,18 @@ var DoubanAbstractLoadHandler = class {
     s = s.replace(/<br\/>/g, "\n");
     return s;
   }
-  parsePartText(template, extract, context, textMode = TemplateTextMode.NORMAL) {
+  parsePartYml(template, extract3, context, variableMap) {
+    return VariableUtil.replaceSubject(variableMap, template, this.getSupportType(), this.doubanPlugin.settingsManager, "yml_text");
+  }
+  parsePartText(template, extract3, context, variableMap) {
+    return VariableUtil.replaceSubject(variableMap, template, this.getSupportType(), this.doubanPlugin.settingsManager, "text");
+  }
+  parsePartPath(template, extract3, context, variableMap) {
+    return VariableUtil.replaceSubject(variableMap, template, this.getSupportType(), this.doubanPlugin.settingsManager, "path");
+  }
+  buildVariableMap(extract3, context) {
     const variableMap = new Map();
-    for (const [key, value] of Object.entries(extract)) {
+    for (const [key, value] of Object.entries(extract3)) {
       if (!value) {
         continue;
       }
@@ -19057,19 +19673,17 @@ var DoubanAbstractLoadHandler = class {
       }
       variableMap.set(key, new DataField(key, type, value, value));
     }
-    variableMap.set(DoubanParameterName.IMAGE_URL, new DataField(DoubanParameterName.IMAGE_URL, DataValueType.url, extract.imageUrl, extract.imageUrl));
-    variableMap.set(DoubanParameterName.YEAR_PUBLISHED, new DataField(DoubanParameterName.YEAR_PUBLISHED, DataValueType.date, extract.datePublished, extract.datePublished ? (0, import_obsidian7.moment)(extract.datePublished).format("yyyy") : ""));
-    variableMap.set(DoubanParameterName.DATE_PUBLISHED, new DataField(DoubanParameterName.DATE_PUBLISHED, DataValueType.date, extract.datePublished, extract.datePublished ? (0, import_obsidian7.moment)(extract.datePublished).format(context.settings.dateFormat) : ""));
-    variableMap.set(DoubanParameterName.TIME_PUBLISHED, new DataField(DoubanParameterName.TIME_PUBLISHED, DataValueType.date, extract.datePublished, extract.datePublished ? (0, import_obsidian7.moment)(extract.datePublished).format(context.settings.timeFormat) : ""));
+    variableMap.set(DoubanParameterName.IMAGE_URL, new DataField(DoubanParameterName.IMAGE_URL, DataValueType.url, extract3.imageUrl, extract3.imageUrl));
+    variableMap.set(DoubanParameterName.YEAR_PUBLISHED, new DataField(DoubanParameterName.YEAR_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian8.moment)(extract3.datePublished).format("yyyy") : ""));
+    variableMap.set(DoubanParameterName.DATE_PUBLISHED, new DataField(DoubanParameterName.DATE_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian8.moment)(extract3.datePublished).format(context.settings.dateFormat) : ""));
+    variableMap.set(DoubanParameterName.TIME_PUBLISHED, new DataField(DoubanParameterName.TIME_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian8.moment)(extract3.datePublished).format(context.settings.timeFormat) : ""));
     const currentDate = new Date();
-    variableMap.set(DoubanParameterName.CURRENT_DATE, new DataField(DoubanParameterName.CURRENT_DATE, DataValueType.date, currentDate, (0, import_obsidian7.moment)(currentDate).format(context.settings.dateFormat)));
-    variableMap.set(DoubanParameterName.CURRENT_TIME, new DataField(DoubanParameterName.CURRENT_TIME, DataValueType.date, currentDate, (0, import_obsidian7.moment)(currentDate).format(context.settings.timeFormat)));
-    this.parseUserInfo(template, variableMap, extract, context, textMode);
-    this.parseVariable(template, variableMap, extract, context, textMode);
-    return VariableUtil.replaceSubject(variableMap, template, this.getSupportType(), this.doubanPlugin.settingsManager);
+    variableMap.set(DoubanParameterName.CURRENT_DATE, new DataField(DoubanParameterName.CURRENT_DATE, DataValueType.date, currentDate, (0, import_obsidian8.moment)(currentDate).format(context.settings.dateFormat)));
+    variableMap.set(DoubanParameterName.CURRENT_TIME, new DataField(DoubanParameterName.CURRENT_TIME, DataValueType.date, currentDate, (0, import_obsidian8.moment)(currentDate).format(context.settings.timeFormat)));
+    return variableMap;
   }
-  parseUserInfo(resultContent, variableMap, extract, context, textMode) {
-    const userState = extract.userState;
+  parseUserInfo(resultContent, variableMap, extract3, context) {
+    const userState = extract3.userState;
     if ((resultContent.indexOf(DoubanUserParameter.MY_TAGS) >= 0 || resultContent.indexOf(DoubanUserParameter.MY_RATING) >= 0 || resultContent.indexOf(DoubanUserParameter.MY_STATE) >= 0 || resultContent.indexOf(DoubanUserParameter.MY_COMMENT) >= 0 || resultContent.indexOf(DoubanUserParameter.MY_COLLECTION_DATE) >= 0) && !this.doubanPlugin.userComponent.isLogin()) {
       log.warn(i18nHelper.getMessage("100113"));
       return resultContent;
@@ -19079,9 +19693,9 @@ var DoubanAbstractLoadHandler = class {
     }
     let tags = [];
     if (userState.tags && userState.tags.length > 0) {
-      tags = [extract.type, ...userState.tags.map((tag) => tag.trim())];
+      tags = [extract3.type, ...userState.tags.map((tag) => tag.trim())];
     } else {
-      tags = [extract.type];
+      tags = [extract3.type];
     }
     Object.entries(userState).forEach(([key, value]) => {
       if (!value) {
@@ -19103,7 +19717,7 @@ var DoubanAbstractLoadHandler = class {
       variableMap.set(DoubanUserParameterName.MY_RATING_STAR, new DataField(DoubanUserParameterName.MY_RATING_STAR, DataValueType.string, userState.rate, NumberUtil.getRateStar(userState.rate, 5, { scoreSetting: context.settings.scoreSetting })));
     }
     if (userState.collectionDate) {
-      variableMap.set(DoubanUserParameterName.MY_COLLECTION_DATE, new DataField(DoubanUserParameterName.MY_COLLECTION_DATE, DataValueType.date, userState.collectionDate, userState.collectionDate ? (0, import_obsidian7.moment)(userState.collectionDate).format(context.settings.dateFormat) : ""));
+      variableMap.set(DoubanUserParameterName.MY_COLLECTION_DATE, new DataField(DoubanUserParameterName.MY_COLLECTION_DATE, DataValueType.date, userState.collectionDate, userState.collectionDate ? (0, import_obsidian8.moment)(userState.collectionDate).format(context.settings.dateFormat) : ""));
     }
   }
   getTemplateKey() {
@@ -19132,7 +19746,7 @@ var DoubanAbstractLoadHandler = class {
     }
     return templateKey;
   }
-  getTemplate(extract, context) {
+  getTemplate(extract3, context) {
     return __async(this, null, function* () {
       const { syncConfig } = context;
       if (syncConfig) {
@@ -19145,7 +19759,7 @@ var DoubanAbstractLoadHandler = class {
       }
       const tempKey = this.getTemplateKey();
       const templatePath = context.settings[tempKey];
-      let useUserState = context.userComponent.isLogin() && extract.userState && extract.userState.collectionDate != null && extract.userState.collectionDate != void 0;
+      let useUserState = context.userComponent.isLogin() && extract3.userState && extract3.userState.collectionDate != null && extract3.userState.collectionDate != void 0;
       useUserState = useUserState ? useUserState : false;
       if (!templatePath || StringUtil.isBlank(templatePath)) {
         return getDefaultTemplateContent(tempKey, useUserState);
@@ -19203,28 +19817,38 @@ var DoubanAbstractLoadHandler = class {
         return "";
     }
   }
-  saveImage(extract, context) {
+  saveImage(extract3, context, variableMap) {
     return __async(this, null, function* () {
       const { syncConfig } = context;
-      if (!extract.image || syncConfig && !syncConfig.cacheImage || !context.settings.cacheImage) {
+      if (!extract3.image || syncConfig && !syncConfig.cacheImage || !context.settings.cacheImage) {
         return;
       }
-      const image = extract.image;
-      const filename = image.split("/").pop();
+      const image = extract3.image;
       let folder = syncConfig ? syncConfig.attachmentPath : context.settings.attachmentPath;
       if (!folder) {
         folder = DEFAULT_SETTINGS.attachmentPath;
       }
-      folder = this.parsePartText(folder, extract, context);
-      const referHeaders = { "referer": image };
+      folder = this.parsePartPath(folder, extract3, context, variableMap);
+      let fileName = syncConfig ? syncConfig.attachmentFileName : context.settings.attachmentFileName;
+      if (!fileName) {
+        fileName = DEFAULT_SETTINGS.attachmentFileName;
+      }
+      let fileNameSuffix = image ? image.substring(image.lastIndexOf(".")) : ".jpg";
+      if (fileNameSuffix && fileNameSuffix.length > 10) {
+        fileNameSuffix = ".jpg";
+      }
+      fileName = this.parsePartPath(fileName, extract3, context, variableMap);
+      fileName = fileName + fileNameSuffix;
+      const referHeaders = context.settings.loginHeadersContent ? JSON.parse(context.settings.loginHeadersContent) : {};
       if ((syncConfig ? syncConfig.cacheHighQuantityImage : context.settings.cacheHighQuantityImage) && context.userComponent.isLogin()) {
         try {
-          const fileNameSpilt = filename.split(".");
+          const fileNameSpilt = fileName.split(".");
           const highFilename = fileNameSpilt.first() + ".jpg";
           const highImage = this.getHighQuantityImageUrl(highFilename);
           const resultValue2 = yield this.handleImage(highImage, folder, highFilename, context, false, referHeaders);
           if (resultValue2 && resultValue2.success) {
-            extract.image = resultValue2.filepath;
+            extract3.image = resultValue2.filepath;
+            this.initImageVariableMap(extract3, context, variableMap);
             return;
           }
         } catch (e) {
@@ -19232,15 +19856,20 @@ var DoubanAbstractLoadHandler = class {
           console.error("\u4E0B\u8F7D\u9AD8\u6E05\u5C01\u9762\u5931\u8D25\uFF0C\u5C06\u4F1A\u4F7F\u7528\u666E\u901A\u5C01\u9762");
         }
       }
-      const resultValue = yield this.handleImage(image, folder, filename, context, true, referHeaders);
+      const resultValue = yield this.handleImage(image, folder, fileName, context, true, referHeaders);
       if (resultValue && resultValue.success) {
-        extract.image = resultValue.filepath;
+        extract3.image = resultValue.filepath;
+        this.initImageVariableMap(extract3, context, variableMap);
       }
     });
   }
+  initImageVariableMap(extract3, context, variableMap) {
+    variableMap.set(DoubanParameterName.IMAGE_URL, new DataField(DoubanParameterName.IMAGE_URL, DataValueType.url, extract3.imageUrl, extract3.imageUrl));
+    variableMap.set(DoubanParameterName.IMAGE, new DataField(DoubanParameterName.IMAGE, DataValueType.path, extract3.image, extract3.image));
+  }
   handleImage(image, folder, filename, context, showError, headers) {
     return __async(this, null, function* () {
-      if (context.settings.pictureBedFlag && import_obsidian7.Platform.isDesktopApp) {
+      if (context.settings.pictureBedFlag && import_obsidian8.Platform.isDesktopApp) {
         const checked = yield context.netFileHandler.downloadDBUploadPicGoByClipboardBefore(context);
         if (!checked) {
           log.notice("\u8FDE\u63A5PicGo\u8F6F\u4EF6\u5931\u8D25, \u8BF7\u68C0\u67E5\u662F\u5426\u5DF2\u5F00\u542FPicGo\u7684Server\u670D\u52A1 \u6216 \u68C0\u67E5\u63D2\u4EF6\u4E2D\u914D\u7F6E\u5730\u5740\u662F\u5426\u6B63\u786E\uFF0C\u73B0\u4F7F\u7528\u9ED8\u8BA4\u7684\u4E0B\u8F7D\u5230\u672C\u5730\u7684\u65B9\u5F0F");
@@ -19284,7 +19913,7 @@ var DoubanBookParameter = {
 };
 
 // src/org/wanxp/douban/data/handler/DoubanBookLoadHandler.ts
-var import_obsidian8 = __toModule(require("obsidian"));
+var import_obsidian9 = __toModule(require("obsidian"));
 var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -19298,12 +19927,12 @@ var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
   getSubjectUrl(id) {
     return `https://book.douban.com/subject/${id}/`;
   }
-  parseVariable(beforeContent, variableMap, extract, context, textMode) {
-    variableMap.set(DoubanBookParameter.author, new DataField(DoubanBookParameter.author, DataValueType.array, extract.author, extract.author.map(this.handleSpecialAuthorName)));
-    variableMap.set(DoubanBookParameter.translator, new DataField(DoubanBookParameter.translator, DataValueType.array, extract.translator, extract.translator.map(this.handleSpecialAuthorName)));
+  parseVariable(beforeContent, variableMap, extract3, context) {
+    variableMap.set(DoubanBookParameter.author, new DataField(DoubanBookParameter.author, DataValueType.array, extract3.author, extract3.author.map(this.handleSpecialAuthorName)));
+    variableMap.set(DoubanBookParameter.translator, new DataField(DoubanBookParameter.translator, DataValueType.array, extract3.translator, extract3.translator.map(this.handleSpecialAuthorName)));
   }
-  support(extract) {
-    return extract && extract.type && (extract.type.contains("\u56FE\u4E66") || extract.type.contains("\u4E66\u7C4D") || extract.type.contains("Book") || extract.type.contains("book"));
+  support(extract3) {
+    return extract3 && extract3.type && (extract3.type.contains("\u56FE\u4E66") || extract3.type.contains("\u4E66\u7C4D") || extract3.type.contains("Book") || extract3.type.contains("book"));
   }
   handleSpecialAuthorName(authorName) {
     return authorName.replace(/\[/g, "").replace("]", "/");
@@ -19320,7 +19949,7 @@ var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian8.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian9.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment
     };
     return { data: html3, userState };
@@ -19429,7 +20058,7 @@ function getProperty(o, name) {
 }
 
 // src/org/wanxp/douban/data/handler/DoubanMovieLoadHandler.ts
-var import_obsidian9 = __toModule(require("obsidian"));
+var import_obsidian10 = __toModule(require("obsidian"));
 var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -19443,14 +20072,14 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
   getSubjectUrl(id) {
     return `https://movie.douban.com/subject/${id}/`;
   }
-  parseVariable(beforeContent, variableMap, extract, context) {
-    variableMap.set("director", new DataField("director", DataValueType.array, extract.director, extract.director.map(SchemaOrg.getPersonName).filter((c) => c)));
-    variableMap.set("actor", new DataField("actor", DataValueType.array, extract.actor, extract.actor.map(SchemaOrg.getPersonName).filter((c) => c)));
-    variableMap.set("author", new DataField("author", DataValueType.array, extract.author, extract.author.map(SchemaOrg.getPersonName).map((name) => super.getPersonName(name, context)).filter((c) => c)));
-    variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract.aliases, extract.aliases.map((a) => a.replace(TITLE_ALIASES_SPECIAL_CHAR_REG_G, "_"))));
+  parseVariable(beforeContent, variableMap, extract3, context) {
+    variableMap.set("director", new DataField("director", DataValueType.array, extract3.director, extract3.director.map(SchemaOrg.getPersonName).filter((c) => c)));
+    variableMap.set("actor", new DataField("actor", DataValueType.array, extract3.actor, extract3.actor.map(SchemaOrg.getPersonName).filter((c) => c)));
+    variableMap.set("author", new DataField("author", DataValueType.array, extract3.author, extract3.author.map(SchemaOrg.getPersonName).map((name) => super.getPersonName(name, context)).filter((c) => c)));
+    variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract3.aliases, extract3.aliases.map((a) => a.trim().replace(/:\s+/g, ":"))));
   }
-  support(extract) {
-    return extract && extract.type && (extract.type.contains("\u7535\u5F71") || extract.type.contains("Movie") || extract.type.contains("movie"));
+  support(extract3) {
+    return extract3 && extract3.type && (extract3.type.contains("\u7535\u5F71") || extract3.type.contains("Movie") || extract3.type.contains("movie"));
   }
   analysisUser(html3, context) {
     let rate = html3("input#n_rating").val();
@@ -19464,7 +20093,7 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian9.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian10.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
@@ -19478,14 +20107,14 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
   }
   parseSubjectFromHtml(html3, context) {
     const movie = html3("script").get().filter((scd) => html3(scd).attr("type") == "application/ld+json").map((i) => {
-      var _a2, _b;
+      var _a5, _b;
       let item = html3(i).text();
       item = super.html_decode(item);
       const obj = JSON.parse(item.replace(/[\r\n\t]+/g, ""));
       const idPattern = /(\d){5,10}/g;
       const id = idPattern.exec(obj.url);
       const name = obj.name;
-      const title = (_a2 = super.getTitleNameByMode(name, PersonNameMode.CH_NAME, context)) != null ? _a2 : name;
+      const title = (_a5 = super.getTitleNameByMode(name, PersonNameMode.CH_NAME, context)) != null ? _a5 : name;
       const originalTitle = (_b = super.getTitleNameByMode(name, PersonNameMode.EN_NAME, context)) != null ? _b : name;
       const result = {
         id: id ? id[0] : "",
@@ -19551,7 +20180,7 @@ var MovieKeyValueMap = new Map([
 ]);
 
 // src/org/wanxp/douban/data/handler/DoubanMusicLoadHandler.ts
-var import_obsidian10 = __toModule(require("obsidian"));
+var import_obsidian11 = __toModule(require("obsidian"));
 var DoubanMusicLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -19565,10 +20194,10 @@ var DoubanMusicLoadHandler = class extends DoubanAbstractLoadHandler {
   getSubjectUrl(id) {
     return `https://music.douban.com/subject/${id}/`;
   }
-  parseVariable(beforeContent, variableMap, extract, context) {
+  parseVariable(beforeContent, variableMap, extract3, context) {
   }
-  support(extract) {
-    return extract && extract.type && (extract.type.contains("\u97F3\u4E50") || extract.type.contains("Music") || extract.type.contains("music"));
+  support(extract3) {
+    return extract3 && extract3.type && (extract3.type.contains("\u97F3\u4E50") || extract3.type.contains("Music") || extract3.type.contains("music"));
   }
   analysisUser(html3, context) {
     const rate = html3("input#n_rating").val();
@@ -19582,7 +20211,7 @@ var DoubanMusicLoadHandler = class extends DoubanAbstractLoadHandler {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian10.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian11.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
@@ -19616,6 +20245,8 @@ var DoubanMusicLoadHandler = class extends DoubanAbstractLoadHandler {
     });
     const idPattern = /(\d){5,10}/g;
     const id = idPattern.exec(url);
+    const trackItems = html3(".track-list .track-items li");
+    const tracks = Array.from(trackItems).map((item) => html3(item).text().trim());
     const result = {
       image,
       imageUrl: image,
@@ -19632,7 +20263,8 @@ var DoubanMusicLoadHandler = class extends DoubanAbstractLoadHandler {
       genre: valueMap.has("genre") ? [valueMap.get("genre")] : [""],
       albumType: valueMap.has("albumType") ? valueMap.get("albumType") : "",
       medium: valueMap.has("medium") ? valueMap.get("medium") : "",
-      barcode: valueMap.has("barcode") ? valueMap.get("barcode") : ""
+      barcode: valueMap.has("barcode") ? valueMap.get("barcode") : "",
+      menu: tracks
     };
     return result;
   }
@@ -19663,10 +20295,10 @@ var DoubanNoteLoadHandler = class extends DoubanAbstractLoadHandler {
   getSubjectUrl(id) {
     return `https://www.douban.com/note/${id}/`;
   }
-  parseVariable(beforeContent, variableMap, extract, context) {
+  parseVariable(beforeContent, variableMap, extract3, context) {
   }
-  support(extract) {
-    return extract && extract.type && (extract.type.contains("\u65E5\u8BB0") || extract.type.contains("Note") || extract.type.contains("Article") || extract.type.contains("note") || extract.type.contains("article"));
+  support(extract3) {
+    return extract3 && extract3.type && (extract3.type.contains("\u65E5\u8BB0") || extract3.type.contains("Note") || extract3.type.contains("Article") || extract3.type.contains("note") || extract3.type.contains("article"));
   }
   analysisUser(html3, context) {
     return { data: html3, userState: null };
@@ -19707,10 +20339,10 @@ var DoubanOtherLoadHandler = class extends DoubanAbstractLoadHandler {
   getSupportType() {
     return SupportType.all;
   }
-  parseVariable(beforeContent, variableMap, extract, context) {
+  parseVariable(beforeContent, variableMap, extract3, context) {
     log.warn(i18nHelper.getMessage("140101"));
   }
-  support(extract) {
+  support(extract3) {
     return false;
   }
   getHighQuantityImageUrl(fileName) {
@@ -19730,7 +20362,7 @@ var DoubanOtherLoadHandler = class extends DoubanAbstractLoadHandler {
 };
 
 // src/org/wanxp/douban/data/handler/DoubanTeleplayLoadHandler.ts
-var import_obsidian11 = __toModule(require("obsidian"));
+var import_obsidian12 = __toModule(require("obsidian"));
 var DoubanTeleplayLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -19738,14 +20370,14 @@ var DoubanTeleplayLoadHandler = class extends DoubanAbstractLoadHandler {
   getSupportType() {
     return SupportType.teleplay;
   }
-  parseVariable(beforeContent, variableMap, extract, context) {
-    variableMap.set("director", new DataField("director", DataValueType.array, extract.director, extract.director.map(SchemaOrg.getPersonName).filter((c) => c)));
-    variableMap.set("actor", new DataField("actor", DataValueType.array, extract.actor, extract.actor.map(SchemaOrg.getPersonName).filter((c) => c)));
-    variableMap.set("author", new DataField("author", DataValueType.array, extract.author, extract.author.map(SchemaOrg.getPersonName).map((name) => super.getPersonName(name, context)).filter((c) => c)));
-    variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract.aliases, extract.aliases.map((a) => a.replace(TITLE_ALIASES_SPECIAL_CHAR_REG_G, "_"))));
+  parseVariable(beforeContent, variableMap, extract3, context) {
+    variableMap.set("director", new DataField("director", DataValueType.array, extract3.director, extract3.director.map(SchemaOrg.getPersonName).filter((c) => c)));
+    variableMap.set("actor", new DataField("actor", DataValueType.array, extract3.actor, extract3.actor.map(SchemaOrg.getPersonName).filter((c) => c)));
+    variableMap.set("author", new DataField("author", DataValueType.array, extract3.author, extract3.author.map(SchemaOrg.getPersonName).map((name) => super.getPersonName(name, context)).filter((c) => c)));
+    variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract3.aliases, extract3.aliases.map((a) => a.trim().replace(/:\s+/g, ":"))));
   }
-  support(extract) {
-    return extract && extract.type && (extract.type.contains("\u7535\u89C6\u5267") || extract.type.contains("Teleplay") || extract.type.contains("teleplay"));
+  support(extract3) {
+    return extract3 && extract3.type && (extract3.type.contains("\u7535\u89C6\u5267") || extract3.type.contains("Teleplay") || extract3.type.contains("teleplay"));
   }
   getHighQuantityImageUrl(fileName) {
     return `https://img9.doubanio.com/view/photo/l/public/${fileName}`;
@@ -19766,21 +20398,21 @@ var DoubanTeleplayLoadHandler = class extends DoubanAbstractLoadHandler {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian11.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian12.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
   }
   parseSubjectFromHtml(html3, context) {
     const teleplay = html3("script").get().filter((scd) => html3(scd).attr("type") == "application/ld+json").map((i) => {
-      var _a2, _b;
+      var _a5, _b;
       let item = html3(i).text();
       item = super.html_decode(item);
       const obj = JSON.parse(item.replace(/[\r\n\t]+/g, ""));
       const idPattern = /(\d){5,10}/g;
       const id = idPattern.exec(obj.url);
       const name = obj.name;
-      const title = (_a2 = super.getTitleNameByMode(name, PersonNameMode.CH_NAME, context)) != null ? _a2 : name;
+      const title = (_a5 = super.getTitleNameByMode(name, PersonNameMode.CH_NAME, context)) != null ? _a5 : name;
       const originalTitle = (_b = super.getTitleNameByMode(name, PersonNameMode.EN_NAME, context)) != null ? _b : name;
       const result = {
         id: id ? id[0] : "",
@@ -19847,7 +20479,7 @@ var TeleplayKeyValueMap = new Map([
 ]);
 
 // src/org/wanxp/douban/data/handler/DoubanGameLoadHandler.ts
-var import_obsidian12 = __toModule(require("obsidian"));
+var import_obsidian13 = __toModule(require("obsidian"));
 var DoubanGameLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -19861,11 +20493,11 @@ var DoubanGameLoadHandler = class extends DoubanAbstractLoadHandler {
   getSubjectUrl(id) {
     return `https://www.douban.com/game/${id}/`;
   }
-  parseVariable(beforeContent, variableMap, extract, context) {
-    variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract.aliases, extract.aliases.map((a) => a.replace(TITLE_ALIASES_SPECIAL_CHAR_REG_G, "_"))));
+  parseVariable(beforeContent, variableMap, extract3, context) {
+    variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract3.aliases, extract3.aliases.map((a) => a.trim().replace(/:\s+/g, ":"))));
   }
-  support(extract) {
-    return extract && extract.type && (extract.type.contains("\u6E38\u620F") || extract.type.contains("Game") || extract.type.contains("game"));
+  support(extract3) {
+    return extract3 && extract3.type && (extract3.type.contains("\u6E38\u620F") || extract3.type.contains("Game") || extract3.type.contains("game"));
   }
   analysisUser(html3, context) {
     let rate = html3("input#n_rating").val();
@@ -19881,7 +20513,7 @@ var DoubanGameLoadHandler = class extends DoubanAbstractLoadHandler {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian12.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian13.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
@@ -19945,7 +20577,7 @@ var GameKeyValueMap = new Map([
 ]);
 
 // src/org/wanxp/douban/data/handler/DoubanTheaterLoadHandler.ts
-var import_obsidian13 = __toModule(require("obsidian"));
+var import_obsidian14 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/data/model/DoubanTheaterSubject.ts
 var DoubanTheaterSubject = class extends DoubanSubject {
@@ -19965,14 +20597,14 @@ var DoubanTheaterLoadHandler = class extends DoubanAbstractLoadHandler {
   getSubjectUrl(id) {
     return `https://www.douban.com/location/drama/${id}/`;
   }
-  parseVariable(beforeContent, variableMap, extract, context) {
-    variableMap.set("director", new DataField("director", DataValueType.array, extract.director, extract.director.map(SchemaOrg.getPersonName).filter((c) => c)));
-    variableMap.set("actor", new DataField("actor", DataValueType.array, extract.actor, extract.actor.map(SchemaOrg.getPersonName).filter((c) => c)));
-    variableMap.set("author", new DataField("author", DataValueType.array, extract.author, extract.author.map(SchemaOrg.getPersonName).map((name) => super.getPersonName(name, context)).filter((c) => c)));
-    variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract.aliases, extract.aliases.map((a) => a.replace(TITLE_ALIASES_SPECIAL_CHAR_REG_G, "_"))));
+  parseVariable(beforeContent, variableMap, extract3, context) {
+    variableMap.set("director", new DataField("director", DataValueType.array, extract3.director, extract3.director.map(SchemaOrg.getPersonName).filter((c) => c)));
+    variableMap.set("actor", new DataField("actor", DataValueType.array, extract3.actor, extract3.actor.map(SchemaOrg.getPersonName).filter((c) => c)));
+    variableMap.set("author", new DataField("author", DataValueType.array, extract3.author, extract3.author.map(SchemaOrg.getPersonName).map((name) => super.getPersonName(name, context)).filter((c) => c)));
+    variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract3.aliases, extract3.aliases.map((a) => a.trim().replace(TITLE_ALIASES_SPECIAL_CHAR_REG_G, "_").replace(/_+/g, "_").replace(/^_/, "").replace(/_$/, ""))));
   }
-  support(extract) {
-    return extract && extract.type && (extract.type.contains("\u821E\u53F0\u5267") || extract.type.contains("\u821E\u5267") || extract.type.contains("Theater") || extract.type.contains("theater"));
+  support(extract3) {
+    return extract3 && extract3.type && (extract3.type.contains("\u821E\u53F0\u5267") || extract3.type.contains("\u821E\u5267") || extract3.type.contains("Theater") || extract3.type.contains("theater"));
   }
   analysisUser(html3, context) {
     const rate = html3("input#n_rating").val();
@@ -19986,7 +20618,7 @@ var DoubanTheaterLoadHandler = class extends DoubanAbstractLoadHandler {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian13.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian14.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
@@ -20000,8 +20632,8 @@ var DoubanTheaterLoadHandler = class extends DoubanAbstractLoadHandler {
 
 // src/org/wanxp/douban/data/handler/DoubanSearchChooseItemHandler.ts
 var DoubanSearchChooseItemHandler = class {
-  constructor(app2, doubanPlugin) {
-    this._app = app2;
+  constructor(app, doubanPlugin) {
+    this._app = app;
     this._doubanPlugin = doubanPlugin;
     this._doubanSubjectHandlerDefault = new DoubanOtherLoadHandler(doubanPlugin);
     this._doubanSubjectHandlers = [
@@ -20028,25 +20660,25 @@ var DoubanSearchChooseItemHandler = class {
       }
     });
   }
-  parseText(extract, context) {
+  parseText(extract3, context) {
     return __async(this, null, function* () {
-      const doubanSubjectHandlers = this._doubanSubjectHandlers.filter((h) => h.support(extract));
+      const doubanSubjectHandlers = this._doubanSubjectHandlers.filter((h) => h.support(extract3));
       if (doubanSubjectHandlers && doubanSubjectHandlers.length > 0) {
-        const result = yield doubanSubjectHandlers.map((h) => h.parse(extract, context));
+        const result = yield doubanSubjectHandlers.map((h) => h.parse(extract3, context));
         if (result && result.length > 0) {
           return result[0];
         } else {
           return { content: "" };
         }
       } else {
-        return this._doubanSubjectHandlerDefault.parse(extract, context);
+        return this._doubanSubjectHandlerDefault.parse(extract3, context);
       }
     });
   }
 };
 
 // src/org/wanxp/douban/data/search/DoubanSearchModal.ts
-var import_obsidian14 = __toModule(require("obsidian"));
+var import_obsidian15 = __toModule(require("obsidian"));
 
 // src/org/wanxp/utils/TimeUtil.ts
 var TimeUtil = class {
@@ -20097,7 +20729,7 @@ var TimeUtil = class {
     }
     return message;
   }
-  static formatDate(date, format2 = "yyyy-MM-dd HH:mm:ss") {
+  static formatDate(date, format = "yyyy-MM-dd HH:mm:ss") {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -20112,7 +20744,7 @@ var TimeUtil = class {
       mm: minute.toString().padStart(2, "0"),
       ss: second.toString().padStart(2, "0")
     };
-    return format2.replace(/yyyy|MM|dd|HH|mm|ss/g, (match) => formatMap[match]);
+    return format.replace(/yyyy|MM|dd|HH|mm|ss/g, (match) => formatMap[match]);
   }
   static getLastMonth() {
     const date = new Date();
@@ -20129,9 +20761,9 @@ var sleepRange = (msMin, msMax) => {
 };
 
 // src/org/wanxp/douban/data/search/DoubanSearchModal.ts
-var DoubanSearchModal = class extends import_obsidian14.Modal {
-  constructor(app2, plugin, context, type) {
-    super(app2);
+var DoubanSearchModal = class extends import_obsidian15.Modal {
+  constructor(app, plugin, context, type) {
+    super(app);
     this.searchType = SupportType.all;
     this.plugin = plugin;
     this.context = context;
@@ -20142,7 +20774,7 @@ var DoubanSearchModal = class extends import_obsidian14.Modal {
     contentEl.createEl("h3", { text: i18nHelper.getMessage("110003") });
     const content = contentEl.createDiv("content");
     const inputs = content.createDiv("inputs");
-    const searchInput = new import_obsidian14.TextComponent(inputs).onChange((searchTerm) => {
+    const searchInput = new import_obsidian15.TextComponent(inputs).onChange((searchTerm) => {
       this.searchTerm = searchTerm;
     });
     inputs.addClass("obsidian_douban_search_input_content");
@@ -20155,16 +20787,16 @@ var DoubanSearchModal = class extends import_obsidian14.Modal {
     });
     inputs.addClass("obsidian_douban_search_input");
     const typeSelect = content.createDiv("type-select");
-    const typeSelectInput = new import_obsidian14.DropdownComponent(typeSelect).addOptions(SearchTypeRecords).setValue(this.searchType).onChange((value) => {
+    const typeSelectInput = new import_obsidian15.DropdownComponent(typeSelect).addOptions(SearchTypeRecords).setValue(this.searchType).onChange((value) => {
       this.searchType = value;
     });
     typeSelect.addClass("obsidian_douban_search_input_type");
     const controls = contentEl.createDiv("controls");
     controls.addClass("obsidian_douban_search_controls");
-    new import_obsidian14.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110004")).setCta().onClick(() => {
+    new import_obsidian15.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110004")).setCta().onClick(() => {
       this.close();
     }).setClass("obsidian_douban_search_button");
-    new import_obsidian14.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => {
+    new import_obsidian15.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => {
       this.close();
     }).setClass("obsidian_douban_cancel_button");
   }
@@ -20186,13 +20818,13 @@ var import_obsidian28 = __toModule(require("obsidian"));
 var import_obsidian20 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/setting/TemplateSettingHelper.ts
-var import_obsidian18 = __toModule(require("obsidian"));
+var import_obsidian19 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/setting/model/FileTreeSelectSuggest.ts
-var import_obsidian16 = __toModule(require("obsidian"));
+var import_obsidian17 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/setting/model/TextInputSuggest.ts
-var import_obsidian15 = __toModule(require("obsidian"));
+var import_obsidian16 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/setting/model/Suggest.ts
 var wrapAround = (value, size) => {
@@ -20409,7 +21041,7 @@ var round = Math.round;
 // node_modules/@popperjs/core/lib/utils/userAgent.js
 function getUAString() {
   var uaData = navigator.userAgentData;
-  if (uaData != null && uaData.brands) {
+  if (uaData != null && uaData.brands && Array.isArray(uaData.brands)) {
     return uaData.brands.map(function(item) {
       return item.brand + "/" + item.version;
     }).join(" ");
@@ -20640,15 +21272,7 @@ function effect2(_ref2) {
       return;
     }
   }
-  if (true) {
-    if (!isHTMLElement(arrowElement)) {
-      console.error(['Popper: "arrow" element must be an HTMLElement (not an SVGElement).', "To use an SVG arrow, wrap it in an HTMLElement that will be used as", "the arrow."].join(" "));
-    }
-  }
   if (!contains2(state.elements.popper, arrowElement)) {
-    if (true) {
-      console.error(['Popper: "arrow" modifier\'s `element` must be a child of the popper', "element."].join(" "));
-    }
     return;
   }
   state.elements.arrow = arrowElement;
@@ -20675,9 +21299,8 @@ var unsetSides = {
   bottom: "auto",
   left: "auto"
 };
-function roundOffsetsByDPR(_ref) {
+function roundOffsetsByDPR(_ref, win) {
   var x = _ref.x, y = _ref.y;
-  var win = window;
   var dpr = win.devicePixelRatio || 1;
   return {
     x: round(x * dpr) / dpr || 0,
@@ -20733,7 +21356,7 @@ function mapToStyles(_ref2) {
   var _ref4 = roundOffsets === true ? roundOffsetsByDPR({
     x,
     y
-  }) : {
+  }, getWindow(popper2)) : {
     x,
     y
   };
@@ -20748,14 +21371,6 @@ function mapToStyles(_ref2) {
 function computeStyles(_ref5) {
   var state = _ref5.state, options = _ref5.options;
   var _options$gpuAccelerat = options.gpuAcceleration, gpuAcceleration = _options$gpuAccelerat === void 0 ? true : _options$gpuAccelerat, _options$adaptive = options.adaptive, adaptive = _options$adaptive === void 0 ? true : _options$adaptive, _options$roundOffsets = options.roundOffsets, roundOffsets = _options$roundOffsets === void 0 ? true : _options$roundOffsets;
-  if (true) {
-    var transitionProperty = getComputedStyle(state.elements.popper).transitionProperty || "";
-    if (adaptive && ["transform", "top", "right", "bottom", "left"].some(function(property) {
-      return transitionProperty.indexOf(property) >= 0;
-    })) {
-      console.warn(["Popper: Detected CSS transitions on at least one of the following", 'CSS properties: "transform", "top", "right", "bottom", "left".', "\n\n", 'Disable the "computeStyles" modifier\'s `adaptive` option to allow', "for smooth transitions, or remove these properties from the CSS", "transition declaration on the popper element if only transitioning", "opacity or background-color for example.", "\n\n", "We recommend using the popper element as a wrapper around an inner", "element that can have any CSS property transitioned for animations."].join(" "));
-    }
-  }
   var commonStyles = {
     placement: getBasePlacement(state.placement),
     variation: getVariation(state.placement),
@@ -21112,9 +21727,6 @@ function computeAutoPlacement(state, options) {
   });
   if (allowedPlacements.length === 0) {
     allowedPlacements = placements2;
-    if (true) {
-      console.error(["Popper: The `allowedAutoPlacements` option did not allow any", "placements. Ensure the `placement` option matches the variation", "of the allowed placements.", 'For example, "auto" cannot be used to allow "bottom-start".', 'Use "auto-start" instead.'].join(" "));
-    }
   }
   var overflows = allowedPlacements.reduce(function(acc, placement2) {
     acc[placement2] = detectOverflow(state, {
@@ -21558,92 +22170,6 @@ function debounce(fn2) {
   };
 }
 
-// node_modules/@popperjs/core/lib/utils/format.js
-function format(str) {
-  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    args[_key - 1] = arguments[_key];
-  }
-  return [].concat(args).reduce(function(p, c) {
-    return p.replace(/%s/, c);
-  }, str);
-}
-
-// node_modules/@popperjs/core/lib/utils/validateModifiers.js
-var INVALID_MODIFIER_ERROR = 'Popper: modifier "%s" provided an invalid %s property, expected %s but got %s';
-var MISSING_DEPENDENCY_ERROR = 'Popper: modifier "%s" requires "%s", but "%s" modifier is not available';
-var VALID_PROPERTIES = ["name", "enabled", "phase", "fn", "effect", "requires", "options"];
-function validateModifiers(modifiers) {
-  modifiers.forEach(function(modifier) {
-    [].concat(Object.keys(modifier), VALID_PROPERTIES).filter(function(value, index2, self) {
-      return self.indexOf(value) === index2;
-    }).forEach(function(key) {
-      switch (key) {
-        case "name":
-          if (typeof modifier.name !== "string") {
-            console.error(format(INVALID_MODIFIER_ERROR, String(modifier.name), '"name"', '"string"', '"' + String(modifier.name) + '"'));
-          }
-          break;
-        case "enabled":
-          if (typeof modifier.enabled !== "boolean") {
-            console.error(format(INVALID_MODIFIER_ERROR, modifier.name, '"enabled"', '"boolean"', '"' + String(modifier.enabled) + '"'));
-          }
-          break;
-        case "phase":
-          if (modifierPhases.indexOf(modifier.phase) < 0) {
-            console.error(format(INVALID_MODIFIER_ERROR, modifier.name, '"phase"', "either " + modifierPhases.join(", "), '"' + String(modifier.phase) + '"'));
-          }
-          break;
-        case "fn":
-          if (typeof modifier.fn !== "function") {
-            console.error(format(INVALID_MODIFIER_ERROR, modifier.name, '"fn"', '"function"', '"' + String(modifier.fn) + '"'));
-          }
-          break;
-        case "effect":
-          if (modifier.effect != null && typeof modifier.effect !== "function") {
-            console.error(format(INVALID_MODIFIER_ERROR, modifier.name, '"effect"', '"function"', '"' + String(modifier.fn) + '"'));
-          }
-          break;
-        case "requires":
-          if (modifier.requires != null && !Array.isArray(modifier.requires)) {
-            console.error(format(INVALID_MODIFIER_ERROR, modifier.name, '"requires"', '"array"', '"' + String(modifier.requires) + '"'));
-          }
-          break;
-        case "requiresIfExists":
-          if (!Array.isArray(modifier.requiresIfExists)) {
-            console.error(format(INVALID_MODIFIER_ERROR, modifier.name, '"requiresIfExists"', '"array"', '"' + String(modifier.requiresIfExists) + '"'));
-          }
-          break;
-        case "options":
-        case "data":
-          break;
-        default:
-          console.error('PopperJS: an invalid property has been provided to the "' + modifier.name + '" modifier, valid properties are ' + VALID_PROPERTIES.map(function(s) {
-            return '"' + s + '"';
-          }).join(", ") + '; but "' + key + '" was provided.');
-      }
-      modifier.requires && modifier.requires.forEach(function(requirement) {
-        if (modifiers.find(function(mod) {
-          return mod.name === requirement;
-        }) == null) {
-          console.error(format(MISSING_DEPENDENCY_ERROR, String(modifier.name), requirement, requirement));
-        }
-      });
-    });
-  });
-}
-
-// node_modules/@popperjs/core/lib/utils/uniqueBy.js
-function uniqueBy(arr, fn2) {
-  var identifiers = new Set();
-  return arr.filter(function(item) {
-    var identifier = fn2(item);
-    if (!identifiers.has(identifier)) {
-      identifiers.add(identifier);
-      return true;
-    }
-  });
-}
-
 // node_modules/@popperjs/core/lib/utils/mergeByName.js
 function mergeByName(modifiers) {
   var merged = modifiers.reduce(function(merged2, current) {
@@ -21660,8 +22186,6 @@ function mergeByName(modifiers) {
 }
 
 // node_modules/@popperjs/core/lib/createPopper.js
-var INVALID_ELEMENT_ERROR = "Popper: Invalid reference or popper argument provided. They must be either a DOM element or virtual element.";
-var INFINITE_LOOP_ERROR = "Popper: An infinite loop in the modifiers cycle has been detected! The cycle has been interrupted to prevent a browser crash.";
 var DEFAULT_OPTIONS = {
   placement: "bottom",
   modifiers: [],
@@ -21712,28 +22236,6 @@ function popperGenerator(generatorOptions) {
         state.orderedModifiers = orderedModifiers.filter(function(m) {
           return m.enabled;
         });
-        if (true) {
-          var modifiers = uniqueBy([].concat(orderedModifiers, state.options.modifiers), function(_ref) {
-            var name = _ref.name;
-            return name;
-          });
-          validateModifiers(modifiers);
-          if (getBasePlacement(state.options.placement) === auto) {
-            var flipModifier = state.orderedModifiers.find(function(_ref2) {
-              var name = _ref2.name;
-              return name === "flip";
-            });
-            if (!flipModifier) {
-              console.error(['Popper: "auto" placements require the "flip" modifier be', "present and enabled to work."].join(" "));
-            }
-          }
-          var _getComputedStyle = getComputedStyle(popper2), marginTop = _getComputedStyle.marginTop, marginRight = _getComputedStyle.marginRight, marginBottom = _getComputedStyle.marginBottom, marginLeft = _getComputedStyle.marginLeft;
-          if ([marginTop, marginRight, marginBottom, marginLeft].some(function(margin) {
-            return parseFloat(margin);
-          })) {
-            console.warn(['Popper: CSS "margin" styles cannot be used to apply padding', "between the popper and its reference element or boundary.", "To replicate margin, use the `offset` modifier, as well as", "the `padding` option in the `preventOverflow` and `flip`", "modifiers."].join(" "));
-          }
-        }
         runModifierEffects();
         return instance.update();
       },
@@ -21743,9 +22245,6 @@ function popperGenerator(generatorOptions) {
         }
         var _state$elements = state.elements, reference3 = _state$elements.reference, popper3 = _state$elements.popper;
         if (!areValidElements(reference3, popper3)) {
-          if (true) {
-            console.error(INVALID_ELEMENT_ERROR);
-          }
           return;
         }
         state.rects = {
@@ -21757,15 +22256,7 @@ function popperGenerator(generatorOptions) {
         state.orderedModifiers.forEach(function(modifier) {
           return state.modifiersData[modifier.name] = Object.assign({}, modifier.data);
         });
-        var __debug_loops__ = 0;
         for (var index2 = 0; index2 < state.orderedModifiers.length; index2++) {
-          if (true) {
-            __debug_loops__ += 1;
-            if (__debug_loops__ > 100) {
-              console.error(INFINITE_LOOP_ERROR);
-              break;
-            }
-          }
           if (state.reset === true) {
             state.reset = false;
             index2 = -1;
@@ -21794,9 +22285,6 @@ function popperGenerator(generatorOptions) {
       }
     };
     if (!areValidElements(reference2, popper2)) {
-      if (true) {
-        console.error(INVALID_ELEMENT_ERROR);
-      }
       return instance;
     }
     instance.setOptions(options).then(function(state2) {
@@ -21805,8 +22293,8 @@ function popperGenerator(generatorOptions) {
       }
     });
     function runModifierEffects() {
-      state.orderedModifiers.forEach(function(_ref3) {
-        var name = _ref3.name, _ref3$options = _ref3.options, options2 = _ref3$options === void 0 ? {} : _ref3$options, effect4 = _ref3.effect;
+      state.orderedModifiers.forEach(function(_ref) {
+        var name = _ref.name, _ref$options = _ref.options, options2 = _ref$options === void 0 ? {} : _ref$options, effect4 = _ref.effect;
         if (typeof effect4 === "function") {
           var cleanupFn = effect4({
             state,
@@ -21838,10 +22326,10 @@ var createPopper = /* @__PURE__ */ popperGenerator({
 
 // src/org/wanxp/douban/setting/model/TextInputSuggest.ts
 var TextInputSuggest = class {
-  constructor(app2, inputEl) {
-    this.app = app2;
+  constructor(app, inputEl) {
+    this.app = app;
     this.inputEl = inputEl;
-    this.scope = new import_obsidian15.Scope();
+    this.scope = new import_obsidian16.Scope();
     this.suggestEl = createDiv("suggestion-container");
     const suggestion = this.suggestEl.createDiv("suggestion");
     this.suggest = new Suggest(this, suggestion, this.scope);
@@ -21894,8 +22382,8 @@ var TextInputSuggest = class {
 
 // src/org/wanxp/douban/setting/model/FileTreeSelectSuggest.ts
 var FileTreeSelectSuggest = class extends TextInputSuggest {
-  constructor(app2, inputEl, manager, settingKey) {
-    super(app2, inputEl);
+  constructor(app, inputEl, manager, settingKey) {
+    super(app, inputEl);
     this.parentPath = "/";
     this.settingKey = "";
     this.manager = manager;
@@ -21912,11 +22400,11 @@ var FileTreeSelectSuggest = class extends TextInputSuggest {
     try {
       const testFile = this.app.vault.getAbstractFileByPath(inputStr.trim());
       if (testFile) {
-        if (testFile instanceof import_obsidian16.TFile && testFile.name.endsWith(".md")) {
+        if (testFile instanceof import_obsidian17.TFile && testFile.name.endsWith(".md")) {
           files.push(testFile);
           return files;
         }
-        if (testFile instanceof import_obsidian16.TFolder) {
+        if (testFile instanceof import_obsidian17.TFolder) {
           parentSearchPath = inputStr.trim();
           currentName = "";
         }
@@ -21954,7 +22442,7 @@ var FileTreeSelectSuggest = class extends TextInputSuggest {
   selectSuggestion(file) {
     this.inputEl.value = file.path;
     this.parentPath = file.path;
-    if (file instanceof import_obsidian16.TFolder) {
+    if (file instanceof import_obsidian17.TFolder) {
       this.inputEl.value += "/";
       this.inputEl.trigger("input");
     } else {
@@ -21965,7 +22453,7 @@ var FileTreeSelectSuggest = class extends TextInputSuggest {
 };
 
 // src/org/wanxp/douban/setting/model/FolderTreeSelectSuggest.ts
-var import_obsidian17 = __toModule(require("obsidian"));
+var import_obsidian18 = __toModule(require("obsidian"));
 var FolderTreeSelectSuggest = class extends TextInputSuggest {
   constructor() {
     super(...arguments);
@@ -21982,10 +22470,10 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
     try {
       const testFile = this.app.vault.getAbstractFileByPath(inputStr.trim());
       if (testFile) {
-        if (testFile instanceof import_obsidian17.TFile) {
+        if (testFile instanceof import_obsidian18.TFile) {
           return files;
         }
-        if (testFile instanceof import_obsidian17.TFolder) {
+        if (testFile instanceof import_obsidian18.TFolder) {
           parentSearchPath = inputStr.trim();
           currentName = "";
         }
@@ -22011,7 +22499,7 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
     return files;
   }
   searchFiles(folder, name, files) {
-    folder.children.filter((f) => f instanceof import_obsidian17.TFolder).forEach((file) => {
+    folder.children.filter((f) => f instanceof import_obsidian18.TFolder).forEach((file) => {
       if (file.name.toLowerCase().contains(name)) {
         files.push(file);
       }
@@ -22023,7 +22511,7 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
   selectSuggestion(file) {
     this.inputEl.value = file.path;
     this.parentPath = file.path;
-    if (file instanceof import_obsidian17.TFolder) {
+    if (file instanceof import_obsidian18.TFolder) {
       this.inputEl.value += "/";
       this.inputEl.trigger("input");
     } else {
@@ -22035,13 +22523,13 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
 // src/org/wanxp/douban/setting/TemplateSettingHelper.ts
 function constructTemplateUI(containerEl, manager) {
   containerEl.createEl("p", { text: i18nHelper.getMessage("1204") });
-  new import_obsidian18.Setting(containerEl).setDesc(i18nHelper.getMessage("1205"));
-  new import_obsidian18.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120101", desc: "120102", placeholder: "121701", key: "movieTemplateFile", manager }));
-  new import_obsidian18.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120201", desc: "120202", placeholder: "121701", key: "bookTemplateFile", manager }));
-  new import_obsidian18.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120301", desc: "120302", placeholder: "121701", key: "musicTemplateFile", manager }));
-  new import_obsidian18.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120401", desc: "120402", placeholder: "121701", key: "noteTemplateFile", manager }));
-  new import_obsidian18.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "121301", desc: "121302", placeholder: "121701", key: "gameTemplateFile", manager }));
-  new import_obsidian18.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "121801", desc: "121802", placeholder: "121701", key: "teleplayTemplateFile", manager }));
+  new import_obsidian19.Setting(containerEl).setDesc(i18nHelper.getMessage("1205"));
+  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120101", desc: "120102", placeholder: "121701", key: "movieTemplateFile", manager }));
+  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120201", desc: "120202", placeholder: "121701", key: "bookTemplateFile", manager }));
+  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120301", desc: "120302", placeholder: "121701", key: "musicTemplateFile", manager }));
+  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120401", desc: "120402", placeholder: "121701", key: "noteTemplateFile", manager }));
+  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "121301", desc: "121302", placeholder: "121701", key: "gameTemplateFile", manager }));
+  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "121801", desc: "121802", placeholder: "121701", key: "teleplayTemplateFile", manager }));
 }
 function createFileSelectionSetting({
   containerEl,
@@ -22121,25 +22609,6 @@ function createFolderSelectionSettingInput({
   };
 }
 
-// src/org/wanxp/utils/FileUtil.ts
-var import_obsidian19 = __toModule(require("obsidian"));
-var FileUtil = {
-  parse(pathString) {
-    const regex = /(?<dir>([^/\\]+[/\\])*)(?<name>[^/\\]*$)/;
-    const match = String(pathString).match(regex);
-    const { dir, name } = match && match.groups;
-    const nameWithoutSpChar = this.replaceSpecialCharactersForFileName(name);
-    return { dir, name: nameWithoutSpChar || "Untitled_" + new Date().getTime(), extension: "md" };
-  },
-  join(...strings) {
-    const parts = strings.map((s) => String(s).trim()).filter((s) => s != null);
-    return (0, import_obsidian19.normalizePath)(parts.join("/"));
-  },
-  replaceSpecialCharactersForFileName(fileName) {
-    return fileName.replaceAll(/[\\/:*?"<>|]/g, "_");
-  }
-};
-
 // src/org/wanxp/douban/setting/OutputSettingsHelper.ts
 function showStarExample(containerEl, manager) {
   containerEl.empty();
@@ -22150,7 +22619,7 @@ function showStarExample(containerEl, manager) {
 function showFileExample(containerEl, manager) {
   containerEl.empty();
   const document2 = new DocumentFragment();
-  document2.createDiv("file-path-example").innerHTML = `${i18nHelper.getMessage("121604")}<a href="https://book.douban.com/subject/2253379/">\u300A\u7B80\u7231\u300B</a>: ${VariableUtil.replaceSubject(EXAMPLE_SUBJECT_MAP, FileUtil.join(manager.plugin.settings.dataFilePath, manager.plugin.settings.dataFileNamePath + ".md"), SupportType.book, manager)}`;
+  document2.createDiv("file-path-example").innerHTML = `${i18nHelper.getMessage("121604")}<a href="https://book.douban.com/subject/2253379/">\u300A\u7B80\u7231\u300B</a>: ${VariableUtil.replaceSubject(EXAMPLE_SUBJECT_MAP, FileUtil.join(manager.plugin.settings.dataFilePath, manager.plugin.settings.dataFileNamePath + ".md"), SupportType.book, manager, "path")}`;
   new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("120603")).setDesc(document2);
 }
 function scoreSettingDisplay(containerEl, manager) {
@@ -22281,6 +22750,8 @@ function constructAttachmentFileSettingsUI(containerEl, manager) {
     } else {
       new import_obsidian20.Setting(containerEl).then(createFolderSelectionSetting({ containerEl, name: "121432", desc: "121433", placeholder: null, key: null, manager }));
       new import_obsidian20.Setting(containerEl).then(createFolderSelectionSettingInput({ containerEl, name: null, desc: null, placeholder: "121434", key: "attachmentPath", manager }));
+      new import_obsidian20.Setting(containerEl).then(createFolderSelectionSetting({ containerEl, name: "121452", desc: "121453", placeholder: null, key: null, manager }));
+      new import_obsidian20.Setting(containerEl).then(createFolderSelectionSettingInput({ containerEl, name: null, desc: null, placeholder: "121454", key: "attachmentFileName", manager }));
       ;
     }
     new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("121435")).setDesc(i18nHelper.getMessage("121436")).addToggle((toggleComponent) => {
@@ -22689,6 +23160,16 @@ ${i18nHelper.getMessage("122004")}
 		<td>${i18nHelper.getMessage("310520")}</th>
 		<td>${i18nHelper.getMessage("310620")}</th>
 		<td>${i18nHelper.getMessage("310720")}</th>
+	</tr>
+			<tr>
+		<td>${i18nHelper.getMessage("320111")}</th>
+		<td>${i18nHelper.getMessage("310122")}</th>
+		<td>${i18nHelper.getMessage("310222")}</th>
+		<td>${i18nHelper.getMessage("310322")}</th>
+		<td>${i18nHelper.getMessage("310422")}</th>
+		<td>${i18nHelper.getMessage("310522")}</th>
+		<td>${i18nHelper.getMessage("310622")}</th>
+		<td>${i18nHelper.getMessage("310722")}</th>
 	</tr>
 </table>`;
   new import_obsidian22.Setting(containerEl).setName(i18nHelper.getMessage("122002")).setDesc(extraVariablesTable);
@@ -23236,8 +23717,8 @@ ${i18nHelper.getMessage("100125")}`;
 
 // src/org/wanxp/douban/setting/DoubanSettingTab.ts
 var DoubanSettingTab = class extends import_obsidian28.PluginSettingTab {
-  constructor(app2, plugin) {
-    super(app2, plugin);
+  constructor(app, plugin) {
+    super(app, plugin);
     this.plugin = plugin;
     this.settingsManager = plugin.settingsManager;
   }
@@ -23334,8 +23815,8 @@ var FileSuggest = class extends TextInputSuggest {
 
 // src/org/wanxp/douban/component/DoubanSyncModal.ts
 var DoubanSyncModal = class extends import_obsidian31.Modal {
-  constructor(app2, plugin, context) {
-    super(app2);
+  constructor(app, plugin, context) {
+    super(app);
     this.plugin = plugin;
     this.context = context;
   }
@@ -23426,6 +23907,7 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
       cacheImage: settings.cacheImage == null ? DEFAULT_SETTINGS.cacheImage : settings.cacheImage,
       cacheHighQuantityImage: settings.cacheHighQuantityImage == null ? DEFAULT_SETTINGS.cacheHighQuantityImage : settings.cacheHighQuantityImage,
       attachmentPath: settings.attachmentPath == "" || settings.attachmentPath == null ? DEFAULT_SETTINGS.attachmentPath : settings.attachmentPath,
+      attachmentFileName: settings.attachmentFileName == "" || settings.attachmentFileName == null ? DEFAULT_SETTINGS.attachmentFileName : settings.attachmentFileName,
       templateFile: settings.movieTemplateFile == "" || settings.movieTemplateFile == null ? DEFAULT_SETTINGS.movieTemplateFile : settings.movieTemplateFile,
       incrementalUpdate: true,
       syncConditionType: SyncConditionType.ALL,
@@ -23614,6 +24096,12 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
         config.attachmentPath = value;
       }));
     })).setDisabled(disable);
+    new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("121452")).setDesc(i18nHelper.getMessage("121453")).addSearch((search) => __async(this, null, function* () {
+      new FolderSuggest(this.plugin.app, search.inputEl);
+      search.setValue(config.attachmentFileName).setPlaceholder(i18nHelper.getMessage("121454")).onChange((value) => __async(this, null, function* () {
+        config.attachmentFileName = value;
+      }));
+    })).setDisabled(disable);
     new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("121435")).setDesc(i18nHelper.getMessage("121438")).addToggle((toggleComponent) => {
       toggleComponent.setValue(config.cacheHighQuantityImage).onChange((value) => __async(this, null, function* () {
         config.cacheHighQuantityImage = value;
@@ -23738,8 +24226,8 @@ function showCustomInputTime(containerEl, config, disable) {
 // src/org/wanxp/file/FileHandler.ts
 var import_obsidian32 = __toModule(require("obsidian"));
 var FileHandler = class {
-  constructor(app2) {
-    this._app = app2;
+  constructor(app) {
+    this._app = app;
   }
   createDirectory(dir) {
     return __async(this, null, function* () {
@@ -24027,8 +24515,8 @@ var SyncStatusHolder = class {
 
 // src/org/wanxp/douban/model/GlobalStatusHolder.ts
 var GlobalStatusHolder = class {
-  constructor(app2, plugin) {
-    this._app = app2;
+  constructor(app, plugin) {
+    this._app = app;
     this._plugin = plugin;
   }
   completeSync() {
@@ -24102,14 +24590,24 @@ var NetFileHandler = class {
     return __async(this, null, function* () {
       const filePath = FileUtil.join(folder, filename);
       return HttpUtil.httpRequestBuffer(url, headers, context.plugin.settingsManager).then((response) => {
+        if (response.status == 404) {
+          throw new Error(i18nHelper.getMessage("130404"));
+        }
         if (response.status == 403) {
           throw new Error(i18nHelper.getMessage("130106"));
         }
         return response.textArrayBuffer;
       }).then((buffer) => {
+        if (!buffer || buffer.byteLength == 0) {
+          return 0;
+        }
         this.fileHandler.creatAttachmentWithData(filePath, buffer);
-      }).then(() => {
-        return { success: true, error: "", filepath: filePath };
+        return buffer.byteLength;
+      }).then((size) => {
+        if (size == 0) {
+          return { success: false, size, error: "\u6587\u4EF6\u552F\u6050", filepath: null };
+        }
+        return { success: true, size, error: "", filepath: filePath };
       }).catch((e) => {
         if (showError) {
           return log.error(i18nHelper.getMessage("130101").replace("{0}", e.toString()), e);
@@ -24169,10 +24667,10 @@ var NetFileHandler = class {
 
 // src/org/wanxp/douban/setting/SettingsManager.ts
 var SettingsManager = class {
-  constructor(app2, plugin) {
+  constructor(app, plugin) {
     this.cleanupFns = [];
     this.innerLogger = new Logger();
-    this.app = app2;
+    this.app = app;
     this.plugin = plugin;
     this.settings = plugin.settings;
   }
@@ -25029,8 +25527,8 @@ var DoubanGameSyncHandler = class extends DoubanAbstractSyncHandler {
 
 // src/org/wanxp/douban/sync/handler/SyncHandler.ts
 var SyncHandler = class {
-  constructor(app2, plugin, syncConfig, context) {
-    this.app = app2;
+  constructor(app, plugin, syncConfig, context) {
+    this.app = app;
     this.plugin = plugin;
     this.syncConfig = syncConfig;
     this.context = context;
@@ -25098,7 +25596,7 @@ var SyncHandler = class {
           details += `${value.id}-  ${value.title}  :  ${i18nHelper.getMessage(value.status)}
 `;
         } else {
-          details += `${value.id}-[[${value.title}]]:  ${i18nHelper.getMessage(value.status)}
+          details += `${value.id}-[[${FileUtil.replaceSpecialCharactersForFileName(value.title)}]]:  ${i18nHelper.getMessage(value.status)}
 `;
         }
       }
@@ -25244,42 +25742,42 @@ var UserComponent = class {
 
 // src/org/wanxp/main.ts
 var DoubanPlugin = class extends import_obsidian35.Plugin {
-  putToObsidian(context, extract) {
+  putToObsidian(context, extract3) {
     return __async(this, null, function* () {
       const syncStatus = context.syncStatusHolder && context.syncStatusHolder.syncStatus ? context.syncStatusHolder.syncStatus : null;
       try {
-        if (!extract) {
+        if (!extract3) {
           log.warn(i18nHelper.getMessage("140101"));
           return;
         }
-        if (context.syncActive && extract.guessType && extract.guessType != extract.type) {
-          extract.handledStatus = SubjectHandledStatus.syncTypeDiffAbort;
+        if (context.syncActive && extract3.guessType && extract3.guessType != extract3.type) {
+          extract3.handledStatus = SubjectHandledStatus.syncTypeDiffAbort;
           if (Action.Sync == context.action) {
-            this.showStatus(i18nHelper.getMessage("140207", syncStatus.getHasHandle(), syncStatus.getTotal(), extract.title));
-            syncStatus.failByDiffType(extract.id, extract.title);
+            this.showStatus(i18nHelper.getMessage("140207", syncStatus.getHasHandle(), syncStatus.getTotal(), extract3.title));
+            syncStatus.failByDiffType(extract3.id, extract3.title);
           } else {
-            console.log(i18nHelper.getMessage("140102", extract.type, extract.title, extract.guessType));
+            console.log(i18nHelper.getMessage("140102", extract3.type, extract3.title, extract3.guessType));
           }
           return;
         }
         if (Action.Sync == context.action) {
-          this.showStatus(i18nHelper.getMessage("140207", syncStatus.getHasHandle(), syncStatus.getTotal(), extract.title));
+          this.showStatus(i18nHelper.getMessage("140207", syncStatus.getHasHandle(), syncStatus.getTotal(), extract3.title));
         } else {
-          this.showStatus(i18nHelper.getMessage("140204", extract.title));
+          this.showStatus(i18nHelper.getMessage("140204", extract3.title));
         }
-        const result = yield this.doubanExtractHandler.parseText(extract, context);
+        const result = yield this.doubanExtractHandler.parseText(extract3, context);
         if (result) {
           yield this.putContentToObsidian(context, result);
-          extract.handledStatus = SubjectHandledStatus.saved;
+          extract3.handledStatus = SubjectHandledStatus.saved;
         }
         if (Action.Sync == context.action) {
-          this.showStatus(i18nHelper.getMessage("140208", syncStatus.getHasHandle(), syncStatus.getTotal(), extract.title));
+          this.showStatus(i18nHelper.getMessage("140208", syncStatus.getHasHandle(), syncStatus.getTotal(), extract3.title));
         } else {
-          this.showStatus(i18nHelper.getMessage("140205", extract.title));
+          this.showStatus(i18nHelper.getMessage("140205", extract3.title));
         }
       } catch (e) {
         log.error(i18nHelper.getMessage("140206", e.message), e);
-        syncStatus != null ? syncStatus.fail(extract.id, extract.title) : null;
+        syncStatus != null ? syncStatus.fail(extract3.id, extract3.title) : null;
       } finally {
         this.clearStatusBarDelay();
       }
@@ -25305,12 +25803,7 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
   }
   createFile(context, result) {
     return __async(this, null, function* () {
-      let filePath = this.settings.dataFilePath;
-      const { syncConfig } = context;
-      if (syncConfig) {
-        filePath = syncConfig.dataFilePath;
-      }
-      filePath = filePath ? filePath : DEFAULT_SETTINGS.dataFilePath;
+      let filePath = result.filePath ? result.filePath : DEFAULT_SETTINGS.dataFilePath;
       filePath = FileUtil.join(filePath, result.fileName);
       const syncStatus = context.syncStatusHolder && context.syncStatusHolder.syncStatus ? context.syncStatusHolder.syncStatus : null;
       const { subject } = result;
@@ -25489,7 +25982,7 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
           action: Action.SearchAndCrate
         }, SupportType.game)
       });
-      this.settingsManager = new SettingsManager(app, this);
+      this.settingsManager = new SettingsManager(this.app, this);
       this.userComponent = new UserComponent(this.settingsManager);
       this.netFileHandler = new NetFileHandler(this.fileHandler);
       this.settingTab = new DoubanSettingTab(this.app, this);
