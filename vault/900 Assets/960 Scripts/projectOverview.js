@@ -1,3 +1,5 @@
+const currentPage = dv.current();
+
 // 默认配置
 const config = {
     maxNotes: 5,           // 每个项目预览的笔记数量
@@ -12,7 +14,17 @@ if (input !== undefined) {
     config.area = input.area !== undefined ? input.area : config.area;
 }
 
-const currentPage = dv.current();
+// 通过识别当前笔记元数据 filter: 来传参
+if (currentPage.filter === "include") {
+    config.area = "include";
+} else if (currentPage.filter === "exclude") {
+    config.area = "exclude";
+}
+
+// 通过识别当前笔记元数据 status: 来传参
+if (currentPage.status) {
+    config.status = currentPage.status;
+}
 const filterStart = currentPage.start_date;
 const filterEnd = currentPage.due_date;
 
@@ -92,7 +104,7 @@ for (let group of projectGroups) {
         const dateMatch = folderName.match(/^(\d{6})(.*)$/);
         projectName = dateMatch ? dateMatch[2].trim() : folderName;
 
-        startDate = dateMatch ? `${dateMatch[1].substring(0,4)}-${dateMatch[1].substring(4,6)}-01` : "";
+        startDate = dateMatch ? `${dateMatch[1].substring(0, 4)}-${dateMatch[1].substring(4, 6)}-01` : "";
         endDate = "";
         status = "";
         priority = "";

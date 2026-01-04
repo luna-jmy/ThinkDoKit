@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "500 Journal/540 Daily/2026-01-02.md",
+                "file": "900 Assets/920 Queries/项目中心（升级）.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-01-02"
+              "title": "项目中心（升级）"
             }
           }
         ]
@@ -74,7 +74,8 @@
               "title": "书签"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -143,7 +144,7 @@
             }
           },
           {
-            "id": "b4efdb5bd0f0cb58",
+            "id": "d1f8a94c4e71b3ac",
             "type": "leaf",
             "state": {
               "type": "file-info-view",
@@ -195,10 +196,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "👉从这里开始 Start from here!.md"
+                "file": "900 Assets/920 Queries/项目中心（升级）.md"
               },
               "icon": "lucide-info",
-              "title": "👉从这里开始 Start from here!的笔记属性"
+              "title": "项目中心（升级）的笔记属性"
             }
           },
           {
@@ -212,7 +213,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -244,8 +245,10 @@
   },
   "active": "e65728cd59c772d8",
   "lastOpenFiles": [
-    "900 Assets/910 Templates/TPL-Daily.md",
+    "900 Assets/960 Scripts/projectGantt.js",
+    "👉从这里开始 Start from here!.md",
     "500 Journal/540 Daily/2026-01-02.md",
+    "900 Assets/910 Templates/TPL-Daily.md",
     "500 Journal/540 Daily/2026-01-03.md",
     "900 Assets/960 Scripts/InlineFieldUpdate.js",
     "900 Assets/920 Queries/按钮中心.md",
@@ -258,7 +261,6 @@
     "900 Assets/960 Scripts/Obsidian Scripting - Check View Mode.md",
     "500 Journal/540 Daily/2025-12-30.md",
     "900 Assets/960 Scripts/journal_tasks_rolling.js",
-    "👉从这里开始 Start from here!.md",
     "900 Assets/920 Queries/项目中心（升级）.md",
     "100 Projects/202501项目1/测试项目1.md",
     "100 Projects/202412测试/测试.md",
