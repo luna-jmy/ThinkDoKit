@@ -27,7 +27,7 @@ type: homepage
 >- 🔖 Tagged: 5 favorites `$=dv.list(dv.pages('#favorite').sort(f=>f.file.name,"desc").limit(5).file.link)`
 
 ```dataviewjs
-await dv.view("year-timeline-1", { theYear: 2025, events: []})
+await dv.view("year-timeline-1", { theYear: 2026, events: []})
 ```
 
 ## 快速开始
@@ -77,35 +77,15 @@ await dv.view("year-timeline-1", { theYear: 2025, events: []})
 
 ## 任务日历
 
-[list2tab]
-- 本周工作日
-	```dataviewjs
-	   await dv.view("tasksCalendar", {
-	   pages: "dv.pages().file.tasks.where(t => !t.tags.includes('#exclude'))", 
-	   view: "week", 
-	   firstDayOfWeek: "1", 
-	   options: "style11 filter noProcess"
-	   })
-	  ```
-- 全周
-	```dataviewjs
-   await dv.view("tasksCalendar", {
-   pages: "dv.pages().file.tasks.where(t => !t.tags.includes('#exclude'))", 
-   view: "week", 
-   firstDayOfWeek: "1", 
-   options: "style9 filter noProcess"
-   })
-  ```
-- 月度
-	```dataviewjs
-   await dv.view("tasksCalendar", {
-   pages: "dv.pages().file.tasks.where(t => !t.tags.includes('#exclude'))", 
-   view: "month", 
-   firstDayOfWeek: "1", 
-   options: "style9 filter noProcess"
-   })
-  ```
-
+```dataviewjs
+await dv.view("900 Assets/960 Scripts/tabTaskView", {
+    tabs: [
+        { name: "工作日历", type: "calendar", calendar: "workdayCalendar" },
+        { name: "周日历", type: "calendar", calendar: "weeklyCalendar" },
+        { name: "月日历", type: "calendar", calendar: "monthlyCalendar" }
+    ]
+});
+```
 ---
 
 

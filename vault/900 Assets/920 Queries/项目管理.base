@@ -6,7 +6,10 @@ views:
     name: 表格
     filters:
       and:
-        - type == "project"
+        - start_date >= this.start_date
+        - due_date <= this.due_date
+        - (this.filter == "exclude" && area != this.area) || (this.filter == "include" && area == this.area)
+        - (this.status == "hide" && status != "completed") || (this.status != "hide" && status == "completed")
     order:
       - file.name
       - start_date

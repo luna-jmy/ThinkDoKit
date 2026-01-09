@@ -3,7 +3,8 @@
   "enabledCssSnippets": [
     "autohide-yaml-header-test1",
     "【BlueTopaz】表格样式TableStyles",
-    "projectCard"
+    "projectCard",
+    "Tab"
   ],
   "theme": "moonstone"
 }

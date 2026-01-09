@@ -692,7 +692,7 @@
           }
         }
       ],
-      "collapsed": true
+      "collapsed": false
     },
     {
       "id": "de720c59-42be-49de-a6f1-fcafe28a5cb8",
@@ -939,43 +939,6 @@
       "runOnStartup": false
     },
     {
-      "id": "70ab840e-1ba8-47d9-8315-7d5f413c3c39",
-      "name": "添加书籍",
-      "type": "Macro",
-      "command": true,
-      "macro": {
-        "id": "289f5fad-4ea6-4469-b083-10c2a6c1c010",
-        "name": "添加书籍",
-        "commands": [
-          {
-            "name": "Wait",
-            "type": "Wait",
-            "id": "596c43e4-b5d1-4c98-a882-66855de3ded8",
-            "time": 100
-          },
-          {
-            "name": "Douban: 搜索书籍并创建",
-            "type": "Obsidian",
-            "id": "580b833f-3045-4ed8-92d1-32a792b831ee",
-            "commandId": "obsidian-douban-plugin:searcher-douban-import-and-create-file-book"
-          },
-          {
-            "name": "Wait",
-            "type": "Wait",
-            "id": "7ad14ff1-a175-4a1e-83e8-97bca02a2284",
-            "time": 20000
-          },
-          {
-            "name": "Templater: Replace templates in the active file",
-            "type": "Obsidian",
-            "id": "c9fd53ae-4981-4111-a179-d503c65d756c",
-            "commandId": "templater-obsidian:replace-in-file-templater"
-          }
-        ]
-      },
-      "runOnStartup": false
-    },
-    {
       "id": "12625743-dc67-4689-97a4-71cdddf96ae7",
       "name": "DeleteDemo",
       "type": "Macro",
@@ -1047,12 +1010,12 @@
     },
     {
       "id": "da55fb91-e42f-4e26-820e-5b6a4d8ed713",
-      "name": "任务rollover",
+      "name": "TaskRollover",
       "type": "Macro",
       "command": true,
       "runOnStartup": false,
       "macro": {
-        "name": "任务rollover",
+        "name": "TaskRollover",
         "id": "f18ec5a8-fda1-4de2-aa78-b9b0cac12fdc",
         "commands": [
           {

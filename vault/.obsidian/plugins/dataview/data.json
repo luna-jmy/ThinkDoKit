@@ -6,7 +6,7 @@
   "taskCompletionDateFormat": "yyyy-MM-dd",
   "recursiveSubTaskCompletion": false,
   "warnOnEmptyResult": true,
-  "refreshEnabled": true,
+  "refreshEnabled": false,
   "refreshInterval": 2500,
   "defaultDateFormat": "yyyy-MM-dd",
   "defaultDateTimeFormat": "yyyy-MM-dd HH:mm",
