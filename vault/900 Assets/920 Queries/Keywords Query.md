@@ -2,26 +2,16 @@
 obsidianUIMode: preview
 cssclasses:
   - fullwidth
+  - matrix
 type: query
 ---
 
 ### 查询有特定关键词笔记
 >*此关键词统计是基于笔记的内联字段keyword，如笔记中无此字段则无法统计。*
 
-`````col
-````col-md
-```button
-name 变更关键词
-type command
-action QuickAdd: UpdateInlineField
-color purple
-```
-````
 
-````col-md
-[query::空间] 
-````
-`````
+| `button-supdate` | [query::理财] |
+| ---------------- | ----------- |
 
 ```dataviewjs
 // 获取当前页面的 query 内联字段值

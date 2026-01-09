@@ -70,7 +70,7 @@ await dv.view("year-timeline-1", { theYear: 2025, events: []})
   
   `button-ResearchNote`
   
-	- [[TPL-Flashcard|如何使用闪卡？]]
+	- [[Readme-Flashcard|如何使用闪卡？]]
 
 
 ---

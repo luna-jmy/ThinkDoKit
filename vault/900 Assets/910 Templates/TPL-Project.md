@@ -1,19 +1,19 @@
 ---
 created: <% tp.date.now("YYYY-MM-DD") %>
-area: 
+project-id: "{{date:YYYYMM}}"
+area:
 type: project
+objective:
 status: <% tp.system.suggester(["未开始/待启动","起草/构思中","执行中","暂停","完成","取消","归档"],["inbox","draft","active","on-hold","completed","cancelled","archived"], "请选择项目状态") %>
 priority: <% tp.system.suggester(["最高","高","中","低","最低"],["1","2","3","4","5"],false,"请选择任务优先级") %>
-due_date: 
+start_date:
+due_date:
+completion_date:
+progress:
+context:
 tags:
   - project
-start_date: 
-completion_date: 
-progress: 
-objective: 
-context: 
-project-id: "{{date:YYYYMM}}"
-project-leader: 
+project-leader:
 project-members:
 ---
 
@@ -22,6 +22,7 @@ project-members:
 ## 🎯 项目目标
 >*项目的最终成果描述或项目期望达成的具体成果*
 
+***
 
 ## 项目分解
 >*将复杂项目分解成可执行的小项目。*
@@ -35,35 +36,35 @@ project-members:
 ### 子项目/任务3
 
 
-```button
-name 插入或更新甘特图
-type command
-action QuickAdd: AddGanttChart
-color blue
-```
+`button-generateGantt`
 
 ## 项目资料与笔记 (Resources & Notes)
 >*记录项目相关的思考、讨论、会议记录链接、收集的资料、头脑风暴等非任务性的内容。*
 
-🔗 相关链接 (Related Links): 
-- **重要的会议纪要**：
-- **收集的参考文档**：
+`button-sfolderLink` | `button-smoveLink` | `button-sfolderArchive`
 
-## 项目回顾与更新 (Review & Updates)
->*定期（例如每周 GTD 回顾时）记录项目进展、遇到的问题、关键决策和调整。*
+🔗 关联笔记 (Related Notes): 
 
-### {{date:YYYY-[W]w}} 周回顾
-
-* **进展**: ...
-* **问题**: ...
-* **下一步计划**: ...
-* **关键调整**: ...
-
-### {{date:YYYY-MM}} 月回顾
-
-* **进展**: ...
-* **问题**: ...
-* **下一步计划**: ...
-* **关键调整**: ...
 
 ---
+
+## 项目回顾与更新 (Review & Updates) 
+>*定期（例如每周 GTD 回顾时）记录项目进展、遇到的问题、关键决策和调整。*
+
+`button-supdate`  `button-sprogress`
+
+>[!note]- ### 项目进度
+>
+>- [Review时间::]
+>- [进展::]
+>- [问题::]
+>- [下一步计划::]
+>- [关键调整::]
+
+```dataviewjs
+await dv.view("900 Assets/960 Scripts/Dataviewjs/dataview_inline_fields_table", {mode: "current"})
+```
+
+---
+
+

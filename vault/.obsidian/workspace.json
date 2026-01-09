@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "6176137f0735b68a",
+        "id": "48b87b6d786e354e",
         "type": "tabs",
         "children": [
           {
-            "id": "e65728cd59c772d8",
+            "id": "64c14e263fe79d25",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "900 Assets/920 Queries/项目中心（升级）.md",
-                "mode": "source",
+                "file": "900 Assets/910 Templates/TPL-Project.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "项目中心（升级）"
+              "title": "TPL-Project"
             }
           }
         ]
@@ -74,8 +74,7 @@
               "title": "书签"
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "horizontal",
@@ -88,7 +87,7 @@
       {
         "id": "4670e93cec4ca723",
         "type": "tabs",
-        "dimension": 29.840319361277444,
+        "dimension": 20.385674931129476,
         "children": [
           {
             "id": "bcd65f4256ddd6f9",
@@ -101,39 +100,6 @@
             }
           },
           {
-            "id": "88b97d3b6cf6ac68",
-            "type": "leaf",
-            "state": {
-              "type": "backlink",
-              "state": {
-                "file": "从这里开始 Start from here!.md",
-                "collapseAll": false,
-                "extraContext": false,
-                "sortOrder": "alphabetical",
-                "showSearch": false,
-                "searchQuery": "",
-                "backlinkCollapsed": false,
-                "unlinkedCollapsed": true
-              },
-              "icon": "links-coming-in",
-              "title": "从这里开始 Start from here! 的反向链接列表"
-            }
-          },
-          {
-            "id": "03978fdd3cdfe5e1",
-            "type": "leaf",
-            "state": {
-              "type": "outgoing-link",
-              "state": {
-                "file": "👉从这里开始 Start from here!.md",
-                "linksCollapsed": false,
-                "unlinkedCollapsed": true
-              },
-              "icon": "links-going-out",
-              "title": "👉从这里开始 Start from here! 的出链列表"
-            }
-          },
-          {
             "id": "509497c3cfa408ab",
             "type": "leaf",
             "state": {
@@ -141,6 +107,20 @@
               "state": {},
               "icon": "timer",
               "title": "Timer"
+            }
+          },
+          {
+            "id": "25d14e835ed454b3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "900 Assets/920 Queries/快速开始.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "快速开始"
             }
           },
           {
@@ -158,7 +138,7 @@
       {
         "id": "ab6e053c3b226343",
         "type": "tabs",
-        "dimension": 70.15968063872255,
+        "dimension": 79.61432506887053,
         "children": [
           {
             "id": "d4ab8c6cfc5b462a",
@@ -196,10 +176,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "900 Assets/920 Queries/项目中心（升级）.md"
+                "file": "900 Assets/910 Templates/TPL-Project.md"
               },
               "icon": "lucide-info",
-              "title": "项目中心（升级）的笔记属性"
+              "title": "TPL-Project的笔记属性"
             }
           },
           {
@@ -211,13 +191,27 @@
               "icon": "calendar-with-checkmark",
               "title": "Timeline"
             }
+          },
+          {
+            "id": "e65728cd59c772d8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "900 Assets/920 Queries/快捷按钮.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "快捷按钮"
+            }
           }
         ],
         "currentTab": 2
       }
     ],
     "direction": "horizontal",
-    "width": 248.5
+    "width": 226.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -243,45 +237,45 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "e65728cd59c772d8",
+  "active": "9d576e43328e4571",
   "lastOpenFiles": [
-    "900 Assets/960 Scripts/projectGantt.js",
-    "👉从这里开始 Start from here!.md",
-    "500 Journal/540 Daily/2026-01-02.md",
+    "900 Assets/910 Templates/TPL-ResearchNote.md",
+    "900 Assets/910 Templates/TPL-Quarterly.md",
+    "900 Assets/950 Readme/Readme-Flashcard.md",
     "900 Assets/910 Templates/TPL-Daily.md",
-    "500 Journal/540 Daily/2026-01-03.md",
+    "900 Assets/910 Templates/TPL-Annual.md",
+    "900 Assets/910 Templates/JS-WeeklyArchive.md",
+    "900 Assets/910 Templates/JS-ResearchNoteMove.md",
+    "900 Assets/910 Templates/JS-get_journal_last&pre_month.md",
+    "900 Assets/910 Templates/JS-DeleteReminder.md",
+    "900 Assets/910 Templates/TPL-Zettelkasten.md",
+    "900 Assets/920 Queries/项目中心（升级）.md",
+    "900 Assets/920 Queries/项目任务查询.md",
+    "900 Assets/920 Queries/TaskCenterBlock.md",
+    "900 Assets/920 Queries/Keywords Query.md",
+    "900 Assets/920 Queries/Inbox清单中心.md",
+    "900 Assets/920 Queries/主页Tips.md",
+    "900 Assets/920 Queries/我的图书馆.base",
+    "900 Assets/920 Queries/项目管理.base",
+    "900 Assets/920 Queries/笔记数据库.base",
+    "900 Assets/920 Queries/快速开始.md",
+    "900 Assets/920 Queries/任务中心.md",
+    "900 Assets/920 Queries/任务月历.md",
+    "900 Assets/920 Queries/生命之轮.md",
+    "900 Assets/910 Templates/TPL-Monthly.md",
+    "900 Assets/920 Queries/快捷按钮.md",
+    "900 Assets/920 Queries/任务中心（手机）.md",
+    "900 Assets/ThinkDoKit 更新日志.md",
+    "900 Assets/920 Queries/闪卡统计.md",
+    "900 Assets/920 Queries/日志数据统计.md",
+    "900 Assets/960 Scripts/projectGantt.js",
     "900 Assets/960 Scripts/InlineFieldUpdate.js",
-    "900 Assets/920 Queries/按钮中心.md",
     "900 Assets/960 Scripts/InlineFieldUpdate-data.js",
     "900 Assets/960 Scripts/InlineFieldUpdate-tracker.js",
     "900 Assets/990 Attachments/Pasted image 20260103225301.png",
-    "500 Journal/540 Daily/2026-01-01.md",
     "900 Assets/960 Scripts/InlineFieldUpdate3.js",
-    "500 Journal/540 Daily/2025-12-31.md",
-    "900 Assets/960 Scripts/Obsidian Scripting - Check View Mode.md",
-    "500 Journal/540 Daily/2025-12-30.md",
     "900 Assets/960 Scripts/journal_tasks_rolling.js",
-    "900 Assets/920 Queries/项目中心（升级）.md",
-    "100 Projects/202501项目1/测试项目1.md",
-    "100 Projects/202412测试/测试.md",
-    "100 Projects/202501项目1/未命名1.md",
-    "100 Projects/202511我的新项目/示例项目.md",
-    "100 Projects/202512项目9/测试项目2.md",
-    "900 Assets/920 Queries/笔记数据库.base",
-    "900 Assets/920 Queries/Inbox清单中心.md",
-    "900 Assets/920 Queries/Keywords Query.md",
-    "900 Assets/920 Queries/日志数据统计.md",
-    "900 Assets/920 Queries/闪卡统计.md",
-    "900 Assets/920 Queries/我的书架.md",
-    "900 Assets/920 Queries/任务月历.md",
-    "项目中心（升级）.md",
-    "900 Assets/920 Queries/任务中心.md",
-    "900 Assets/920 Queries/项目任务查询.md",
-    "100 Projects/202503项目4/测试项目3.md",
     "100 Projects/202511无主文件项目",
-    "100 Projects/202412测试",
-    "100 Projects/202411测试",
-    "👉从这里开始 Start from here!.md.tmp.10820.1765957988488",
     "900 Assets/990 Attachments/Pasted image 20251006163810.png",
     "900 Assets/990 Attachments/Pasted image 20251006162514.png",
     "900 Assets/990 Attachments/Pasted image 20251006162452.png",

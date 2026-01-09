@@ -1,0 +1,52 @@
+/* 容器：强制 Flex 布局 */
+.tab-group-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 0;
+}
+
+/* 每一个 Details 标签 */
+.tab-group-container details {
+    display: contents !important; /* 核心：让子元素 summary 提到父级 flex 布局中 */
+}
+
+/* Tab 标题按钮 */
+.tab-group-container summary {
+    display: inline-flex !important;
+    padding: 8px 16px !important;
+    cursor: pointer !important;
+    background: var(--background-secondary) !important;
+    border: 1px solid var(--background-modifier-border) !important;
+    border-bottom: none !important;
+    border-radius: 6px 6px 0 0 !important;
+    list-style: none !important;
+    font-size: 0.9em !important;
+    transition: all 0.2s ease;
+}
+
+.tab-group-container summary::-webkit-details-marker {
+    display: none !important;
+}
+
+/* 激活状态：当 details 为 open 时，改变对应的 summary 样式 */
+.tab-group-container details[open] summary {
+    background: var(--background-primary) !important;
+    color: var(--interactive-accent) !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid var(--interactive-accent) !important;
+    margin-bottom: -1px; /* 盖住下边框 */
+    z-index: 1;
+}
+
+/* 任务列表显示区 */
+.tab-content-area {
+    width: 100% !important;
+    order: 99; /* 强制内容区排在所有 Tab 按钮之后 */
+    padding: 20px 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-top: none;
+    background: var(--background-primary);
+    min-height: 200px;
+}

@@ -58,7 +58,7 @@ path does not include 500 Journal/540 Daily
 ## 📈 习惯记录
 
 ### 打卡（布尔值🔲✔️❌）
-`button-supdate`
+`button-tracker`
 - [💊medicine::]
 - [🧠flashcard::]
 - [🧘‍♂️meditation::]
@@ -66,7 +66,7 @@ path does not include 500 Journal/540 Daily
 
 ### 数据记录（仅填写数值）
 %%图标单位含义：⚖️公斤kg；🕓分钟；⏳小时；📅日；💰元；💸万元；🧮次数%%
-`button-supdate`
+`button-data`
 - [weight⚖️::]
 - [exercise🕓::]
 - [reading🕓::]
