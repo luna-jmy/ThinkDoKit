@@ -33,13 +33,30 @@ const currentNoteArea = currentPage.area;
 // 获取所有项目笔记
 let pages = dv.pages()
     .where(p => p.type === "project")
-    .where(p => p.start_date && p.due_date)
     .where(p => {
-        const projectStart = dv.date(p.start_date);
-        const projectEnd = dv.date(p.due_date);
+        // 获取项目的开始和结束日期
+        const projectStart = p.start_date ? dv.date(p.start_date) : null;
+        const projectEnd = (p.due_date || p.end_date) ? dv.date(p.due_date || p.end_date) : null;
         const filterStartDate = dv.date(filterStart);
         const filterEndDate = dv.date(filterEnd);
-        return projectStart <= filterEndDate && projectEnd >= filterStartDate;
+
+        // 至少需要一个日期
+        if (!projectStart && !projectEnd) return false;
+
+        // 日期筛选逻辑：项目时间段与筛选时间段有交集
+        // 情况1：项目有开始和结束日期
+        if (projectStart && projectEnd) {
+            return projectStart <= filterEndDate && projectEnd >= filterStartDate;
+        }
+        // 情况2：只有开始日期
+        if (projectStart) {
+            return projectStart >= filterStartDate && projectStart <= filterEndDate;
+        }
+        // 情况3：只有结束日期
+        if (projectEnd) {
+            return projectEnd >= filterStartDate && projectEnd <= filterEndDate;
+        }
+        return false;
     })
     .where(p => p.status !== "cancelled");
 
@@ -96,8 +113,22 @@ Object.keys(groupedPages).forEach(context => {
 
     groupedPages[context].forEach(page => {
         const taskName = page.file.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '');
-        const startDate = dv.date(page.start_date).toFormat("yyyy-MM-dd");
-        const dueDate = dv.date(page.due_date).toFormat("yyyy-MM-dd");
+
+        // 获取开始和结束日期，支持 due_date 或 end_date
+        let startDate = page.start_date ? dv.date(page.start_date) : null;
+        let endDate = (page.due_date || page.end_date) ? dv.date(page.due_date || page.end_date) : null;
+
+        // 如果没有开始日期，使用结束日期前7天作为开始日期
+        if (!startDate && endDate) {
+            startDate = endDate.minus({ days: 7 });
+        }
+        // 如果没有结束日期，使用开始日期后7天作为结束日期
+        if (startDate && !endDate) {
+            endDate = startDate.plus({ days: 7 });
+        }
+
+        const startDateFormatted = startDate.toFormat("yyyy-MM-dd");
+        const endDateFormatted = endDate.toFormat("yyyy-MM-dd");
 
         let status = "";
         if (page.status === "completed") {
@@ -106,7 +137,7 @@ Object.keys(groupedPages).forEach(context => {
             status = "active, ";
         }
 
-        mermaidCode += `    ${page.file.name} :${status}${taskName}, ${startDate}, ${dueDate}\n`;
+        mermaidCode += `    ${page.file.name} :${status}${taskName}, ${startDateFormatted}, ${endDateFormatted}\n`;
     });
 
     mermaidCode += "\n";

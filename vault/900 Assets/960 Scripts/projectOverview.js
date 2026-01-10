@@ -87,34 +87,83 @@ const container = dv.container.createEl("div", { cls: "projects-container" });
 
 // 渲染快速项目列表（多个项目在一个卡片里）
 function renderQuickProjectList(projectFiles, title, containerEl) {
-    const card = containerEl.createEl("div", { 
+    // 对快速项目应用与普通项目相同的筛选逻辑
+    const filteredProjectFiles = projectFiles.filter(projectFile => {
+        const status = projectFile.status || "";
+        const projectArea = projectFile.area || null;
+        const startDate = projectFile.start_date;
+        const endDate = projectFile.due_date || projectFile.end_date;
+
+        // status 筛选
+        // 定义完成状态列表
+        const completedStatuses = ["completed", "完成", "done", "archived", "归档"];
+        const isCompleted = completedStatuses.includes(status);
+
+        if (config.status === "hide") {
+            if (isCompleted) return false;
+        } else if (config.status === "completed") {
+            if (!isCompleted) return false;
+        }
+
+        // area 筛选
+        if (config.area) {
+            // 即使 currentNoteArea 为空，也要进行筛选（空值意味着不匹配任何 area）
+            const filterValue = currentNoteArea ? (Array.isArray(currentNoteArea) ? currentNoteArea : [currentNoteArea]) : [];
+            const projectAreas = projectArea ? (Array.isArray(projectArea) ? projectArea : [projectArea]) : [];
+            const hasMatch = projectAreas.some(pa => filterValue.includes(pa));
+
+            if (config.area === "include" && !hasMatch) return false;
+            if (config.area === "exclude" && hasMatch) return false;
+        }
+
+        // 日期筛选
+        let shouldDisplay = false;
+        if (startDate && endDate) {
+            shouldDisplay = (startDate <= filterEnd && endDate >= filterStart);
+        } else if (startDate) {
+            shouldDisplay = (startDate >= filterStart && startDate <= filterEnd);
+        } else if (endDate) {
+            shouldDisplay = (endDate >= filterStart && endDate <= filterEnd);
+        } else {
+            shouldDisplay = true;
+        }
+
+        return shouldDisplay;
+    });
+
+    // 如果没有项目通过筛选，不渲染卡片
+    if (filteredProjectFiles.length === 0) {
+        return 0;
+    }
+
+    const card = containerEl.createEl("div", {
         cls: "project-card quick-project-card",
         attr: { style: "border-left: 3px solid var(--interactive-accent); height: 100%;" }
     });
-    
+
     // 标题
     const titleWrapper = card.createEl("div", {
         attr: { style: "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;" }
     });
-    
+
     const titleEl = titleWrapper.createEl("h3", {
         attr: { style: "margin: 0; font-size: 1em;" }
     });
     titleEl.textContent = `⚡ ${title}`;
-    
+
     const countBadge = titleWrapper.createEl("span", {
         cls: "project-status",
         attr: { style: "margin: 0; background: rgba(100, 150, 255, 0.2);" }
     });
-    countBadge.textContent = `${projectFiles.length}`;
-    
+    countBadge.textContent = `${filteredProjectFiles.length}`;
+
     // 项目列表
     const listDiv = card.createEl("div", { cls: "project-notes" });
     const ul = listDiv.createEl("ul", {
         attr: { style: "margin: 0;" }
     });
-    
-    projectFiles.forEach(projectFile => {
+
+    filteredProjectFiles.forEach(projectFile => {
         const li = ul.createEl("li", {
             attr: { style: "display: flex; justify-content: space-between; align-items: center; padding: 4px 0;" }
         });
@@ -159,6 +208,8 @@ function renderQuickProjectList(projectFiles, title, containerEl) {
             dateSpan.textContent = dv.date(endDate).toFormat("MM-dd");
         }
     });
+
+    return filteredProjectFiles.length;
 }
 
 // 渲染正常项目卡片
@@ -180,18 +231,23 @@ function renderNormalProjectCard(folderPath, projectFiles, allNotesInFolder, con
     projectArea = projectFile.area || null;
     
     // status 筛选
+    // 定义完成状态列表
+    const completedStatuses = ["completed", "完成", "done", "archived", "归档"];
+    const isCompleted = completedStatuses.includes(status);
+
     if (config.status === "hide") {
-        if (status === "completed" || status === "完成") return false;
+        if (isCompleted) return false;
     } else if (config.status === "completed") {
-        if (status !== "completed" && status !== "完成") return false;
+        if (!isCompleted) return false;
     }
     
     // area 筛选
-    if (config.area && currentNoteArea) {
-        const filterValue = Array.isArray(currentNoteArea) ? currentNoteArea : [currentNoteArea];
+    if (config.area) {
+        // 即使 currentNoteArea 为空，也要进行筛选（空值意味着不匹配任何 area）
+        const filterValue = currentNoteArea ? (Array.isArray(currentNoteArea) ? currentNoteArea : [currentNoteArea]) : [];
         const projectAreas = projectArea ? (Array.isArray(projectArea) ? projectArea : [projectArea]) : [];
         const hasMatch = projectAreas.some(pa => filterValue.includes(pa));
-        
+
         if (config.area === "include" && !hasMatch) return false;
         if (config.area === "exclude" && hasMatch) return false;
     }
@@ -390,8 +446,10 @@ if (hasQuickProjects) {
     
     // 渲染所有快速项目卡片到网格中
     allQuickGroups.forEach(group => {
-        renderQuickProjectList(group.projects, group.title, quickGrid);
-        displayedQuickProjects += group.projects.length;
+        const renderedCount = renderQuickProjectList(group.projects, group.title, quickGrid);
+        if (renderedCount !== undefined) {
+            displayedQuickProjects += renderedCount;
+        }
     });
 }
 
