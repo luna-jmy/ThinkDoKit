@@ -7,7 +7,6 @@
   "obsidian-spaced-repetition",
   "journals",
   "buttons",
-  "quickadd",
   "obsidian-view-mode-by-frontmatter",
   "obsidian-outliner",
   "homepage",
@@ -21,5 +20,6 @@
   "pomodoro-timer",
   "workspaces-plus",
   "floating-toc",
-  "obsidian-memos"
+  "obsidian-memos",
+  "obsidian-kanban"
 ]

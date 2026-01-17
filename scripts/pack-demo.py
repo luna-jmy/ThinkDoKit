@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 
 # Configuration
-VERSION = "1.1.3"
+VERSION = "1.2.0"
 TARGET = f"ThinkDoKit-Demo-{VERSION}.zip"
 
 # Auto-detect paths based on script location

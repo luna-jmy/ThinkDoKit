@@ -157,7 +157,7 @@
                 "state": {
                   "type": "outline",
                   "state": {
-                    "file": "500 Journal/520 Monthly/2025-07.md",
+                    "file": "900 Assets/ThinkDoKit 更新日志.md",
                     "followCursor": false,
                     "showSearch": false,
                     "searchQuery": ""
@@ -187,7 +187,7 @@
                 "state": {
                   "type": "file-properties",
                   "state": {
-                    "file": "900 Assets/920 Queries/任务中心.md"
+                    "file": "900 Assets/920 Queries/项目中心（升级）.md"
                   },
                   "icon": "lucide-info",
                   "title": "👉从这里开始 Start from here!的笔记属性"

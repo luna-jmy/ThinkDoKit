@@ -2,7 +2,7 @@
   "attachmentFolderPath": "900 Assets/990 Attachments",
   "alwaysUpdateLinks": true,
   "propertiesInDocument": "hidden",
-  "newFileLocation": "folder",
+  "newFileLocation": "current",
   "newFileFolderPath": "000 Inbox",
   "showUnsupportedFiles": true,
   "userIgnoreFilters": [

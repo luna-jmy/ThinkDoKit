@@ -2,9 +2,8 @@
 # Obsidian cache
 .obsidian/cache/
 .obsidian/backup/
-.obsidian/plugins/remotely-save
+.obsidian/plugins/remotely-save/
 .trash/
-.obsidian/plugins/obsidian-kanban-modify
 
 # OS
 .DS_Store

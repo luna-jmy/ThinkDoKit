@@ -164,11 +164,11 @@ module.exports = async (params) => {
 
             new Notice(`项目 "${pureProjectName}" 创建完成！（含主项目文件）`);
 
-            // 可选：打开新创建的项目文件
-            // const newFile = app.vault.getAbstractFileByPath(projectFilePath);
-            // if (newFile) {
-            //     await app.workspace.openLinkText(newFile.path, "", true);
-            // }
+            // 打开新创建的项目文件
+            const newFile = app.vault.getAbstractFileByPath(projectFilePath);
+            if (newFile) {
+                await app.workspace.openLinkText(newFile.path, "", true);
+            }
         } catch (error) {
             console.error("创建主项目文件时出错:", error);
             console.error("错误堆栈:", error.stack);
