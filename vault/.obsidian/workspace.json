@@ -11,20 +11,14 @@
             "id": "e65728cd59c772d8",
             "type": "leaf",
             "state": {
-              "type": "kanban",
+              "type": "markdown",
               "state": {
-                "file": "000 Inbox/未命名看板.md",
-                "kanbanViewState": {
-                  "kanban-plugin": "eisenhower",
-                  "list-collapse": [
-                    false,
-                    false,
-                    false
-                  ]
-                }
+                "file": "900 Assets/ThinkDoKit 更新日志.md",
+                "mode": "preview",
+                "source": false
               },
-              "icon": "lucide-trello",
-              "title": "未命名看板"
+              "icon": "lucide-file",
+              "title": "ThinkDoKit 更新日志"
             }
           }
         ]
@@ -212,7 +206,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 248.5
+    "width": 248.5,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {

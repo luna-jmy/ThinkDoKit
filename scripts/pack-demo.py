@@ -12,6 +12,7 @@ from pathlib import Path
 # Configuration
 VERSION = "1.2.0"
 TARGET = f"ThinkDoKit-Demo-{VERSION}.zip"
+EXCLUDE_DIRS = {".trash"}
 
 # Auto-detect paths based on script location
 SCRIPT_DIR = Path(__file__).parent.resolve()
@@ -21,10 +22,13 @@ RELEASES_DIR = PROJECT_ROOT / "releases"
 
 
 def create_zip(source_dir, output_file):
-    """Create ZIP archive from directory, including everything"""
+    """Create ZIP archive from directory, excluding specified directories"""
     with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
         # Walk through all directories and files
         for root, dirs, files in os.walk(source_dir):
+            # Filter out excluded directories in-place
+            dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+
             # Add files
             for file in files:
                 file_path = Path(root) / file
@@ -87,7 +91,7 @@ def main():
     print("=" * 60)
     print(f"  Output: {zip_path}")
     print(f"  Size:   {file_size_mb:.2f} MB")
-    print(f"  Contains: Complete vault (all files and folders)")
+    print(f"  Contains: Complete vault (excluding: {', '.join(sorted(EXCLUDE_DIRS))})")
     print("=" * 60)
 
     return 0

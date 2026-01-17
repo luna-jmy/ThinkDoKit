@@ -12,7 +12,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Configuration
-VERSION = "1.1.3"
+VERSION = "1.2.0"
 TARGET = f"ThinkDoKit-Full-{VERSION}.zip"
 
 # Set to True if you want .gitkeep files in empty folders
@@ -99,23 +99,37 @@ def copy_structure(src_dir, dest_dir, relative_path=""):
     for item in src_dir.iterdir():
         if item.is_dir():
             item_relative = str(Path(relative_path) / item.name) if relative_path else item.name
-            
+
             # Check if folder should be completely excluded
             if should_exclude(item_relative):
                 print(f"  [EXCLUDE] Folder: {item_relative}")
                 continue
-            
+
             # ALWAYS create folder structure, even in empty zones
             print(f"  [CREATE] Folder: {item_relative}")
             new_dest = dest_dir / item.name
-            
+
             # Recursively process subfolder
             copy_structure(item, new_dest, item_relative)
-    
+
+    # Create Journal subfolders if in 500 Journal directory
+    if current_relative == "500 Journal":
+        journal_subfolders = ["510 Annual", "520 Monthly", "530 Weekly", "540 Daily"]
+        for subfolder in journal_subfolders:
+            subfolder_path = dest_dir / subfolder
+            subfolder_path.mkdir(parents=True, exist_ok=True)
+            print(f"  [CREATE] Journal subfolder: {subfolder}")
+            if USE_GITKEEP:
+                gitkeep = subfolder_path / ".gitkeep"
+                gitkeep.write_text("# Preserve folder structure\n", encoding="utf-8")
+
     # Add .gitkeep to empty folders (optional)
     if USE_GITKEEP:
         items = list(dest_dir.iterdir())
-        if not items or all(f.name == ".gitkeep" for f in items):
+        gitkeep_items = [".gitkeep"]
+        if current_relative == "500 Journal":
+            gitkeep_items = [".gitkeep", "510 Annual", "520 Monthly", "530 Weekly", "540 Daily"]
+        if not items or all(f.name in gitkeep_items for f in items):
             gitkeep = dest_dir / ".gitkeep"
             gitkeep.write_text("# Preserve folder structure\n", encoding="utf-8")
             print(f"  [GITKEEP] {current_relative}")
