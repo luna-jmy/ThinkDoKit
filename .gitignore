@@ -8,3 +8,7 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# AI Tools
+.agent/
+.claude/
