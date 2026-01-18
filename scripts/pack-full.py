@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ThinkDoKit Lite Packaging Script
-Preserves folder structure but removes note contents
+ThinkDoKit Full Packaging Script
+Packages .obsidian, 900 Assets (full) and fixed folder structure
 """
 
-import os
 import shutil
 import zipfile
 from pathlib import Path
@@ -15,10 +14,6 @@ from datetime import datetime
 VERSION = "1.2.0"
 TARGET = f"ThinkDoKit-Full-{VERSION}.zip"
 
-# Set to True if you want .gitkeep files in empty folders
-# Set to False to have truly empty folders (but Git won't track them)
-USE_GITKEEP = False
-
 # Auto-detect paths based on script location
 SCRIPT_DIR = Path(__file__).parent.resolve()
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -26,126 +21,87 @@ VAULT_PATH = PROJECT_ROOT / "vault"
 RELEASES_DIR = PROJECT_ROOT / "releases"
 TEMP_DIR = Path.cwd() / f"temp-pack-{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
-# Folders to empty but keep structure (including ALL subfolders)
-FOLDERS_TO_EMPTY = [
-    "000 Inbox",
-    "100 Projects",
-    "200 Areas",
-    "300 Resources",
-    "400 Archive",
-    "500 Journal",
-    "600 Zettelkasten"
-]
-
-# Folders to completely exclude (don't create at all)
-FOLDERS_TO_EXCLUDE = [
-    ".trash",
-    ".obsidian/plugins/remotely-save"
-]
-
-# Files to exclude from root directory
-FILES_TO_EXCLUDE = [
-    "✅请完成你的第一个任务！.md"
-]
-
-
-def is_in_empty_zone(relative_path):
-    """Check if path is in a folder that should be emptied"""
-    rel_str = str(relative_path).replace("\\", "/")
-    for folder in FOLDERS_TO_EMPTY:
-        if rel_str == folder or rel_str.startswith(f"{folder}/"):
-            return True
-    return False
+# Fixed folder structure (nested format)
+FOLDER_STRUCTURE = {
+    "000 Inbox": [],
+    "100 Projects": [],
+    "200 Areas": [],
+    "300 Resources": [
+        "310 Clippings",
+        "320 References",
+        "330 Books",
+        "340 Courses",
+        "350 Articles",
+        "390 EverythingElse"
+    ],
+    "400 Archive": [],
+    "500 Journal": [
+        "510 Annual",
+        "520 Monthly",
+        "530 Weekly",
+        "540 Daily"
+    ],
+    "600 Zettelkasten": [
+        "610 Evergreen",
+        "620 Flashcards"
+    ]
+}
 
 
-def should_exclude(relative_path):
-    """Check if path should be completely excluded"""
-    rel_str = str(relative_path).replace("\\", "/")
-    for folder in FOLDERS_TO_EXCLUDE:
-        if rel_str == folder or rel_str.startswith(f"{folder}/"):
-            return True
-    return False
+def create_folder_structure(dest_dir):
+    """Create fixed empty folder structure"""
+    for folder, subfolders in FOLDER_STRUCTURE.items():
+        folder_path = dest_dir / folder
+        folder_path.mkdir(parents=True, exist_ok=True)
+        print(f"  [CREATE] {folder}")
 
-
-def copy_structure(src_dir, dest_dir, relative_path=""):
-    """
-    Recursively copy folder structure, excluding files in empty zones
-    """
-    # Create destination directory
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    
-    current_relative = relative_path
-    is_empty_zone = is_in_empty_zone(current_relative) if current_relative else False
-    
-    # Process files in current directory
-    for item in src_dir.iterdir():
-        if item.is_file():
-            item_relative = str(Path(relative_path) / item.name) if relative_path else item.name
-            
-            # Check if file should be excluded (root level only)
-            should_exclude_file = False
-            if not relative_path and item.name in FILES_TO_EXCLUDE:
-                should_exclude_file = True
-                print(f"  [EXCLUDE] File: {item.name}")
-            
-            # Copy file only if NOT in empty zone and NOT excluded
-            if not is_empty_zone and not should_exclude_file:
-                shutil.copy2(item, dest_dir / item.name)
-                print(f"  [COPY] {item_relative}")
-            elif is_empty_zone:
-                print(f"  [SKIP] {item_relative} (empty zone)")
-    
-    # Process subdirectories
-    for item in src_dir.iterdir():
-        if item.is_dir():
-            item_relative = str(Path(relative_path) / item.name) if relative_path else item.name
-
-            # Check if folder should be completely excluded
-            if should_exclude(item_relative):
-                print(f"  [EXCLUDE] Folder: {item_relative}")
-                continue
-
-            # ALWAYS create folder structure, even in empty zones
-            print(f"  [CREATE] Folder: {item_relative}")
-            new_dest = dest_dir / item.name
-
-            # Recursively process subfolder
-            copy_structure(item, new_dest, item_relative)
-
-    # Create Journal subfolders if in 500 Journal directory
-    if current_relative == "500 Journal":
-        journal_subfolders = ["510 Annual", "520 Monthly", "530 Weekly", "540 Daily"]
-        for subfolder in journal_subfolders:
-            subfolder_path = dest_dir / subfolder
+        for subfolder in subfolders:
+            subfolder_path = folder_path / subfolder
             subfolder_path.mkdir(parents=True, exist_ok=True)
-            print(f"  [CREATE] Journal subfolder: {subfolder}")
-            if USE_GITKEEP:
-                gitkeep = subfolder_path / ".gitkeep"
-                gitkeep.write_text("# Preserve folder structure\n", encoding="utf-8")
+            print(f"  [CREATE] {folder}/{subfolder}")
 
-    # Add .gitkeep to empty folders (optional)
-    if USE_GITKEEP:
-        items = list(dest_dir.iterdir())
-        gitkeep_items = [".gitkeep"]
-        if current_relative == "500 Journal":
-            gitkeep_items = [".gitkeep", "510 Annual", "520 Monthly", "530 Weekly", "540 Daily"]
-        if not items or all(f.name in gitkeep_items for f in items):
-            gitkeep = dest_dir / ".gitkeep"
-            gitkeep.write_text("# Preserve folder structure\n", encoding="utf-8")
-            print(f"  [GITKEEP] {current_relative}")
+
+def copy_full_folders(src_dir, dest_dir):
+    """Copy .obsidian, 900 Assets folders and start file completely"""
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    # Copy .obsidian folder
+    obsidian_src = src_dir / ".obsidian"
+    if obsidian_src.exists():
+        obsidian_dest = dest_dir / ".obsidian"
+        shutil.copytree(obsidian_src, obsidian_dest, dirs_exist_ok=True)
+        print(f"  [COPY] .obsidian")
+    else:
+        print(f"  [WARNING] .obsidian not found in vault")
+
+    # Copy 900 Assets folder completely
+    assets_src = src_dir / "900 Assets"
+    if assets_src.exists():
+        assets_dest = dest_dir / "900 Assets"
+        shutil.copytree(assets_src, assets_dest, dirs_exist_ok=True)
+        print(f"  [COPY] 900 Assets")
+    else:
+        print(f"  [WARNING] 900 Assets not found in vault")
+
+    # Copy start file
+    start_file = src_dir / "👉从这里开始 Start from here!.md"
+    if start_file.exists():
+        shutil.copy2(start_file, dest_dir / start_file.name)
+        print(f"  [COPY] {start_file.name}")
+    else:
+        print(f"  [WARNING] Start file not found in vault")
 
 
 def create_zip(source_dir, output_file):
-    """Create ZIP archive from directory, including empty folders"""
+    """Create ZIP archive from directory"""
     with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        # Walk through all directories and files
         for root, dirs, files in os.walk(source_dir):
             # Add files
             for file in files:
                 file_path = Path(root) / file
                 arcname = file_path.relative_to(source_dir)
                 zipf.write(file_path, arcname)
-            
+
             # Add empty directories
             for dir_name in dirs:
                 dir_path = Path(root) / dir_name
@@ -154,14 +110,15 @@ def create_zip(source_dir, output_file):
                     # Add empty directory to ZIP
                     arcname = str(dir_path.relative_to(source_dir)) + "/"
                     zipf.writestr(zipfile.ZipInfo(arcname), "")
-                    print(f"  [EMPTY] {arcname}")
+
+
+import os
 
 
 def main():
     print("=" * 60)
-    print("ThinkDoKit Lite Packaging Tool")
+    print("ThinkDoKit Full Packaging Tool")
     print(f"Version: {VERSION}")
-    print(f"Empty folder handling: {'With .gitkeep' if USE_GITKEEP else 'Truly empty'}")
     print("=" * 60)
     print(f"\nDetected paths:")
     print(f"  Script:   {SCRIPT_DIR}")
@@ -169,7 +126,7 @@ def main():
     print(f"  Vault:    {VAULT_PATH}")
     print(f"  Releases: {RELEASES_DIR}")
     print(f"  Temp:     {TEMP_DIR}")
-    
+
     # Validate source directory
     if not VAULT_PATH.exists():
         print(f"\nERROR: Vault directory not found: {VAULT_PATH}")
@@ -177,51 +134,42 @@ def main():
         print("  1. This script is in the 'scripts/' folder")
         print("  2. The 'vault/' folder exists in the project root")
         return 1
-    
+
     # Create releases directory
     RELEASES_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     # Clean up temp directory if exists
     if TEMP_DIR.exists():
         shutil.rmtree(TEMP_DIR)
-    
+
     print("\n" + "=" * 60)
-    print("[Step 1] Copying folder structure...")
+    print("[Step 1] Creating package...")
     print("=" * 60)
-    copy_structure(VAULT_PATH, TEMP_DIR)
-    
+
+    # Copy full folders (.obsidian, 900 Assets)
+    print("\nCopying full folders:")
+    copy_full_folders(VAULT_PATH, TEMP_DIR)
+
+    # Create fixed folder structure
+    print("\nCreating folder structure:")
+    create_folder_structure(TEMP_DIR)
+
     print("\n" + "=" * 60)
-    print("[Step 2] Verifying results...")
-    print("=" * 60)
-    for folder in FOLDERS_TO_EMPTY:
-        folder_path = TEMP_DIR / folder
-        if folder_path.exists():
-            md_files = list(folder_path.rglob("*.md"))
-            subfolders = [d for d in folder_path.rglob("*") if d.is_dir()]
-            
-            if md_files:
-                print(f"  [WARNING] {folder} contains {len(md_files)} .md files!")
-            else:
-                print(f"  [OK] {folder} - No .md files ({len(subfolders)} subfolders)")
-        else:
-            print(f"  [WARNING] {folder} not found in package!")
-    
-    print("\n" + "=" * 60)
-    print("[Step 3] Creating ZIP archive...")
+    print("[Step 2] Creating ZIP archive...")
     print("=" * 60)
     zip_path = RELEASES_DIR / TARGET
     if zip_path.exists():
         zip_path.unlink()
-    
+
     create_zip(TEMP_DIR, zip_path)
     print(f"  Archive created: {zip_path.name}")
-    
+
     print("\n" + "=" * 60)
-    print("[Step 4] Cleaning up temporary files...")
+    print("[Step 3] Cleaning up temporary files...")
     print("=" * 60)
     shutil.rmtree(TEMP_DIR)
     print(f"  Removed: {TEMP_DIR}")
-    
+
     # Show results
     file_size_mb = zip_path.stat().st_size / (1024 * 1024)
     print("\n" + "=" * 60)
@@ -229,9 +177,13 @@ def main():
     print("=" * 60)
     print(f"  Output: {zip_path}")
     print(f"  Size:   {file_size_mb:.2f} MB")
-    print(f"\n  Empty folders: {'With .gitkeep placeholders' if USE_GITKEEP else 'Truly empty'}")
+    print(f"\n  Contains:")
+    print(f"    - .obsidian (full)")
+    print(f"    - 900 Assets (full)")
+    print(f"    - 👉从这里开始 Start from here!.md")
+    print(f"    - Fixed folder structure (empty)")
     print("=" * 60)
-    
+
     return 0
 
 

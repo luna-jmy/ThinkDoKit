@@ -13,15 +13,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "900 Assets/ThinkDoKit 更新日志.md",
+                "file": "👉从这里开始 Start from here!.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ThinkDoKit 更新日志"
+              "title": "👉从这里开始 Start from here!"
+            }
+          },
+          {
+            "id": "0a3292da382d9ccc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "900 Assets/ThinkDoKit（知行盒子）使用指南.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ThinkDoKit（知行盒子）使用指南"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -78,7 +93,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 204.5
+    "width": 200,
+    "collapsed": true
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -155,13 +171,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "900 Assets/ThinkDoKit 更新日志.md",
+                "file": "900 Assets/ThinkDoKit（知行盒子）使用指南.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "👉从这里开始 Start from here! 的大纲"
+              "title": "ThinkDoKit（知行盒子）使用指南 的大纲"
             }
           },
           {
@@ -185,10 +201,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "900 Assets/920 Queries/项目中心（升级）.md"
+                "file": "900 Assets/ThinkDoKit（知行盒子）使用指南.md"
               },
               "icon": "lucide-info",
-              "title": "👉从这里开始 Start from here!的笔记属性"
+              "title": "ThinkDoKit（知行盒子）使用指南的笔记属性"
             }
           },
           {
@@ -202,12 +218,11 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
-    "width": 248.5,
-    "collapsed": true
+    "width": 248.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -234,53 +249,54 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "e65728cd59c772d8",
+  "active": "0a3292da382d9ccc",
   "lastOpenFiles": [
-    "👉从这里开始 Start from here!.md",
-    "000 Inbox/未命名看板.md",
-    "900 Assets/ThinkDoKit 更新日志.md",
+    "900 Assets/910 Templates/TPL-ContentHub.md",
+    "900 Assets/920 Queries/按钮中心.md",
+    "900 Assets/ThinkDoKit（知行盒子）使用指南.md",
     "900 Assets/920 Queries/项目中心（升级）.md",
-    "900 Assets/910 Templates/TPL-Daily.md",
-    "000 Inbox/示例任务2.md",
-    "000 Inbox/示例任务.md",
-    "000 Inbox/测试任务🛫 2026-01-16 ⏫ 📅 2026-01-17 [eisenhower q1].md",
-    "900 Assets/920 Queries/任务中心.md",
-    "000 Inbox/测试Tab视图.md",
-    "000 Inbox/学习笔记《吃掉那只青蛙》.md",
-    "000 Inbox/测试笔记.md",
-    "000 Inbox/Tab Test.md",
-    "100 Projects/快速项目/示例项目0110.md",
+    "900 Assets/910 Templates/TPL-ContentOutline.md",
+    "200 Areas/210 ContentHub/示例内容中心.md",
+    "内容创作工作台设计.canvas",
+    "100 Projects/202412测试/测试.md",
     "100 Projects/快速项目/示例项目0.md",
-    "100 Projects/202503项目4/未命名2.md",
-    "100 Projects/202501项目1/未命名1.md",
-    "100 Projects/示例项目11.md",
-    "900 Assets/920 Queries/Keywords Query.md",
+    "知识管理工作台设计.canvas",
+    "900 Assets/910 Templates/TPL-NewNote.md",
+    "900 Assets/910 Templates/TPL-IdeaCapture.md",
+    "900 Assets/920 Queries/项目任务查询.md",
+    "900 Assets/990 Attachments/unnamed (1) 1.png",
+    "900 Assets/990 Attachments/unnamed (1).png",
+    "900 Assets/990 Attachments/unnamed.png",
+    "900 Assets/ThinkDoKit 更新日志.md",
     "900 Assets/✨快速入门小贴士 Tips.md",
+    "👉从这里开始 Start from here!.md",
+    "900 Assets/920 Queries/TaskCenterBlock.md",
+    "900 Assets/920 Queries/Keywords Query.md",
+    "900 Assets/920 Queries/Inbox清单中心.md",
+    "900 Assets/920 Queries/主页Tips.md",
+    "900 Assets/920 Queries/笔记数据库.base",
+    "900 Assets/920 Queries/快捷按钮.md",
+    "900 Assets/920 Queries/快速开始.md",
+    "900 Assets/920 Queries/任务月历.md",
+    "900 Assets/920 Queries/任务中心.md",
+    "900 Assets/920 Queries/任务中心（手机）.md",
+    "900 Assets/920 Queries/项目管理.base",
+    "900 Assets/920 Queries/我的图书馆.base",
+    "900 Assets/920 Queries/我的书架.md",
+    "900 Assets/920 Queries/手机主页.md",
+    "900 Assets/990 Attachments/Pasted image 20250704222000.png",
+    "900 Assets/990 Attachments/Pasted image 20251006162419.png",
+    "900 Assets/990 Attachments/Pasted image 20251006162514.png",
+    "900 Assets/990 Attachments/s4208841.jpg",
+    "900 Assets/990 Attachments/Pasted image 20250704220528.png",
+    "900 Assets/990 Attachments/Pasted image 20250704220404.png",
+    "900 Assets/990 Attachments/Pasted image 20250705112725.png",
     "100 Projects/快速项目",
-    "900 Assets/950 Readme/【脚本说明】基于任务生成甘特图.md",
-    "900 Assets/950 Readme/【脚本说明】任务热力图.md",
-    "900 Assets/950 Readme/tabTaskView示例.md",
-    "900 Assets/950 Readme/【脚本说明】random-quote.md",
-    "900 Assets/950 Readme/【脚本说明】内联字段填充器2种.md",
-    "900 Assets/950 Readme/Readme-Flashcard.md",
     "900 Assets/960 Scripts/TabTaskView.js",
     "900 Assets/960 Scripts/monthlyCalendar/view.js",
     "900 Assets/960 Scripts/weeklyCalendar/view.js",
     "900 Assets/960 Scripts/workdayCalendar/view.js",
     "900 Assets/960 Scripts/monthlyCalendar",
-    "900 Assets/960 Scripts/weeklyCalendar",
-    "900 Assets/960 Scripts/workdayCalendar",
-    "900 Assets/960 Scripts/tabTaskView/view.js",
-    "900 Assets/960 Scripts/tabTaskView",
-    "900 Assets/990 Attachments/Pasted image 20260103225301.png",
-    "900 Assets/990 Attachments/Pasted image 20251006163810.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162514.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162452.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162441.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162430.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162419.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162408.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162354.png",
-    "900 Assets/990 Attachments/Pasted image 20250914205443.png"
+    "900 Assets/960 Scripts/weeklyCalendar"
   ]
 }

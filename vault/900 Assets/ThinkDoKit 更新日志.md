@@ -35,8 +35,8 @@ obsidianUIMode: preview
 	- 【可选】如笔记或任务较多，建议关闭Dataview的自动刷新功能。可显著提升性能。
 
 Demo：含demo笔记的完整版，适合刚入门Obsidian，尚在学习中的用户
-Full：空文件夹架构、使用指南、Assets及Obsidian配置文件夹，适合已了解使用方法的新用户
-Light：仅Assets及Obsidian配置文件夹，适合老用户直接覆盖
+Full：空文件夹分类架构、使用指南、Assets及Obsidian配置文件夹，适合已了解使用方法的新用户
+Lite：仅包含核心Assets（模板、查询、脚本）及Obsidian配置文件夹，适合老用户直接覆盖
 
 ## 1.1.3 Update
 

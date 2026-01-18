@@ -43,6 +43,59 @@ const dateObj = dv.date("2024-01-01");
 const formatted = dateObj.toFormat("yyyy-MM-dd");
 ```
 
+#### Date Parsing Rules
+- **Input format**: Accepts string format `YYYY-MM-DD` (e.g., "2024-01-15")
+- **Cannot accept**: JavaScript `Date` objects or Luxon `DateTime` objects directly
+- **Timezone awareness**: Uses local timezone for string parsing
+
+#### Common Pitfall - Date Object Conversion
+```javascript
+// ❌ WRONG - Passing Date object directly
+const date = new Date();
+const parsed = dv.date(date); // Error: No implementation of 'date' found for arguments: object
+
+// ✅ CORRECT - Convert to string first
+function toLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+const date = new Date();
+const parsed = dv.date(toLocalDateString(date));
+```
+
+#### Date Comparison and Manipulation
+```javascript
+// Get timestamps for comparison
+const timestamp = dateObj.toMillis();  // Returns milliseconds since epoch
+
+// Format dates
+const iso = dateObj.toISO();           // "2024-01-15T00:00:00.000+08:00"
+const formatted = dateObj.toFormat("yyyy-MM-dd");  // "2024-01-15"
+
+// Date arithmetic (Luxon DateTime)
+const nextWeek = dateObj.plus({ weeks: 1 });
+const yesterday = dateObj.minus({ days: 1 });
+```
+
+#### Date Field Types in Dataview
+Dataview metadata fields can be different types:
+- **DateTime objects**: From frontmatter dates (e.g., `start_date: 2024-01-15`)
+- **Link objects**: From `[[2024-01-15]]` wiki-links
+- **Strings**: From string values
+
+Always convert with `dv.date()` before comparison:
+```javascript
+const projectStart = dv.date(p.start_date);  // Handles all types
+const filterStart = dv.date("2024-01-01");
+
+// Compare using timestamps
+if (projectStart.toMillis() >= filterStart.toMillis()) {
+    // ...
+}
+```
+
 ## Data Processing Patterns
 
 ### 1. Grouping Pages

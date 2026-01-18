@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ThinkDoKit Lite Packaging Script
-Only packages .obsidian and 900 Assets folders
+Only packages .obsidian and selected subfolders from 900 Assets
 """
 
 import shutil
@@ -21,22 +21,38 @@ VAULT_PATH = PROJECT_ROOT / "vault"
 RELEASES_DIR = PROJECT_ROOT / "releases"
 TEMP_DIR = Path.cwd() / f"temp-pack-{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
-# Folders to include
-FOLDERS_TO_INCLUDE = [".obsidian", "900 Assets"]
+# Subfolders to include from 900 Assets
+ASSETS_SUBFOLDERS = ["910 Templates", "920 Queries", "960 Scripts"]
 
 
 def copy_folders(src_dir, dest_dir):
-    """Copy only specified folders"""
+    """Copy .obsidian and selected subfolders from 900 Assets"""
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    for folder in FOLDERS_TO_INCLUDE:
-        src_folder = src_dir / folder
-        if src_folder.exists():
-            dest_folder = dest_dir / folder
-            shutil.copytree(src_folder, dest_folder, dirs_exist_ok=True)
-            print(f"  [COPY] {folder}")
-        else:
-            print(f"  [WARNING] {folder} not found in vault")
+    # Copy .obsidian folder
+    obsidian_src = src_dir / ".obsidian"
+    if obsidian_src.exists():
+        obsidian_dest = dest_dir / ".obsidian"
+        shutil.copytree(obsidian_src, obsidian_dest, dirs_exist_ok=True)
+        print(f"  [COPY] .obsidian")
+    else:
+        print(f"  [WARNING] .obsidian not found in vault")
+
+    # Copy selected subfolders from 900 Assets
+    assets_src = src_dir / "900 Assets"
+    if assets_src.exists():
+        assets_dest = dest_dir / "900 Assets"
+        assets_dest.mkdir(parents=True, exist_ok=True)
+        for subfolder in ASSETS_SUBFOLDERS:
+            subfolder_src = assets_src / subfolder
+            if subfolder_src.exists():
+                subfolder_dest = assets_dest / subfolder
+                shutil.copytree(subfolder_src, subfolder_dest, dirs_exist_ok=True)
+                print(f"  [COPY] 900 Assets/{subfolder}")
+            else:
+                print(f"  [WARNING] 900 Assets/{subfolder} not found in vault")
+    else:
+        print(f"  [WARNING] 900 Assets not found in vault")
 
 
 def create_zip(source_dir, output_file):
@@ -82,7 +98,8 @@ def main():
     print("\n" + "=" * 60)
     print("[Step 1] Copying folders...")
     print("=" * 60)
-    print(f"  Including: {', '.join(FOLDERS_TO_INCLUDE)}")
+    print(f"  Including: .obsidian")
+    print(f"            900 Assets/{', '.join(ASSETS_SUBFOLDERS)}")
     copy_folders(VAULT_PATH, TEMP_DIR)
 
     print("\n" + "=" * 60)
@@ -108,7 +125,7 @@ def main():
     print("=" * 60)
     print(f"  Output: {zip_path}")
     print(f"  Size:   {file_size_mb:.2f} MB")
-    print(f"  Contains: {', '.join(FOLDERS_TO_INCLUDE)}")
+    print(f"  Contains: .obsidian, 900 Assets/{', '.join(ASSETS_SUBFOLDERS)}")
     print("=" * 60)
 
     return 0
