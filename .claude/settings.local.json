@@ -21,7 +21,10 @@
       "Bash(yarn build:*)",
       "Bash(git check-ignore:*)",
       "Bash(git ls-tree:*)",
-      "Bash(git submodule status:*)"
+      "Bash(git submodule status:*)",
+      "Bash(tree:*)",
+      "Skill(dataviewjs)",
+      "Skill(dataviewjs:*)"
     ]
   }
 }

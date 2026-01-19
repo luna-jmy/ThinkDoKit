@@ -502,3 +502,7 @@ separator: " | "
 ```
 
 
+---
+
+`button-archiveJournal`
+

@@ -1,52 +1,103 @@
 ---
 created: <% tp.date.now("YYYY-MM-DD") %>
-area: 
+area:
 type: content-hub
 status: <% tp.system.suggester(["未开始/待启动","起草/构思中","执行中","暂停","完成","取消","归档"],["inbox","draft","active","on-hold","completed","cancelled","archived"], "请选择项目状态") %>
-due_date: 
+due_date:
 priority: <% tp.system.suggester(["最高","高","中","低","最低"],["1","2","3","4","5"],false,"请选择任务优先级") %>
 tags:
   - content-hub
-target_platform:
+mastery_level: <% tp.system.suggester(["入门","进阶","精通","专家"],["beginner","intermediate","advanced","expert"],false,"请选择掌握程度") %>
 ---
 
-# 领域: <% tp.file.title %>
+# 知识地图: <% tp.file.title %>
 
-## 领域描述
->*这个内容项目要达成什么目标？希望产生什么影响？*
+我来帮你把这个内容项目管理模板改造成领域知识hub模板。以下是改造后的版本：
 
-## 学习目标
->*你的内容是给谁看的？他们的需求是什么？*
-
-> [!info]- 项目状态与时间线
+> [!info]- 知识库状态
 状态: `=this.file.link.status`
 创建日期: `=this.file.link.date_created`
-预计完成日期: `=this.file.link.due_date`
+掌握程度: `=this.file.link.mastery_level`
+知识领域: `=this.file.link.area`
 
->*项目状态与时间线是自动链接笔记属性的行内代码，新建笔记有时不能正常更新内容，关闭笔记重新打开就好了。*
+## 领域概述
+>*这个知识领域涵盖什么内容？它的边界和范围是什么？*
+
+## 核心概念与框架
+### 基础概念
+- 
+
+### 核心理论
+- 
+
+### 重要模型
+- 
+
+## 知识结构
+### 分类体系
+```
+领域名称/
+├── 基础概念/
+├── 核心理论/
+├── 实践应用/
+├── 工具方法/
+└── 进阶主题/
+```
+
+### 知识图谱
+- 
+
+## 学习路径
+
+### 入门路径
+1. 
+2. 
+3. 
+
+### 进阶路径
+1. 
+2. 
+3. 
+
+### 专家路径
+1. 
+2. 
+3. 
 
 ## 相关笔记与资源
 
-### 灵感与想法
-- [[链接到相关的想法捕获笔记 1]]
-- [[链接到相关的想法捕获笔记 2]]
+### 基础知识
+- 
 
-### 相关内容研究
-- [[链接到相关内容研究笔记]]
+### 核心理论
+- 
 
-### 内容大纲
-- [[链接到相关内容大纲笔记]]
+### 实践案例
+- 
 
-### 章节草稿
-- [[链接到相关内容草稿]]
+### 工具资源
+- 
 
-### 反链列表
+### 外部资源
+- 
+
+## 知识网络
+
 ```dataview
-LIST
-FROM [[]]
-WHERE file.name != this.file.name
-SORT file.mtime DESC
+TABLE WITHOUT ID 
+	file.link as "相关笔记", 
+	file.mtime as "更新时间", 
+	file.folder as "位置" 
+FROM [[]] 
+WHERE file.name != this.file.name 
+SORT file.mtime 
+DESC 
+LIMIT 20
 ```
 
+---
 
+## 维护记录
+- `<% tp.date.now("YYYY-MM-DD") %>`: 创建知识地图
+- 
 

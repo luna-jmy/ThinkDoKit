@@ -60,6 +60,7 @@
     "读完时间": "date",
     "开始时间": "date",
     "priority": "number",
-    "excalidraw-embed-md": "checkbox"
+    "excalidraw-embed-md": "checkbox",
+    "excalidraw-export-internal-links": "checkbox"
   }
 }

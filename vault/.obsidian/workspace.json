@@ -4,39 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "6176137f0735b68a",
+        "id": "4509724f8bf84da7",
         "type": "tabs",
         "children": [
           {
-            "id": "e65728cd59c772d8",
+            "id": "dee8dcbaf7bb736d",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "👉从这里开始 Start from here!.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "👉从这里开始 Start from here!"
-            }
-          },
-          {
-            "id": "0a3292da382d9ccc",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "900 Assets/ThinkDoKit（知行盒子）使用指南.md",
+                "file": "900 Assets/920 Queries/按钮中心.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ThinkDoKit（知行盒子）使用指南"
+              "title": "按钮中心"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -93,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 221.5
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -157,6 +141,30 @@
               "icon": "timer",
               "title": "Timer"
             }
+          },
+          {
+            "id": "0a41c3f0682549ca",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "1f612d824505fa41",
+            "type": "leaf",
+            "state": {
+              "type": "review-queue-list-view",
+              "state": {},
+              "icon": "SpacedRepIcon",
+              "title": "笔记复习序列"
+            }
           }
         ]
       },
@@ -201,10 +209,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "900 Assets/ThinkDoKit（知行盒子）使用指南.md"
+                "file": "900 Assets/920 Queries/按钮中心.md"
               },
               "icon": "lucide-info",
-              "title": "ThinkDoKit（知行盒子）使用指南的笔记属性"
+              "title": "按钮中心的笔记属性"
             }
           },
           {
@@ -222,7 +230,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 248.5
+    "width": 248.5,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -249,41 +258,47 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "0a3292da382d9ccc",
+  "active": "dee8dcbaf7bb736d",
   "lastOpenFiles": [
-    "900 Assets/910 Templates/TPL-ContentHub.md",
+    "900 Assets/910 Templates/TPL-Monthly.md",
+    "900 Assets/950 Readme/【脚本说明】JournalArchive.md",
+    "900 Assets/950 Readme/【脚本说明】journal-section-summary.md",
+    "900 Assets/950 Readme/【脚本说明】random-quote.md",
+    "900 Assets/950 Readme/【脚本说明】SnapshotDataview（测试中）.md",
+    "900 Assets/ThinkDoKit 更新日志.md",
+    "900 Assets/960 Scripts/SnapshotDataview.js",
+    "900 Assets/910 Templates/TPL-Weekly.md",
+    "500 Journal/540 Daily/2026-01-03.md",
     "900 Assets/920 Queries/按钮中心.md",
+    "500 Journal/540 Daily/2026-01-01.md",
+    "500 Journal/540 Daily/2026-01-02.md",
+    "500 Journal/530 Weekly/2025-W27.md",
+    "900 Assets/960 Scripts/JournalArchive.js",
+    "900 Assets/960 Scripts/MonthlyArchive.js",
+    "900 Assets/950 Readme/【脚本说明】journal-section-summary.md.tmp.45412.1768837368101",
+    "500 Journal/530 Weekly/2026-W3.md",
+    "500 Journal/540 Daily/2026-01-16.md",
+    "500 Journal/540 Daily/2026-01-14.md",
+    "500 Journal/540 Daily/2026-01-15.md",
+    "500 Journal/540 Daily/2026-01-13.md",
+    "500 Journal/540 Daily/2026-01-12.md",
+    "900 Assets/910 Templates/TPL-Daily.md",
+    "900 Assets/960 Scripts/journal-section-summary.js",
+    "900 Assets/910 Templates/TPL-ContentOutline.md",
+    "900 Assets/910 Templates/TPL-Flashcard.md",
+    "900 Assets/910 Templates/TPL-ContentHub.md",
     "900 Assets/ThinkDoKit（知行盒子）使用指南.md",
     "900 Assets/920 Queries/项目中心（升级）.md",
-    "900 Assets/910 Templates/TPL-ContentOutline.md",
     "200 Areas/210 ContentHub/示例内容中心.md",
     "内容创作工作台设计.canvas",
     "100 Projects/202412测试/测试.md",
-    "100 Projects/快速项目/示例项目0.md",
     "知识管理工作台设计.canvas",
-    "900 Assets/910 Templates/TPL-NewNote.md",
-    "900 Assets/910 Templates/TPL-IdeaCapture.md",
-    "900 Assets/920 Queries/项目任务查询.md",
     "900 Assets/990 Attachments/unnamed (1) 1.png",
     "900 Assets/990 Attachments/unnamed (1).png",
     "900 Assets/990 Attachments/unnamed.png",
-    "900 Assets/ThinkDoKit 更新日志.md",
-    "900 Assets/✨快速入门小贴士 Tips.md",
-    "👉从这里开始 Start from here!.md",
-    "900 Assets/920 Queries/TaskCenterBlock.md",
-    "900 Assets/920 Queries/Keywords Query.md",
-    "900 Assets/920 Queries/Inbox清单中心.md",
-    "900 Assets/920 Queries/主页Tips.md",
     "900 Assets/920 Queries/笔记数据库.base",
-    "900 Assets/920 Queries/快捷按钮.md",
-    "900 Assets/920 Queries/快速开始.md",
-    "900 Assets/920 Queries/任务月历.md",
-    "900 Assets/920 Queries/任务中心.md",
-    "900 Assets/920 Queries/任务中心（手机）.md",
     "900 Assets/920 Queries/项目管理.base",
     "900 Assets/920 Queries/我的图书馆.base",
-    "900 Assets/920 Queries/我的书架.md",
-    "900 Assets/920 Queries/手机主页.md",
     "900 Assets/990 Attachments/Pasted image 20250704222000.png",
     "900 Assets/990 Attachments/Pasted image 20251006162419.png",
     "900 Assets/990 Attachments/Pasted image 20251006162514.png",
@@ -292,11 +307,6 @@
     "900 Assets/990 Attachments/Pasted image 20250704220404.png",
     "900 Assets/990 Attachments/Pasted image 20250705112725.png",
     "100 Projects/快速项目",
-    "900 Assets/960 Scripts/TabTaskView.js",
-    "900 Assets/960 Scripts/monthlyCalendar/view.js",
-    "900 Assets/960 Scripts/weeklyCalendar/view.js",
-    "900 Assets/960 Scripts/workdayCalendar/view.js",
-    "900 Assets/960 Scripts/monthlyCalendar",
-    "900 Assets/960 Scripts/weeklyCalendar"
+    "900 Assets/960 Scripts/TabTaskView.js"
   ]
 }

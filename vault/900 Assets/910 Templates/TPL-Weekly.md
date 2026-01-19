@@ -13,22 +13,25 @@ tags:
 # <% tp.file.title %> 周日志
 
 ## 🎯 本周焦点与目标
-> *提示: 可以是月度目标的细化，或独立周计划。*
+***上周提醒***：`$={const m=dv.current().file.name.match(/(\d{4})-W(\d+)/);const w=parseInt(m[2])-1;const y=w>0?parseInt(m[1]):parseInt(m[1])-1;const f=y+"-W"+(w>0?w:52).toString().padStart(2,"0");const p=dv.pages('"500 Journal/530 Weekly"').find(p=>p.file.name===f);p?p["下周需要调整的地方"]:"未找到"+f+"日志或字段"}`
+***上周展望***：`$={const m=dv.current().file.name.match(/(\d{4})-W(\d+)/);const w=parseInt(m[2])-1;const y=w>0?parseInt(m[1]):parseInt(m[1])-1;const f=y+"-W"+(w>0?w:52).toString().padStart(2,"0");const p=dv.pages('"500 Journal/530 Weekly"').find(p=>p.file.name===f);p?p["下周展望"]:"未找到"+f+"日志或字段"}`
 
-## 🚧 本周任务清单 
->*使用 Tasks 语法记录本周计划任务，并使用 Dataview 汇总相关任务。*
-- [ ] 
+## 🚧 本周计划
+`button-sweeklyPlan`
 
-## 🤔 周末回顾与总结
 
-- **本周亮点**:
-- **本周的关键进展**:
-- **遇到的问题/阻碍**:
-- **需要调整的地方**:
+## 上期未完成
+`button-staskRollover`
 
-## ✨下周展望
->*下周重点关注事项*
-- ...
+
+## 🤔 周末回顾与总结 
+`button-supdate`
+
+- [本周成就/亮点::]
+- [本周关键项目/计划进展::]
+- [本周遇到的挑战/问题::]
+- [下周需要调整的地方::]
+- [下周展望::]
 
 ## 🎥 娱乐放松 / 亲子
 >*户外、观影、游戏、煲剧等娱乐放松安排*
@@ -59,22 +62,24 @@ SORT file.ctime DESC
 limit 20
 ```
 
-## 📒 本周习惯记录
+## 📒 本周日志汇总
 
-```dataview
-TABLE WITHOUT ID
-	file.name as "📅",
-	🧠flashcard as "🧠✅",
-	💊medicine as "💊✅",
-	🧘‍♂️meditation as "🧘‍♂️✅",
-	🍽️fasting as "🍽️✅",
-	weight⚖️ as "⚖️⚖️",
-	exercise🕓 as "🏃🕓",
-	reading🕓 as "📖🕓"
-FROM "500 Journal/540 Daily"
-WHERE date(file.name) >= this.journal-date 
-	AND date(file.name) <= date(dateformat(date(this.journal-date + dur(6 days)), "yyyy-MM-dd"))
-SORT file.name ASC
+```dataviewjs
+dv.view("journal-section-summary", { 
+  sectionTitle: "### 打卡" 
+})
+```
+
+```dataviewjs
+dv.view("journal-section-summary", { 
+  sectionTitle: "### 数据记录" 
+})
+```
+
+```dataviewjs
+dv.view("journal-section-summary", { 
+  sectionTitle: "## ✍️ 今日小结与回顾" 
+})
 ```
 
 ## 🔄 本周任务跟踪回顾
@@ -132,13 +137,7 @@ separator: " | "
 
 ---
 
-```button
-name 一键归档🗄️本周日志
-type command
-action Templater: Insert 900 Assets/910 Templates/JS-WeeklyArchive.md
-remove true
-color purple
-```
+`button-archiveJournal`
 
 > *提示: 避免日志数量膨胀过快，建议按周或按月进行日志归档。*
 ---

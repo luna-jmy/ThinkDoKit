@@ -1067,6 +1067,26 @@
           }
         ]
       }
+    },
+    {
+      "id": "5abe02aa-5e18-4409-87f3-5ecccf95c2e2",
+      "name": "JournalArchive",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "JournalArchive",
+        "id": "1b45d4c1-4f8b-4c57-a989-f4685e47b0f0",
+        "commands": [
+          {
+            "name": "JournalArchive",
+            "type": "UserScript",
+            "id": "5e9164d0-57cf-4091-9ccf-91a941040427",
+            "path": "900 Assets/960 Scripts/JournalArchive.js",
+            "settings": {}
+          }
+        ]
+      }
     }
   ],
   "inputPrompt": "single-line",

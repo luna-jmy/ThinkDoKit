@@ -46,7 +46,7 @@ path does not include 500 Journal/540 Daily
 > *提示: 通过 `Tasks插件` 的快捷键 `Alt+t` 可以快速帮你在这里添加/编辑任务。也可以通过在任意笔记的任意位置使用 `QuickAdd: 📌 AddTodoToday` 随时添加今日待办*
 
 
-> *提示: 点击下方按钮👇可将前一日未完成的任务转移到此处。（需开启Rollover Daily Todos 插件）*
+> *提示: 点击下方按钮👇可将前一日未完成的任务转移到此处。*
 `button-staskRollover`
 
 
