@@ -939,26 +939,6 @@
       "runOnStartup": false
     },
     {
-      "id": "12625743-dc67-4689-97a4-71cdddf96ae7",
-      "name": "DeleteDemo",
-      "type": "Macro",
-      "command": true,
-      "macro": {
-        "id": "874757f9-3fa4-444a-92bd-da76c46fb20d",
-        "name": "DeleteDemo",
-        "commands": [
-          {
-            "name": "delete_demo",
-            "type": "UserScript",
-            "id": "22bdd7fc-f709-4c81-b557-600cc1cbae45",
-            "path": "900 Assets/960 Scripts/delete_demo.js",
-            "settings": {}
-          }
-        ]
-      },
-      "runOnStartup": false
-    },
-    {
       "id": "683afc1a-0144-45a6-8bcb-d1bcdc2aa115",
       "name": "Zettelkasten",
       "type": "Template",

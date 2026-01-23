@@ -8,6 +8,14 @@ tags:
   - journal/annual
 cssclasses:
   - matrix
+Finance: 1
+Social: 1
+FunRecreation: 1
+PersonalGrowth: 1
+HealthFitness: 1
+LoveRelationships: 1
+CareerWork: 1
+Spiritual: 1
 ---
 
 # <% tp.file.title %> 年度日志
@@ -27,6 +35,10 @@ cssclasses:
 > *提示1: 可以使用 Tasks 语法设定目标，方便年度/月度/周度回顾时追踪进度。*
 
 > *提示2: 可以根据生命之轮（Wheel of Life）从情绪健康、职业发展、亲密关系、身体健康、个人成长、休闲娱乐、社交生活、财务状况等8个维度设定年度目标。*
+
+```dataviewjs
+dv.view("wheel-of-life-interactive")
+```
 
 ## ✨ 年度高光时刻与挑战
 
@@ -64,100 +76,10 @@ SORT completion_date DESC
 汇总年度任务、笔记等数据。
 
 ```dataviewjs
-// 获取当前页面的journal-date.year属性，如果没有则使用当前年份
-const currentYear = dv.current()["journal-date"]?.year || new Date().getFullYear();
-
-// 查询指定年份的所有日记页面
-const pages = dv.pages('"500 Journal/540 Daily"')
-    .where(p => p.file.day && 
-           dv.date(p.file.day).year === currentYear);
-
-// 按月份分组并统计完成任务数
-const monthlyData = {};
-
-pages.forEach(page => {
-    // 获取页面的完成任务数
-    const completedTasks = page.file.tasks ? 
-        page.file.tasks.filter(t => t.status === "x").length : 0;
-    
-    // 格式化月份 (yyyy-MM)
-    const month = dv.date(page.file.day).toFormat("yyyy-MM");
-    
-    // 累加每月的完成任务数
-    if (monthlyData[month]) {
-        monthlyData[month] += completedTasks;
-    } else {
-        monthlyData[month] = completedTasks;
-    }
-});
-
-// 转换为图表数据格式并排序
-const chartData = Object.entries(monthlyData)
-    .map(([month, count]) => ({ month, count }))
-    .sort((a, b) => a.month.localeCompare(b.month));
-
-// 如果没有数据，显示提示信息
-if (chartData.length === 0) {
-    dv.paragraph(`**${currentYear}年暂无任务完成数据**`);
-} else {
-
-// 使用Charts插件渲染柱状图
-const chartConfig = {
-    type: 'bar',
-    data: {
-        labels: chartData.map(item => item.month),
-        datasets: [{
-            label: '完成任务数',
-            data: chartData.map(item => item.count),
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            title: {
-                display: true,
-                text: `${currentYear}年每月任务完成统计`
-            },
-            legend: {
-                display: true
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                },
-                title: {
-                    display: true,
-                    text: '完成任务数'
-                }
-            },
-            x: {
-                title: {
-                    display: true,
-                    text: '月份'
-                }
-            }
-        }
-    }
-};
-
-// 渲染图表
-window.renderChart(chartConfig, this.container);
-
-// 同时显示数据表格（可选）
-dv.paragraph("---");
-dv.header(3, "详细数据");
-dv.table(
-    ["月份", "完成任务数"],
-    chartData.map(item => [item.month, item.count])
-);
-}
+dv.view("annual-daily-task-stats")
 ```
+
+>*使用archive的日志计算，请将代码中的 `annual-daily-task-stats` 替换为 `weekly-archive-task-stats` （基于周志archive）或者 `monthly-archive-task-stats` （基于月志archive）*
 
 > *提示: 此 Dataview 示例统计每日完成任务数的月度汇总。*
 
@@ -189,10 +111,4 @@ separator: " | "
 ```
 
 
-### 生命之轮
-
-
-|                         |                                        |
-| ----------------------- | -------------------------------------- |
-| ![[生命之轮#Wheel of Life]] | ![[生命之轮#**说明**]]<br>![[生命之轮#**使用方法**]] |
 

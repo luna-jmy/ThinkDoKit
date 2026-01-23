@@ -57,24 +57,23 @@ path does not include 500 Journal/540 Daily
 
 ## 📈 习惯记录
 
-### 打卡（布尔值🔲✔️❌）
+### 每日打卡
 `button-tracker`
 - [💊medicine::]
 - [🧠flashcard::]
 - [🧘‍♂️meditation::]
 - [🍽️fasting::]
-
-### 数据记录（仅填写数值）
-%%图标单位含义：⚖️公斤kg；🕓分钟；⏳小时；📅日；💰元；💸万元；🧮次数%%
+%%（布尔值🔲✔️❌）%% 
+### 数据记录
 `button-data`
 - [weight⚖️::]
 - [exercise🕓::]
 - [reading🕓::]
 - [saving💰::]
 - [spent💰::]
-
+%%仅可填写数值；图标单位含义：⚖️公斤kg；🕓分钟；⏳小时；📅日；💰元；💸万元；🧮次数%%
 ## ✍️ 今日小结与回顾
-`button-supdate`
+`^button-supdate`
 - [今天最满意的事::]
 - [今天遇到的障碍或困难::]
 - [今天印象最深刻的事::]
