@@ -8,20 +8,63 @@
         "type": "tabs",
         "children": [
           {
-            "id": "dee8dcbaf7bb736d",
+            "id": "e7a7b303c61786dc",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "900 Assets/920 Queries/按钮中心.md",
+                "file": "900 Assets/ThinkDoKit 更新日志.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "按钮中心"
+              "title": "ThinkDoKit 更新日志"
+            }
+          },
+          {
+            "id": "e4a9d938fa8494ff",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "500 Journal/520 Monthly/2026-01.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-01"
+            }
+          },
+          {
+            "id": "2eb68fe87b2774d5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "900 Assets/950 Readme/【脚本说明】周日志归档任务统计.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "【脚本说明】周日志归档任务统计"
+            }
+          },
+          {
+            "id": "4a95afc4970b6d23",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "500 Journal/510 Annual/2026.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026"
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -179,13 +222,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "900 Assets/ThinkDoKit（知行盒子）使用指南.md",
+                "file": "500 Journal/510 Annual/2026.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "ThinkDoKit（知行盒子）使用指南 的大纲"
+              "title": "2026 的大纲"
             }
           },
           {
@@ -209,10 +252,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "900 Assets/920 Queries/按钮中心.md"
+                "file": "500 Journal/510 Annual/2026.md"
               },
               "icon": "lucide-info",
-              "title": "按钮中心的笔记属性"
+              "title": "2026的笔记属性"
             }
           },
           {
@@ -230,13 +273,11 @@
       }
     ],
     "direction": "horizontal",
-    "width": 248.5,
-    "collapsed": true
+    "width": 258.5
   },
   "left-ribbon": {
     "hiddenItems": {
       "bases:创建新数据库": false,
-      "obsidian-kanban:创建新看板": false,
       "homepage:Open homepage": false,
       "pomodoro-timer:Toggle timer panel": false,
       "obsidian-spaced-repetition:复习卡片": false,
@@ -258,55 +299,54 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "dee8dcbaf7bb736d",
+  "active": "4a95afc4970b6d23",
   "lastOpenFiles": [
-    "900 Assets/910 Templates/TPL-Monthly.md",
+    "500 Journal/520 Monthly/2026-01.md",
+    "500 Journal/510 Annual/2026.md",
+    "900 Assets/ThinkDoKit 更新日志.md",
+    "900 Assets/960 Scripts/monthly-archive-task-stats.js",
+    "500 Journal/530 Weekly/2026-W4.md",
+    "500 Journal/530 Weekly/2026-W1.md",
+    "500 Journal/530 Weekly/2026-W3.md",
+    "500 Journal/530 Weekly/2026-W2.md",
+    "900 Assets/950 Readme/【脚本说明】周日志归档任务统计.md",
+    "500 Journal/540 Daily/2025-12-29.md",
+    "500 Journal/540 Daily/2026-01-02.md",
+    "500 Journal/540 Daily/2026-01-23.md",
+    "500 Journal/540 Daily/2026-01-22.md",
+    "500 Journal/540 Daily/2026-01-20.md",
+    "500 Journal/540 Daily/2026-01-19.md",
+    "900 Assets/920 Queries/生命之轮.md",
+    "900 Assets/950 Readme/【脚本说明】交互式生命之轮.md",
+    "900 Assets/960 Scripts/wheel-of-life-interactive.js",
+    "500 Journal/540 Daily/2026-01-21.md",
+    "500 Journal/520 Monthly/2025-06.md",
+    "900 Assets/960 Scripts/weekly-archive-task-stats.js",
+    "900 Assets/950 Readme/【说明文档】Douban.md",
+    "900 Assets/950 Readme/【说明文档】Columns.md",
+    "900 Assets/950 Readme/【脚本说明】SnapshotDataview（测试中）.md",
+    "900 Assets/950 Readme/【脚本说明】random-quote.md",
     "900 Assets/950 Readme/【脚本说明】JournalArchive.md",
     "900 Assets/950 Readme/【脚本说明】journal-section-summary.md",
-    "900 Assets/950 Readme/【脚本说明】random-quote.md",
-    "900 Assets/950 Readme/【脚本说明】SnapshotDataview（测试中）.md",
-    "900 Assets/ThinkDoKit 更新日志.md",
-    "900 Assets/960 Scripts/SnapshotDataview.js",
-    "900 Assets/910 Templates/TPL-Weekly.md",
-    "500 Journal/540 Daily/2026-01-03.md",
     "900 Assets/920 Queries/按钮中心.md",
-    "500 Journal/540 Daily/2026-01-01.md",
-    "500 Journal/540 Daily/2026-01-02.md",
-    "500 Journal/530 Weekly/2025-W27.md",
+    "900 Assets/960 Scripts/SnapshotDataview.js",
     "900 Assets/960 Scripts/JournalArchive.js",
     "900 Assets/960 Scripts/MonthlyArchive.js",
     "900 Assets/950 Readme/【脚本说明】journal-section-summary.md.tmp.45412.1768837368101",
-    "500 Journal/530 Weekly/2026-W3.md",
-    "500 Journal/540 Daily/2026-01-16.md",
-    "500 Journal/540 Daily/2026-01-14.md",
-    "500 Journal/540 Daily/2026-01-15.md",
-    "500 Journal/540 Daily/2026-01-13.md",
-    "500 Journal/540 Daily/2026-01-12.md",
-    "900 Assets/910 Templates/TPL-Daily.md",
     "900 Assets/960 Scripts/journal-section-summary.js",
-    "900 Assets/910 Templates/TPL-ContentOutline.md",
-    "900 Assets/910 Templates/TPL-Flashcard.md",
-    "900 Assets/910 Templates/TPL-ContentHub.md",
-    "900 Assets/ThinkDoKit（知行盒子）使用指南.md",
-    "900 Assets/920 Queries/项目中心（升级）.md",
-    "200 Areas/210 ContentHub/示例内容中心.md",
     "内容创作工作台设计.canvas",
-    "100 Projects/202412测试/测试.md",
     "知识管理工作台设计.canvas",
     "900 Assets/990 Attachments/unnamed (1) 1.png",
     "900 Assets/990 Attachments/unnamed (1).png",
     "900 Assets/990 Attachments/unnamed.png",
     "900 Assets/920 Queries/笔记数据库.base",
     "900 Assets/920 Queries/项目管理.base",
-    "900 Assets/920 Queries/我的图书馆.base",
     "900 Assets/990 Attachments/Pasted image 20250704222000.png",
     "900 Assets/990 Attachments/Pasted image 20251006162419.png",
     "900 Assets/990 Attachments/Pasted image 20251006162514.png",
     "900 Assets/990 Attachments/s4208841.jpg",
     "900 Assets/990 Attachments/Pasted image 20250704220528.png",
     "900 Assets/990 Attachments/Pasted image 20250704220404.png",
-    "900 Assets/990 Attachments/Pasted image 20250705112725.png",
-    "100 Projects/快速项目",
-    "900 Assets/960 Scripts/TabTaskView.js"
+    "900 Assets/990 Attachments/Pasted image 20250705112725.png"
   ]
 }

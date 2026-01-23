@@ -105,7 +105,7 @@
           },
           "insertAfter": {
             "enabled": true,
-            "after": "### 🐸 今日待办",
+            "after": "`button-stodoToday`",
             "insertAtEnd": false,
             "considerSubsections": false,
             "createIfNotFound": false,
@@ -1083,6 +1083,26 @@
             "type": "UserScript",
             "id": "5e9164d0-57cf-4091-9ccf-91a941040427",
             "path": "900 Assets/960 Scripts/JournalArchive.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "9048c594-e33a-4e76-8f29-a962834acf3f",
+      "name": "Snapshot",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "Snapshot",
+        "id": "af411c7d-f488-4b47-bd8d-f1ac00d8143c",
+        "commands": [
+          {
+            "name": "SnapshotDataview",
+            "type": "UserScript",
+            "id": "bae9d25a-6abf-488e-8d57-442bdfd34f15",
+            "path": "900 Assets/960 Scripts/SnapshotDataview.js",
             "settings": {}
           }
         ]

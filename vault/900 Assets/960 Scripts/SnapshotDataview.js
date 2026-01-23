@@ -53,7 +53,7 @@ module.exports = async (params) => {
         }
 
         // 生成快照内容
-        const snapshotContent = await generateSnapshot(content, app);
+        const snapshotContent = await generateSnapshot(content, app, activeFile);
 
         if (!snapshotContent) {
             new Notice("❌ 生成快照失败");
@@ -88,28 +88,88 @@ module.exports = async (params) => {
 };
 
 // 生成快照内容
-async function generateSnapshot(content, app) {
+async function generateSnapshot(content, app, currentFile) {
     const DataviewAPI = app.plugins.plugins.dataview?.api;
     if (!DataviewAPI) {
         throw new Error("Dataview 插件未启用或未找到 API");
     }
 
-    // 处理 Dataview 查询块（DQL）
-    content = content.replace(/```dataview\n([\s\S]*?)```/g, async (match, query) => {
+    // 获取当前文件的frontmatter用于替换this.file
+    let currentFrontmatter = {};
+    if (currentFile) {
+        const fileMetadata = DataviewAPI.page(currentFile.path);
+        if (fileMetadata) {
+            currentFrontmatter = fileMetadata;
+        }
+    }
+
+    // 处理 Dataview 查询块（DQL）- 逐个匹配并异步替换
+    const dataviewRegex = /```dataview\n([\s\S]*?)```/g;
+    const replacements = [];
+
+    // 先收集所有匹配项
+    let match;
+    while ((match = dataviewRegex.exec(content)) !== null) {
+        const fullMatch = match[0];
+        const query = match[1];
+        const startIndex = match.index;
+
+        replacements.push({
+            startIndex,
+            length: fullMatch.length,
+            query,
+            fullMatch
+        });
+    }
+
+    // 按倒序处理替换（避免索引变化）
+    for (let i = replacements.length - 1; i >= 0; i--) {
+        const repl = replacements[i];
         try {
+            // 替换this引用为当前文件的frontmatter值
+            let query = repl.query;
+
+            // 替换 this.file.frontmatter["journal-date"] 为实际日期值
+            const journalDateMatch = query.match(/this\.file\.frontmatter\["journal-date"\]/g);
+            if (journalDateMatch && currentFrontmatter["journal-date"]) {
+                const dateValue = formatDataviewDate(currentFrontmatter["journal-date"]);
+                query = query.replace(/this\.file\.frontmatter\["journal-date"\]/g, `"${dateValue}"`);
+            }
+
+            // 替换 this.journal-date（直接引用frontmatter中的字段）
+            const thisJournalDateMatch = query.match(/this\.journal-date/g);
+            if (thisJournalDateMatch && currentFrontmatter["journal-date"]) {
+                const dateValue = formatDataviewDate(currentFrontmatter["journal-date"]);
+                query = query.replace(/this\.journal-date/g, `date("${dateValue}")`);
+            }
+
+            // 替换 this.file.path
+            query = query.replace(/this\.file\.path/g, `"${currentFile.path}"`);
+
             // 执行查询
             const result = await DataviewAPI.query(query);
 
-            if (!result || result.successful === false) {
-                return `\n> ⚠️ 查询失败: ${result?.error || '未知错误'}\n\n${query}\n`;
+            if (!result) {
+                const replacement = `\n> ⚠️ 查询失败: result is null/undefined\n> 原始查询:\n\`\`\`\n${repl.query}\n\`\`\`\n`;
+                content = content.slice(0, repl.startIndex) + replacement + content.slice(repl.startIndex + repl.length);
+            } else if (result.successful === false) {
+                const replacement = `\n> ⚠️ 查询失败: ${result.error || '未知错误'}\n> 替换后查询:\n\`\`\`\n${query}\n\`\`\`\n`;
+                content = content.slice(0, repl.startIndex) + replacement + content.slice(repl.startIndex + repl.length);
+            } else {
+                // 转换为 Markdown 表格
+                try {
+                    const replacement = queryResultToMarkdown(result.value);
+                    content = content.slice(0, repl.startIndex) + replacement + content.slice(repl.startIndex + repl.length);
+                } catch (formatError) {
+                    const replacement = `\n> ⚠️ 结果格式化失败: ${formatError.message}\n> result.value: ${JSON.stringify(result.value)}\n`;
+                    content = content.slice(0, repl.startIndex) + replacement + content.slice(repl.startIndex + repl.length);
+                }
             }
-
-            // 转换为 Markdown 表格
-            return queryResultToMarkdown(result.value);
         } catch (error) {
-            return `\n> ⚠️ 查询出错: ${error.message}\n\n${query}\n`;
+            const replacement = `\n> ⚠️ 查询异常: ${error.message}\n> Stack: ${error.stack}\n> 替换后查询:\n\`\`\`\n${repl.query}\n\`\`\`\n`;
+            content = content.slice(0, repl.startIndex) + replacement + content.slice(repl.startIndex + repl.length);
         }
-    });
+    }
 
     // 处理 DataviewJS 代码块
     content = content.replace(/```dataviewjs\n([\s\S]*?)```/g, (match, code) => {
@@ -127,14 +187,28 @@ async function generateSnapshot(content, app) {
         return match; // 保留复杂的内联表达式
     });
 
-    // 执行所有异步替换
-    for (let i = 0; i < 10; i++) { // 最多处理10轮
-        const newContent = await Promise.resolve(content);
-        if (newContent === content) break;
-        content = newContent;
+    return content;
+}
+
+// 格式化日期为Dataview可识别的格式
+function formatDataviewDate(dateValue) {
+    if (!dateValue) return "";
+
+    // 如果是日期对象
+    if (dateValue instanceof Date) {
+        return moment(dateValue).format("YYYY-MM-DD");
     }
 
-    return content;
+    // 如果是字符串
+    const dateStr = String(dateValue).trim();
+
+    // 尝试解析为日期
+    const date = moment(dateStr);
+    if (date.isValid()) {
+        return date.format("YYYY-MM-DD");
+    }
+
+    return dateStr;
 }
 
 // 将 Dataview 查询结果转换为 Markdown 表格
@@ -168,7 +242,11 @@ function resultToTable(result) {
 
     // 数据行
     for (const row of result.values) {
-        const formattedRow = row.map(cell => formatCell(cell));
+        const formattedRow = row.map(cell => {
+            const cellText = formatCell(cell);
+            // 转义表格中的管道符
+            return cellText.replace(/\|/g, "\\|");
+        });
         markdown += "| " + formattedRow.join(" | ") + " |\n";
     }
 
@@ -212,13 +290,18 @@ function resultToTaskList(result) {
 function formatCell(cell) {
     if (cell === null || cell === undefined) return "";
 
-    // 处理链接对象
-    if (typeof cell === "object" && cell.path) {
-        const display = cell.display || cell.path;
+    // 处理链接对象（Dataview Link类型）
+    if (cell && typeof cell === "object" && "path" in cell && "type" in cell && cell.type === "file") {
+        const display = cell.display || cell.path.split("/").pop();
         return `[[${cell.path}|${display}]]`;
     }
 
-    // 处理日期对象
+    // 处理日期对象（Dataview使用的luxon moment）
+    if (cell && typeof cell === "object" && "ts" in cell && "toFormat" in cell) {
+        return cell.toFormat("yyyy-MM-dd");
+    }
+
+    // 处理原生Date对象
     if (cell instanceof Date) {
         return moment(cell).format("YYYY-MM-DD");
     }
@@ -228,8 +311,12 @@ function formatCell(cell) {
         return cell.map(item => formatCell(item)).join(", ");
     }
 
-    // 处理对象
+    // 处理对象（不是链接和日期的情况）
     if (typeof cell === "object") {
+        // 尝试检查是否有toString方法
+        if (typeof cell.toString === "function" && cell.toString() !== "[object Object]") {
+            return cell.toString();
+        }
         return JSON.stringify(cell);
     }
 

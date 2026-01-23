@@ -244,6 +244,29 @@ async function collectData() {
   return { fields: Array.from(allFields).sort(), data };
 }
 
+// 生成Markdown表格字符串
+function generateMarkdownTable(headers, data) {
+  // 处理表头
+  const headerRow = `| ${headers.join(' | ')} |`;
+  const separatorRow = `| ${headers.map(() => '---').join(' | ')} |`;
+
+  // 处理数据行
+  const dataRows = data.map(row => {
+    const processedCells = row.map(cell => {
+      // 处理Obsidian链接对象
+      if (cell && typeof cell === 'object' && cell.displayText) {
+        return cell.displayText;
+      }
+      // 处理普通文本，转义表格特殊字符
+      const text = String(cell || '');
+      return text.replace(/\|/g, '\\|').replace(/\n/g, ' ');
+    });
+    return `| ${processedCells.join(' | ')} |`;
+  });
+
+  return [headerRow, separatorRow, ...dataRows].join('\n');
+}
+
 // 渲染汇总表格
 async function renderSummary() {
   if (dailyPages.length === 0) {
@@ -315,6 +338,40 @@ async function renderSummary() {
     style: "margin-top: 10px; font-size: 0.9em; color: var(--text-muted);"
   });
   dv.el("span", `📄 日志数量: ${data.length} | 📋 字段数量: ${fields.length}`, { container: stats });
+
+  // 添加导出按钮
+  const exportContainer = dv.el("div", "", {
+    style: "margin-top: 15px;"
+  });
+  const exportBtn = dv.el("button", "📋 导出Markdown表格", {
+    container: exportContainer,
+    attr: {
+      style: "padding: 8px 16px; background: var(--interactive-normal); color: var(--text-normal); border: 1px solid var(--background-modifier-border); border-radius: 4px; cursor: pointer;"
+    }
+  });
+
+  // 复制到剪贴板功能
+  exportBtn.onclick = async () => {
+    try {
+      const markdown = generateMarkdownTable(tableHeaders, tableData);
+      await navigator.clipboard.writeText(markdown);
+
+      // 按钮反馈
+      exportBtn.textContent = "✅ 已复制到剪贴板";
+      exportBtn.style.background = "var(--interactive-success)";
+
+      setTimeout(() => {
+        exportBtn.textContent = "📋 导出Markdown表格";
+        exportBtn.style.background = "var(--interactive-normal)";
+      }, 2000);
+    } catch (error) {
+      console.error("复制失败:", error);
+      exportBtn.textContent = "❌ 复制失败";
+      setTimeout(() => {
+        exportBtn.textContent = "📋 导出Markdown表格";
+      }, 2000);
+    }
+  };
 }
 
 // 执行渲染

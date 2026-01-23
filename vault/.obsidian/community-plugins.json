@@ -14,12 +14,12 @@
   "oz-clear-unused-images",
   "obsidian-day-planner",
   "table-editor-obsidian",
-  "obsidian-charts",
   "obsidian-douban-plugin",
   "obsidian-excalidraw-plugin",
   "pomodoro-timer",
   "workspaces-plus",
   "floating-toc",
   "obsidian-memos",
-  "quickadd"
+  "quickadd",
+  "obsidian-charts"
 ]

@@ -61,6 +61,9 @@
     "开始时间": "date",
     "priority": "number",
     "excalidraw-embed-md": "checkbox",
-    "excalidraw-export-internal-links": "checkbox"
+    "excalidraw-export-internal-links": "checkbox",
+    "Social": "number",
+    "Finance": "number",
+    "Spiritual": "number"
   }
 }
