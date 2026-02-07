@@ -12,7 +12,7 @@ trigger:
   - "book excerpt"
   - "书摘笔记"
   - "book note"
-  - "paragraph format"
+  - "book-excerpt-format"
 ---
 
 # 书摘整理技能 (Book Excerpt Processor)
@@ -23,8 +23,8 @@ trigger:
 
 ### 核心功能
 
-1. **段落格式化** - 在书摘段落之间添加空行，提高可读性
-2. **书摘格式化** - 将 txt 格式转换为 ThinkDoKit 标准格式
+1. **书摘格式化** - 将 txt 格式转换为 ThinkDoKit 标准格式
+2. **段落格式化** - 在书摘段落之间添加空行，提高可读性
 3. **日期提取** - 从书摘中提取第一条和最后一条日期（用于 BookInfo 笔记）
 4. **笔记创建** - 创建标准格式的书摘笔记
 5. **BookInfo 更新** - 更新 BookInfo 笔记的开始和结束时间
@@ -44,7 +44,7 @@ status: archived
 due_date:
 priority: 5
 tags:
-source:
+source: 微信读书
 keywords:
   - 关键词1
   - 关键词2
@@ -94,16 +94,17 @@ keywords:
 
 ## 工作流程
 
-### 步骤 1：段落格式化
+### 步骤 1：书摘格式化
 
-用户复制书摘后，调用段落格式化脚本：
+用户复制书摘后，粘贴到 Obsidian 笔记中，调用书摘格式化脚本：
 
 ```javascript
-// 调用 paragraph-format.js
+// 调用 book-excerpt-format.js
 // 在书摘段落之间添加空行
+// 确保 YAML header 和正文之间空两行
 ```
 
-**QuickAdd 命令：** `paragraph-format`
+**QuickAdd 命令：** `book-excerpt-format`
 
 ---
 
@@ -137,6 +138,33 @@ keywords:
 开始时间: 第一条书摘的日期
 读完时间: 最后一条书摘的日期
 ```
+
+---
+
+## QuickAdd 脚本
+
+### book-excerpt-format.js
+
+**位置：** `vault/900 Assets/960 Scripts/book-excerpt-format.js`
+
+**功能：**
+- 批量插入空行
+- 批量删除空行
+- 段落规整（智能判断）
+- 保留 YAML header
+- 书摘格式化
+
+**使用：**
+- 在 QuickAdd 中配置命令
+- 或通过 QuickAdd API 调用
+
+**与 paragraph-format.js 的区别：**
+
+| 特性 | paragraph-format.js | book-excerpt-format.js |
+|------|---------------------|----------------------|
+| YAML header 后空行 | 1 行 | 2 行（书摘格式需要） |
+| 其他功能 | 相同 | 相同 |
+| 主要用途 | 通用格式化 | 书摘专用 |
 
 ---
 
@@ -210,7 +238,7 @@ keywords:
 
 ### 空行规则
 
-在书摘段落之间添加一个空行：
+在书摘段落之间添加一个或两个空行（确保 YAML header 和正文之间空两行）：
 
 **转换前：**
 ```markdown
@@ -226,6 +254,16 @@ keywords:
 书摘内容2
 
 ----
+```
+
+**YAML header 后：**
+```yaml
+---
+
+created: 2026-02-07
+
+
+书摘内容1
 ```
 
 ---
@@ -286,6 +324,7 @@ keywords:
   - 决策
 ---
 
+
 《[[思考快与慢]]》（诺贝尔奖得主丹尼尔·卡尼曼经典之作），丹尼尔·卡尼曼
 
 书摘：
@@ -316,18 +355,6 @@ keywords:
 开始时间: 2026-02-07
 结束时间: 2026-02-08
 ```
-
----
-
-## QuickAdd 脚本
-
-### paragraph-format.js
-
-**位置：** `vault/900 Assets/960 Scripts/paragraph-format.js`
-
-**功能：** 在书摘段落之间添加空行
-
-**使用：** 在 QuickAdd 中配置命令，或通过 QuickAdd API 调用
 
 ---
 
@@ -386,9 +413,11 @@ BookInfo 笔记底部包含书摘链接：
 ### 2. 再创建书摘笔记
 
 1. 复制电子书阅读器书摘（txt）
-2. 调用段落格式化
-3. 创建书摘笔记到 `332 BookExcerpts/`
-4. 提取日期
+2. 粘贴到 Obsidian，创建新笔记
+3. 调用 `book-excerpt-format`，选择"段落规整"
+4. 添加元数据（YAML header）
+5. 创建到 `332 BookExcerpts/`
+6. 提取日期
 
 ### 3. 更新 BookInfo 笔记
 
@@ -407,6 +436,7 @@ BookInfo 笔记底部包含书摘链接：
 3. **关键词** - 每条书摘添加 `[keyword::关键词]` 标记
 4. **标签** - 每条书摘添加 `#content/类型` 标签
 5. **链接** - 确保 BookInfo 笔记中的书摘链接正确
+6. **YAML header** - 确保与正文之间空两行
 
 ---
 
@@ -415,6 +445,7 @@ BookInfo 笔记底部包含书摘链接：
 - **Douban 插件说明：** `vault/900 Assets/950 Readme/【说明文档】Douban.md`
 - **BookInfo 模板：** `vault/900 Assets/910 Templates/TPL-BookInfo.md`
 - **书摘示例：** `vault/300 Resources/330 Books/332 BookExcerpts/`
+- **段落格式化说明：** `vault/900 Assets/950 Readme/【脚本说明】paragraph-format.md`
 
 ---
 
@@ -441,6 +472,6 @@ module.exports = async (params) => {
 
 ---
 
-_版本：1.0_
-_创建日期：2026-02-07_
+_版本：2.0_
+_更新日期：2026-02-07_
 _维护者：Luna (Lunaの小爪牙) 🐾_
