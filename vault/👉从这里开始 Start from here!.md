@@ -78,7 +78,7 @@ await dv.view("year-timeline-1", { theYear: 2026, events: []})
 ## 任务日历
 
 ```dataviewjs
-await dv.view("900 Assets/960 Scripts/tabTaskView", {
+await dv.view("TabTaskView", {
     tabs: [
         { name: "工作日历", type: "calendar", calendar: "workdayCalendar" },
         { name: "周日历", type: "calendar", calendar: "weeklyCalendar" },

@@ -1,9 +1,15 @@
-
 # Obsidian cache
 .obsidian/cache/
 .obsidian/backup/
 .obsidian/plugins/remotely-save/
 .trash/
+
+# Obsidian workspace data (个人配置，不应提交)
+.obsidian/workspace*
+.obsidian/workspace-mobile*
+
+# Obsidian plugin data (自动生成的个人数据)
+.obsidian/*/data.json
 
 # OS
 .DS_Store
@@ -12,3 +18,23 @@ Thumbs.db
 # AI Tools
 .agent/
 .claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Releases (生成的分发包)
+releases/
+
+# Temp files
+*.tmp
+*.bak
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

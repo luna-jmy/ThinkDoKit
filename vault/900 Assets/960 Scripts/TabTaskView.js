@@ -122,6 +122,9 @@ async function renderTasksForTab(tab, container) {
 
     // 否则渲染任务列表视图
     renderTaskListView(tab, container);
+
+    // 添加点击监听，在任务状态变化后立即刷新
+    setupTaskClickHandler(tab, container);
 }
 
 /**
@@ -191,6 +194,24 @@ async function renderCalendarView(tab, container) {
     } catch (error) {
         container.innerHTML = `<p style="color: red; padding: 20px;">日历视图加载失败: ${error.message}</p>`;
     }
+}
+
+/**
+ * 设置任务点击处理器 - 在复选框点击后立即刷新
+ */
+function setupTaskClickHandler(tab, container) {
+    // 使用事件委托监听容器内的点击
+    container.addEventListener("click", (event) => {
+        // 检查点击的是否是复选框
+        const checkbox = event.target.closest('input[type="checkbox"]');
+        if (checkbox) {
+            // 复选框被点击了，延迟 300ms 让文件更新完成
+            setTimeout(() => {
+                // 清空容器并重新渲染
+                renderTaskListView(tab, container);
+            }, 300);
+        }
+    });
 }
 
 /**
@@ -273,46 +294,42 @@ async function renderTaskListView(tab, container) {
 
     // 渲染每个文件的任务
     for (const [filePath, fileTasks] of Object.entries(tasksByFile)) {
-        const fileName = filePath.split(/[/\\]/).pop().replace(".md", "");
-        const fileLink = `[[${filePath}|📄 ${fileName}]]`;
-
-        // 文件标题
-        const fileHeader = dv.el("div", "", { container: container });
-        fileHeader.style.cssText = `
-            margin-top: 15px;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: var(--background-secondary);
-            border-radius: 4px;
-            font-weight: bold;
-            max-width: 100%;
-            width: 100%;
-            box-sizing: border-box;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-        `;
-
-        dv.el("span", `📁 ${fileLink} (${fileTasks.length})`, { container: fileHeader });
-
-        // 创建任务列表容器
+        // 创建任务列表容器（不创建文件标题，让 dv.taskList 自己处理分组）
         const taskListWrapper = dv.el("div", "", { container: container });
         taskListWrapper.style.cssText = `
-            margin-left: 20px;
+            margin-top: 15px;
             max-width: 100%;
             overflow-x: auto;
             word-wrap: break-word;
             overflow-wrap: break-word;
         `;
 
-        // 构建 Markdown 任务列表字符串
-        let markdownTasks = "";
-        fileTasks.forEach(task => {
-            // 获取任务的 Markdown 原始文本（包含状态符号）
-            const status = task.status || " ";
-            markdownTasks += `- [${status}] ${task.text}\n`;
-        });
+        // 临时切换容器到 taskListWrapper，让 dv.taskList() 渲染到正确位置
+        const originalContainer = dv.container;
+        const beforeCount = dv.container.children.length;
+        dv.container = taskListWrapper;
 
-        // 使用 Obsidian 的 Markdown 渲染器渲染任务
-        await dv.paragraph(markdownTasks, { container: taskListWrapper });
+        // 使用 dv.taskList() 渲染任务 - 这样复选框会自动同步到原始文件
+        // 不设置 hideFilePath 和 groupByFile，让它使用默认的文件分组显示
+        dv.taskList(fileTasks);
+
+        // 恢复原始容器
+        dv.container = originalContainer;
+
+        // 等待渲染完成，然后将任务移动到正确容器（处理模式切换问题）
+        setTimeout(() => {
+            // 检查是否有新增元素被添加到了原始容器
+            const newElements = [];
+            for (let i = beforeCount; i < originalContainer.children.length; i++) {
+                newElements.push(originalContainer.children[i]);
+            }
+
+            // 将这些元素移动到 taskListWrapper
+            newElements.forEach(el => {
+                if (el) {
+                    taskListWrapper.appendChild(el);
+                }
+            });
+        }, 50);
     }
 }

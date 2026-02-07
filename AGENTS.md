@@ -2,8 +2,6 @@
 
 ## Available Skills
 
-The following skills are available for specialized tasks:
-
 | Skill | Description | When to Use |
 |-------|-------------|-------------|
 | `/dataviewjs` | DataviewJS API usage and visualization patterns | Writing/modifying DataviewJS scripts, working with `dv` object, Dataview queries |
@@ -14,41 +12,18 @@ The following skills are available for specialized tasks:
 
 ---
 
-## Project Overview
-
-ThinkDoKit (知行盒子) is an Obsidian vault template distribution project for Personal Knowledge Management (PKM). The repository contains packaging scripts and the vault content itself.
-
-**Project Type**: Obsidian vault distribution with Python packaging utilities
-**Languages**: Python (scripts), JavaScript (Obsidian/Dataview plugins)
-**Target**: Obsidian users seeking a structured PKM system
-
----
-
 ## Build & Run Commands
 
-### Python Packaging Scripts
 ```bash
-# Create full distribution (includes .obsidian, 900 Assets, empty folder structure)
-python scripts/pack-full.py
-
-# Create lite distribution (includes .obsidian, selected 900 Assets subfolders)
-python scripts/pack-lite.py
-
-# Create demo distribution (complete vault excluding .trash/)
-python scripts/pack-demo.py
+# Python packaging scripts
+python scripts/pack-full.py   # Full distribution (.obsidian + 900 Assets + empty folders)
+python scripts/pack-lite.py   # Lite distribution (.obsidian + selected 900 Assets subfolders)
+python scripts/pack-demo.py   # Demo distribution (complete vault excluding .trash/)
 ```
 
-### Running Scripts
-All scripts are standalone executables. They auto-detect paths based on their location in `scripts/` folder.
+**Testing**: Manual testing only. Run scripts locally, verify output in `releases/` directory, extract and test in Obsidian.
 
-### Testing
-No test framework configured. Manual testing:
-1. Run packaging scripts locally
-2. Verify output in `releases/` directory
-3. Extract and test vault in Obsidian
-
-### Linting
-No linting configured. Maintain code style manually (see guidelines below).
+**Linting**: None configured. Maintain code style manually.
 
 ---
 
@@ -56,39 +31,33 @@ No linting configured. Maintain code style manually (see guidelines below).
 
 ### Python Scripts
 
-#### Import Style
 ```python
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-import os
 import shutil
 import zipfile
 from pathlib import Path
 from datetime import datetime
 
-# Third-party imports (if any)
-# Local imports (if any)
+# Configuration constants
+VERSION = "1.2.0"
+TARGET = f"ThinkDoKit-Full-{VERSION}.zip"
+
+# Auto-detect paths based on script location
+SCRIPT_DIR = Path(__file__).parent.resolve()
+PROJECT_ROOT = SCRIPT_DIR.parent
+VAULT_PATH = PROJECT_ROOT / "vault"
 ```
 
-- Group imports: stdlib → third-party → local
-- One import per line
-- No wildcard imports
-- Use specific module imports (e.g., `from pathlib import Path`)
+**Imports**: Group stdlib → third-party → local. One per line. No wildcards.
+**Naming**: `snake_case` for variables/functions, `UPPER_SNAKE_CASE` for constants.
+**Formatting**: 4-space indentation, double quotes, f-strings for interpolation.
+**Paths**: Always use `pathlib.Path`, never `os.path`.
+**Error handling**: Wrap operations in try-except, log technical details.
+**Output**: Use section dividers (`"=" * 60`), 2-space indents for continuation.
 
-#### Naming Conventions
-- **Variables/Functions**: `snake_case` (e.g., `temp_dir`, `create_zip`)
-- **Constants**: `UPPER_SNAKE_CASE` (e.g., `VERSION`, `TARGET`)
-- **Classes**: `PascalCase` (rarely used)
-
-#### Formatting
-- **Indentation**: 4 spaces
-- **Quotes**: Double quotes for strings
-- **Line length**: Prefer under 80 chars when practical
-- **Blank lines**: 2 blank lines before top-level functions
-
-#### Functions
 ```python
 def create_folder_structure(dest_dir):
     """Create fixed empty folder structure"""
@@ -98,46 +67,11 @@ def create_folder_structure(dest_dir):
         print(f"  [CREATE] {folder}")
 ```
 
-- Docstring on single line for simple functions
-- Use `pathlib.Path` for all path operations (not `os.path`)
-- Use f-strings for string formatting
-
-#### Error Handling
-```python
-try:
-    await navigator.clipboard.writeText(text);
-except err:
-    console.error('复制失败:', err);
-```
-
-- Wrap operations that may fail in try-except
-- Provide user-friendly error messages
-- Log technical details to console
-
-#### Output Messages
-```python
-print("=" * 60)
-print("ThinkDoKit Full Packaging Tool")
-print(f"Version: {VERSION}")
-print("=" * 60)
-print(f"\nDetected paths:")
-print(f"  Script:   {SCRIPT_DIR}")
-```
-
-- Use section dividers (`"=" * 60`) for major sections
-- Use 2-space indent for continuation lines
-- Include timestamps/sizes in output
-
 ---
 
-### JavaScript Scripts (Obsidian/Dataview)
+### JavaScript/Dataview Scripts
 
-#### Global Objects Available
-- `dv` - Dataview API instance
-- `app` - Obsidian app instance
-- `input` - Configuration object passed from calling code
-
-#### Config Pattern
+**Dataview Pattern**:
 ```javascript
 let config = {
   folder: "300 Resources/330 Books/332 BookExcerpts",
@@ -145,35 +79,36 @@ let config = {
   quoteTemplate: "> {quote}\n>\n> — *{source}*"
 };
 
-// Override with input if provided
 if (input !== undefined) {
   config = { ...config, ...input };
 }
 ```
 
-- Define default config object
-- Use spread operator to merge input
-- Support partial config override
+**QuickAdd Pattern**:
+```javascript
+module.exports = async (params) => {
+    const { quickAddApi, app } = params;
+    // implementation
+};
+```
 
-#### Naming Conventions
-- **Variables**: `camelCase` (e.g., `tabButton`, `refreshTimeout`)
-- **Constants**: `UPPER_SNAKE_CASE` (rare)
-- **Functions**: `camelCase` (e.g., `formatBookName`, `copyToClipboard`)
-- **Event handlers**: Descriptive (e.g., `onclick`, `addEventListener`)
+**Global Objects**:
+- `dv` - Dataview API instance (Dataview scripts)
+- `app` - Obsidian app instance
+- `quickAddApi` - QuickAdd API (QuickAdd scripts)
+- `input` - Optional configuration object
 
-#### Formatting
-- **Indentation**: 2 spaces (JavaScript standard)
-- **Quotes**: Single quotes for strings, template literals for multiline
-- **Semicolons**: Required (always use)
+**Naming**: `camelCase` for variables/functions.
+**Formatting**: 2-space indentation, single quotes for strings, semicolons required.
+**Async**: Always use `async/await` for file operations and API calls.
 
-#### Functions
 ```javascript
 async function displayRandomQuote(container, config) {
   try {
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
-    // ... logic
+    // logic
   } catch (error) {
     const errorMessage = config.errorTemplate.replace('{error}', error.message);
     dv.paragraph(errorMessage, container);
@@ -181,43 +116,14 @@ async function displayRandomQuote(container, config) {
 }
 ```
 
-- Use `async/await` for asynchronous operations
-- Wrap async code in try-catch
-- Use `const` for variables that don't change, `let` for those that do
-
-#### DOM Manipulation
+**DOM Manipulation** (Dataview):
 ```javascript
 const container = dv.el('div', '');
-const buttonContainer = dv.el('div', '', { cls: 'button-container' });
-
-buttonContainer.style.cssText = "display: flex; gap: 5px;";
-
-const button = dv.el('button', 'Refresh', { container: buttonContainer });
-button.onclick = function() {
-  // handler logic
-};
+const button = dv.el('button', 'Refresh', { container });
+button.onclick = function() { /* handler */ };
 ```
 
-- Use `dv.el()` for creating elements (Obsidian API)
-- Use inline styles via `cssText` for simplicity
-- Store element references for later manipulation
-
-#### Comments
-```javascript
-// Single-line comment for code logic
-/**
- * Multi-line comment for complex functions
- * Explains the purpose and behavior
- */
-function complexFunction() {
-  // User-facing text in Chinese
-  const message = "已复制到剪贴板";
-}
-```
-
-- English comments for code logic
-- Chinese text for user-facing messages
-- JSDoc-style for function documentation
+**Comments**: English for code logic, Chinese for user-facing text.
 
 ---
 
@@ -242,19 +148,17 @@ ThinkDoKit/
 │       ├── 910 Templates/
 │       ├── 920 Queries/
 │       ├── 950 Readme/
-│       └── 960 Scripts/    # Dataview JS scripts
+│       └── 960 Scripts/    # Dataview JS and QuickAdd scripts
 ├── releases/            # Generated ZIP distributions
-├── .github/             # GitHub workflows
-└── AGENTS.md           # This file
+└── .github/             # GitHub workflows
 ```
 
 ---
 
 ## Common Patterns
 
-### Python: Path Operations
+### Python: Path Detection
 ```python
-# Auto-detect paths based on script location
 SCRIPT_DIR = Path(__file__).parent.resolve()
 PROJECT_ROOT = SCRIPT_DIR.parent
 VAULT_PATH = PROJECT_ROOT / "vault"
@@ -262,90 +166,70 @@ VAULT_PATH = PROJECT_ROOT / "vault"
 
 ### Python: ZIP Creation
 ```python
-def create_zip(source_dir, output_file):
-    with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(source_dir):
-            for file in files:
-                file_path = Path(root) / file
-                arcname = file_path.relative_to(source_dir)
-                zipf.write(file_path, arcname)
+with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    for root, dirs, files in os.walk(source_dir):
+        for file in files:
+            file_path = Path(root) / file
+            arcname = file_path.relative_to(source_dir)
+            zipf.write(file_path, arcname)
 ```
 
 ### JavaScript: Dataview Queries
 ```javascript
 const pages = dv.pages('"300 Resources/330 Books"')
     .where(p => p.file.tags.includes('#content/金句'));
-
-const tasks = dv.pages().file.tasks
-    .where(t => !t.tags.includes('#exclude'));
 ```
 
-### JavaScript: Tab Interface Pattern
+### JavaScript: File Operations (QuickAdd)
 ```javascript
-// Create tab container
-const container = dv.el('div', '');
-
-// Tab buttons
-const tabs.forEach((tab, index) => {
-  const button = dv.el('button', tab.name, {
-    container: tabBar,
-    cls: 'tab-button'
-  });
-
-  button.onclick = async () => {
-    // Show/hide content
-    // Update active state
-  };
-});
+const file = app.vault.getAbstractFileByPath(path);
+const content = await app.vault.read(file);
+await app.vault.modify(activeFile, updatedContent);
 ```
 
 ---
 
 ## Important Notes
 
-1. **No dependencies**: Python scripts use only stdlib. No `requirements.txt` needed.
-2. **Versioning**: Update `VERSION` constant in all pack scripts when making releases.
-3. **Path handling**: Always use `pathlib.Path` in Python scripts for cross-platform compatibility.
-4. **Chinese support**: All user-facing text in Chinese, code comments in English.
-5. **Script location**: Packaging scripts expect to be in `scripts/` folder relative to project root.
-6. **Output directory**: Generated ZIPs go to `releases/` folder (auto-created if missing).
-7. **Temporary files**: Packaging scripts create temp directories and clean them up automatically.
+1. **No Python dependencies**: Scripts use only stdlib. No `requirements.txt`.
+2. **Versioning**: Update `VERSION` constant in all pack scripts for releases.
+3. **Path handling**: Use `pathlib.Path` for cross-platform compatibility.
+4. **Language**: User-facing text in Chinese, code comments in English.
+5. **Script location**: Packaging scripts expect to be in `scripts/` folder.
+6. **Output**: Generated ZIPs go to `releases/` folder (auto-created).
+7. **Temp cleanup**: Scripts create temp directories and clean up automatically.
 
 ---
 
-## Workflow for Adding New Scripts
+## Workflow for Adding Scripts
 
 ### Python Packaging Script
 1. Copy existing pack script (e.g., `pack-full.py`)
 2. Update `VERSION` and `TARGET` constants
-3. Modify folder selection logic as needed
-4. Test with `python scripts/pack-newscript.py`
-5. Verify output ZIP in `releases/` directory
+3. Modify folder selection logic
+4. Test: `python scripts/pack-newscript.py`
+5. Verify ZIP in `releases/` directory
 
-### JavaScript Dataview Script
-1. Create new `.js` file in `vault/900 Assets/960 Scripts/`
-2. Follow config pattern with defaults
-3. Use `dv` and `app` globals as needed
-4. Handle errors gracefully with user messages
+### Dataview Script
+1. Create `.js` file in `vault/900 Assets/960 Scripts/`
+2. Define config object with defaults
+3. Use `dv` and `app` globals
+4. Handle errors with user messages
 5. Test in Obsidian via Dataview code block
 6. Document usage in `vault/900 Assets/950 Readme/` if complex
 
-**Reference**: Use `/dataviewjs` skill for DataviewJS API patterns and examples
-
 ### QuickAdd Script
-1. Create new `.js` file in `vault/900 Assets/960 Scripts/`
-2. Use `quickAddApi` for user input and `app.vault` for file operations
-3. Follow async/await pattern for file operations
-4. Handle errors gracefully with user feedback
-5. Test via QuickAdd macro or command
-6. Document usage in `vault/900 Assets/950 Readme/` if complex
-
-**Reference**: Use `/quickadd` skill for QuickAdd API patterns and examples
+1. Create `.js` file in `vault/900 Assets/960 Scripts/`
+2. Use `module.exports = async (params) =>`
+3. Use `quickAddApi` for input, `app.vault` for file operations
+4. Follow async/await pattern
+5. Handle errors gracefully
+6. Test via QuickAdd macro/command
 
 ---
 
 ## GitHub Integration
 
-The repository uses OpenCode workflow for GitHub issue/PR automation. Triggered by `/oc` or `/opencode` commands in issue comments.
+Uses OpenCode workflow for GitHub issue/PR automation. Triggered by `/oc` or `/opencode` in issue comments.
 
 **Model**: `siliconflow-cn/zai-org/GLM-4.6` (configured in `.github/workflows/opencode.yml`)
