@@ -20,37 +20,8 @@
               "icon": "lucide-file",
               "title": "ThinkDoKit 更新日志"
             }
-          },
-          {
-            "id": "220dbf116a98b90d",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "900 Assets/920 Queries/任务中心.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "任务中心"
-            }
-          },
-          {
-            "id": "31b73da3e419db78",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "👉从这里开始 Start from here!.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "👉从这里开始 Start from here!"
-            }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -107,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 367.5
+    "width": 200
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -124,8 +95,8 @@
             "state": {
               "type": "journal-calendar",
               "state": {},
-              "icon": "calendar-days",
-              "title": "Calendar"
+              "icon": "lucide-ghost",
+              "title": "journal-calendar"
             }
           },
           {
@@ -194,6 +165,36 @@
               "icon": "SpacedRepIcon",
               "title": "笔记复习序列"
             }
+          },
+          {
+            "id": "d2ba6a555288c81d",
+            "type": "leaf",
+            "state": {
+              "type": "review-queue-list-view",
+              "state": {},
+              "icon": "SpacedRepIcon",
+              "title": "笔记复习序列"
+            }
+          },
+          {
+            "id": "0f7362ad9427d882",
+            "type": "leaf",
+            "state": {
+              "type": "journal-calendar",
+              "state": {},
+              "icon": "calendar-days",
+              "title": "Calendar"
+            }
+          },
+          {
+            "id": "87cb0312d79dce5a",
+            "type": "leaf",
+            "state": {
+              "type": "planner-timeline",
+              "state": {},
+              "icon": "calendar-with-checkmark",
+              "title": "Timeline"
+            }
           }
         ],
         "currentTab": 5
@@ -239,10 +240,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "900 Assets/920 Queries/任务中心.md"
+                "file": "900 Assets/ThinkDoKit 更新日志.md"
               },
               "icon": "lucide-info",
-              "title": "任务中心的笔记属性"
+              "title": "ThinkDoKit 更新日志的笔记属性"
             }
           },
           {
@@ -251,8 +252,8 @@
             "state": {
               "type": "planner-timeline",
               "state": {},
-              "icon": "calendar-with-checkmark",
-              "title": "Timeline"
+              "icon": "lucide-ghost",
+              "title": "planner-timeline"
             }
           }
         ],
@@ -265,11 +266,6 @@
   "left-ribbon": {
     "hiddenItems": {
       "bases:创建新数据库": false,
-      "homepage:Open homepage": false,
-      "pomodoro-timer:Toggle timer panel": false,
-      "obsidian-spaced-repetition:复习卡片": false,
-      "table-editor-obsidian:Advanced Tables Toolbar": false,
-      "obsidian-excalidraw-plugin:新建绘图文件": false,
       "graph:查看关系图谱": false,
       "canvas:新建白板": false,
       "daily-notes:打开/创建今天的日记": false,
@@ -279,16 +275,24 @@
       "random-note:开始漫游笔记": false,
       "audio-recorder:开始/结束录音": false,
       "workspaces:管理工作区布局": false,
-      "templater-obsidian:Templater": false,
       "switcher:打开快速切换": false,
+      "templater-obsidian:Templater": false,
+      "obsidian-spaced-repetition:复习卡片": false,
+      "homepage:Open homepage": false,
       "obsidian-day-planner:Open Timeline": false,
       "obsidian-day-planner:Open Multi-Day View": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "obsidian-excalidraw-plugin:新建绘图文件": false,
+      "pomodoro-timer:Toggle timer panel": false,
       "obsidian-memos:Thino": false
     }
   },
-  "active": "220dbf116a98b90d",
+  "active": "e7a7b303c61786dc",
   "lastOpenFiles": [
     "👉从这里开始 Start from here!.md",
+    "500 Journal/540 Daily/2026-02-17.md",
+    "900 Assets/920 Queries/项目中心（升级）.md",
+    "900 Assets/920 Queries/项目任务查询.md",
     "900 Assets/920 Queries/任务中心.md",
     "900 Assets/ThinkDoKit 更新日志.md",
     "000 Inbox/🧪 DataviewJS Tabs 最终结论.md",
@@ -314,10 +318,7 @@
     "500 Journal/540 Daily/2026-01-20.md",
     "900 Assets/960 Scripts/dynamic-chart-kanban3.js",
     "900 Assets/960 Scripts/dynamic-chart.js",
-    "500 Journal/510 Annual/2026.md",
-    "900 Assets/950 Readme/【脚本说明】周日志归档任务统计.md",
     "900 Assets/960 Scripts/annual-daily-task-stats.js",
-    "900 Assets/920 Queries/生命之轮.md",
     "900 Assets/960 Scripts/monthly-archive-task-stats.js",
     "900 Assets/960 Scripts/wheel-of-life-interactive.js",
     "900 Assets/960 Scripts/weekly-archive-task-stats.js",

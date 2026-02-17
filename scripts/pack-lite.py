@@ -57,7 +57,7 @@ def copy_folders(src_dir, dest_dir):
 
 def create_zip(source_dir, output_file):
     """Create ZIP archive from directory"""
-    with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as zipf:
         for root, _, files in os.walk(source_dir):
             for file in files:
                 file_path = Path(root) / file
