@@ -23,7 +23,7 @@ RELEASES_DIR = PROJECT_ROOT / "releases"
 
 def create_zip(source_dir, output_file):
     """Create ZIP archive from directory, excluding specified directories"""
-    with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as zipf:
         # Walk through all directories and files
         for root, dirs, files in os.walk(source_dir):
             # Filter out excluded directories in-place
