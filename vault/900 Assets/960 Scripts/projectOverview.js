@@ -49,28 +49,40 @@ if (currentPage.status && !config.statusOverride) {
     config.status = currentPage.status;
 }
 
-const filterStart = currentPage.start_date || null;
-const filterEnd = currentPage.due_date || null;
+let filterStart = currentPage.start_date || null;
+let filterEnd = currentPage.due_date || null;
 const currentNoteArea = currentPage.area;
 
-// 设置默认日期范围（1年前到1年后）
+// 标记当前笔记是否设置了日期范围
+const hasExplicitDateRange = filterStart || filterEnd;
+
+// 设置默认日期范围（1年前到1年后）- 仅用于交互式筛选器的初始值
+let defaultFilterStart, defaultFilterEnd;
 if (!filterStart) {
     const now = new Date();
     const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-    filterStart = dv.date(toLocalDateString(oneYearAgo));
+    defaultFilterStart = dv.date(toLocalDateString(oneYearAgo));
+} else {
+    defaultFilterStart = dv.date(filterStart);
 }
 if (!filterEnd) {
     const now = new Date();
     const oneYearLater = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-    filterEnd = dv.date(toLocalDateString(oneYearLater));
+    defaultFilterEnd = dv.date(toLocalDateString(oneYearLater));
+} else {
+    defaultFilterEnd = dv.date(filterEnd);
 }
+
+// 用于筛选的实际值
+const effectiveFilterStart = filterStart ? dv.date(filterStart) : null;
+const effectiveFilterEnd = filterEnd ? dv.date(filterEnd) : null;
 
 // 创建筛选控制面板
 function createFilterBar(container) {
     // 初始化日期范围（只在第一次）
     if (!config.filterStart || !config.filterEnd) {
-        config.filterStart = filterStart;
-        config.filterEnd = filterEnd;
+        config.filterStart = defaultFilterStart;
+        config.filterEnd = defaultFilterEnd;
     }
 
     const filterBar = container.createEl("div", {
@@ -271,8 +283,6 @@ function renderQuickProjectList(projectFiles, title, containerEl) {
     const filteredProjectFiles = projectFiles.filter(projectFile => {
         const status = projectFile.status || "";
         const projectArea = projectFile.area || null;
-        const startDate = projectFile.start_date;
-        const endDate = projectFile.due_date || projectFile.end_date;
         const projectName = projectFile.file.name.toLowerCase();
 
         // 搜索筛选
@@ -281,7 +291,7 @@ function renderQuickProjectList(projectFiles, title, containerEl) {
         }
 
         // status 筛选
-        const completedStatuses = ["completed", "完成", "done", "archived", "归档"];
+        const completedStatuses = ["completed", "完成", "done", "archived", "归档", "cancelled", "取消"];
         const isCompleted = completedStatuses.includes(status);
 
         if (config.status === "hide") {
@@ -308,10 +318,21 @@ function renderQuickProjectList(projectFiles, title, containerEl) {
             }
         }
 
-        // 日期筛选
-        let shouldDisplay = false;
+        // 日期筛选 - 快速项目也需要根据当前笔记日期范围筛选
+        // 如果是长期项目（long-term: true），跳过日期筛选
+        if (projectFile["long-term"] === true) {
+            return true;
+        }
+
+        const startDate = projectFile.start_date;
+        const endDate = projectFile.due_date || projectFile.end_date;
+
+        // 如果当前笔记没有设置任何日期范围，显示全部项目
+        if (!hasExplicitDateRange) {
+            return true;
+        }
+
         // 将日期转换为 DateTime 对象进行比较
-        // Dataview 的日期字段可能是 DateTime 对象、Link 对象或字符串
         let startDateObj = null;
         let endDateObj = null;
 
@@ -322,25 +343,48 @@ function renderQuickProjectList(projectFiles, title, containerEl) {
             endDateObj = dv.date(endDate);
         }
 
-        // 使用时间戳进行比较，确保类型一致
-        const filterStartTime = config.filterStart.toMillis();
-        const filterEndTime = config.filterEnd.toMillis();
+        // 如果当前笔记只有 start_date 没有 due_date
+        if (effectiveFilterStart && !effectiveFilterEnd) {
+            const filterStartTime = effectiveFilterStart.toMillis();
+            // 显示所有 start_date >= filterStart 的项目
+            if (startDateObj) {
+                return startDateObj.toMillis() >= filterStartTime;
+            } else if (endDateObj) {
+                return endDateObj.toMillis() >= filterStartTime;
+            }
+            return true;
+        }
+        // 如果当前笔记有完整的日期范围（start_date 和 due_date 都有）
+        else if (effectiveFilterStart && effectiveFilterEnd) {
+            const filterStartTime = effectiveFilterStart.toMillis();
+            const filterEndTime = effectiveFilterEnd.toMillis();
 
-        if (startDateObj && endDateObj) {
-            const startTime = startDateObj.toMillis();
-            const endTime = endDateObj.toMillis();
-            shouldDisplay = (startTime <= filterEndTime && endTime >= filterStartTime);
-        } else if (startDateObj) {
-            const startTime = startDateObj.toMillis();
-            shouldDisplay = (startTime >= filterStartTime && startTime <= filterEndTime);
-        } else if (endDateObj) {
-            const endTime = endDateObj.toMillis();
-            shouldDisplay = (endTime >= filterStartTime && endTime <= filterEndTime);
-        } else {
-            shouldDisplay = true;
+            if (startDateObj && endDateObj) {
+                const startTime = startDateObj.toMillis();
+                const endTime = endDateObj.toMillis();
+                return (startTime <= filterEndTime && endTime >= filterStartTime);
+            } else if (startDateObj) {
+                const startTime = startDateObj.toMillis();
+                return (startTime >= filterStartTime && startTime <= filterEndTime);
+            } else if (endDateObj) {
+                const endTime = endDateObj.toMillis();
+                return (endTime >= filterStartTime && endTime <= filterEndTime);
+            }
+            return true;
+        }
+        // 如果当前笔记只有 due_date 没有 start_date
+        else if (!effectiveFilterStart && effectiveFilterEnd) {
+            const filterEndTime = effectiveFilterEnd.toMillis();
+            // 显示所有 end_date <= filterEnd 或 start_date <= filterEnd 的项目
+            if (startDateObj) {
+                return startDateObj.toMillis() <= filterEndTime;
+            } else if (endDateObj) {
+                return endDateObj.toMillis() <= filterEndTime;
+            }
+            return true;
         }
 
-        return shouldDisplay;
+        return true;
     });
 
     if (filteredProjectFiles.length === 0) {
@@ -419,8 +463,9 @@ function renderQuickProjectList(projectFiles, title, containerEl) {
 }
 
 // 渲染正常项目卡片
-function renderNormalProjectCard(folderPath, projectFiles, allNotesInFolder, containerEl) {
-    const hasMultipleProjects = projectFiles.length > 1;
+function renderNormalProjectCard(folderPath, projectFiles, allProjectFiles, allNotesInFolder, containerEl) {
+    const hasMultipleProjects = allProjectFiles.length > 1;
+    const hasExplicitMainProject = allProjectFiles.some(p => p["main-project"] === true);
     const projectFile = projectFiles[0];
 
     let projectName, startDate, endDate, status, priority, progress, projectArea;
@@ -438,7 +483,7 @@ function renderNormalProjectCard(folderPath, projectFiles, allNotesInFolder, con
         return false;
     }
 
-    const completedStatuses = ["completed", "完成", "done", "archived", "归档"];
+    const completedStatuses = ["completed", "完成", "done", "archived", "归档", "cancelled", "取消"];
     const isCompleted = completedStatuses.includes(status);
 
     if (config.status === "hide") {
@@ -464,35 +509,84 @@ function renderNormalProjectCard(folderPath, projectFiles, allNotesInFolder, con
         }
     }
 
+    // 多项目文件夹检查：如果有多个项目笔记且当前不是主项目，则作为普通笔记处理
+    if (hasMultipleProjects) {
+        // 检查当前项目是否有 main-project: true
+        const isMainProject = projectFile["main-project"] === true;
+        // 检查是否有其他项目标记为 main-project: true
+        const hasMainProject = projectFiles.some(p => p["main-project"] === true);
+        // 如果有其他主项目且当前不是主项目，则不显示为项目卡片（作为普通笔记）
+        if (hasMainProject && !isMainProject) {
+            return false;
+        }
+    }
+
     let shouldDisplay = false;
-    // 将日期转换为 DateTime 对象进行比较
-    // Dataview 的日期字段可能是 DateTime 对象、Link 对象或字符串
-    let startDateObj = null;
-    let endDateObj = null;
 
-    if (startDate) {
-        startDateObj = dv.date(startDate);
-    }
-    if (endDate) {
-        endDateObj = dv.date(endDate);
-    }
-
-    // 使用时间戳进行比较，确保类型一致
-    const filterStartTime = config.filterStart.toMillis();
-    const filterEndTime = config.filterEnd.toMillis();
-
-    if (startDateObj && endDateObj) {
-        const startTime = startDateObj.toMillis();
-        const endTime = endDateObj.toMillis();
-        shouldDisplay = (startTime <= filterEndTime && endTime >= filterStartTime);
-    } else if (startDateObj) {
-        const startTime = startDateObj.toMillis();
-        shouldDisplay = (startTime >= filterStartTime && startTime <= filterEndTime);
-    } else if (endDateObj) {
-        const endTime = endDateObj.toMillis();
-        shouldDisplay = (endTime >= filterStartTime && endTime <= filterEndTime);
-    } else {
+    // 如果是长期项目（long-term: true），跳过日期筛选直接显示
+    if (projectFile["long-term"] === true) {
         shouldDisplay = true;
+    } else {
+        // 将日期转换为 DateTime 对象进行比较
+        // Dataview 的日期字段可能是 DateTime 对象、Link 对象或字符串
+        let startDateObj = null;
+        let endDateObj = null;
+
+        if (startDate) {
+            startDateObj = dv.date(startDate);
+        }
+        if (endDate) {
+            endDateObj = dv.date(endDate);
+        }
+
+        // 如果当前笔记没有设置任何日期范围，显示全部项目
+        if (!hasExplicitDateRange) {
+            shouldDisplay = true;
+        }
+        // 如果当前笔记只有 start_date 没有 due_date
+        else if (effectiveFilterStart && !effectiveFilterEnd) {
+            const filterStartTime = effectiveFilterStart.toMillis();
+            // 显示所有 start_date >= filterStart 的项目
+            if (startDateObj) {
+                shouldDisplay = startDateObj.toMillis() >= filterStartTime;
+            } else if (endDateObj) {
+                // 如果没有 start_date 但有 end_date，显示 end_date >= filterStart 的项目
+                shouldDisplay = endDateObj.toMillis() >= filterStartTime;
+            } else {
+                shouldDisplay = true;
+            }
+        }
+        // 如果当前笔记有完整的日期范围（start_date 和 due_date 都有）
+        else if (effectiveFilterStart && effectiveFilterEnd) {
+            const filterStartTime = effectiveFilterStart.toMillis();
+            const filterEndTime = effectiveFilterEnd.toMillis();
+
+            if (startDateObj && endDateObj) {
+                const startTime = startDateObj.toMillis();
+                const endTime = endDateObj.toMillis();
+                shouldDisplay = (startTime <= filterEndTime && endTime >= filterStartTime);
+            } else if (startDateObj) {
+                const startTime = startDateObj.toMillis();
+                shouldDisplay = (startTime >= filterStartTime && startTime <= filterEndTime);
+            } else if (endDateObj) {
+                const endTime = endDateObj.toMillis();
+                shouldDisplay = (endTime >= filterStartTime && endTime <= filterEndTime);
+            } else {
+                shouldDisplay = true;
+            }
+        }
+        // 如果当前笔记只有 due_date 没有 start_date
+        else if (!effectiveFilterStart && effectiveFilterEnd) {
+            const filterEndTime = effectiveFilterEnd.toMillis();
+            // 显示所有 end_date <= filterEnd 或 start_date <= filterEnd 的项目
+            if (startDateObj) {
+                shouldDisplay = startDateObj.toMillis() <= filterEndTime;
+            } else if (endDateObj) {
+                shouldDisplay = endDateObj.toMillis() <= filterEndTime;
+            } else {
+                shouldDisplay = true;
+            }
+        }
     }
 
     if (!shouldDisplay) return false;
@@ -520,12 +614,13 @@ function renderNormalProjectCard(folderPath, projectFiles, allNotesInFolder, con
         attr: { style: "display: flex; gap: 5px; margin-top: 5px;" }
     });
 
-    if (hasMultipleProjects) {
+    // 只有当有多个项目且没有明确指定主项目时，才显示警告徽章
+    if (hasMultipleProjects && !hasExplicitMainProject) {
         const warningBadge = badgesWrapper.createEl("span", {
             cls: "project-status",
             attr: { style: "margin: 0; background: rgba(255, 150, 0, 0.2);" }
         });
-        warningBadge.textContent = `⚠️ ${projectFiles.length}个主文档`;
+        warningBadge.textContent = `⚠️ ${allProjectFiles.length}个项目文档`;
     }
 
     if (priority) {
@@ -576,9 +671,15 @@ function renderNormalProjectCard(folderPath, projectFiles, allNotesInFolder, con
     }
 
     const notesDiv = card.createEl("div", { cls: "project-notes" });
-    const notesList = allNotesInFolder.filter(n =>
-        n.type !== "project" && n.file.folder === folderPath
-    );
+    // 筛选笔记：包括普通笔记，以及同一文件夹中非主项目的其他项目文档
+    const notesList = allNotesInFolder.filter(n => {
+        if (n.file.folder !== folderPath) return false;
+        // 如果是项目文档，只包含那些不是当前主项目的其他项目
+        if (n.type === "project") {
+            return n.file.path !== projectFile.file.path;
+        }
+        return true;
+    });
 
     if (notesList.length > 0) {
         const ul = notesDiv.createEl("ul");
@@ -750,9 +851,18 @@ function renderProjects(container) {
 
     const sortedNormalProjects = Array.from(normalProjects.entries())
         .map(([folderPath, projectFiles]) => {
-            const mainProject = projectFiles[0];
+            // 处理多项目文件夹：如果文件夹中有多个项目且其中一个标记为 main-project: true
+            // 则只将该主项目作为代表显示
+            let displayProjects = projectFiles;
+            if (projectFiles.length > 1) {
+                const mainProject = projectFiles.find(p => p["main-project"] === true);
+                if (mainProject) {
+                    displayProjects = [mainProject];
+                }
+            }
+            const mainProject = displayProjects[0];
             const sortDate = mainProject.due_date || mainProject.end_date || null;
-            return { folderPath, projectFiles, sortDate };
+            return { folderPath, projectFiles: displayProjects, allProjectFiles: projectFiles, sortDate };
         })
         .sort((a, b) => {
             if (a.sortDate && b.sortDate) {
@@ -763,9 +873,9 @@ function renderProjects(container) {
             return a.folderPath.localeCompare(b.folderPath);
         });
 
-    sortedNormalProjects.forEach(({ folderPath, projectFiles }) => {
+    sortedNormalProjects.forEach(({ folderPath, projectFiles, allProjectFiles }) => {
         const notesInFolder = folderNotesMap.get(folderPath) || [];
-        const rendered = renderNormalProjectCard(folderPath, projectFiles, notesInFolder, normalGrid);
+        const rendered = renderNormalProjectCard(folderPath, projectFiles, allProjectFiles, notesInFolder, normalGrid);
         if (rendered) displayedNormalProjects++;
     });
 
@@ -777,13 +887,22 @@ function renderProjects(container) {
         empty.textContent = "📭 没有符合筛选条件的项目";
     }
 
-    const filterStartFormatted = config.filterStart.toFormat("yyyy-MM-dd");
-    const filterEndFormatted = config.filterEnd.toFormat("yyyy-MM-dd");
+    // 根据当前笔记的日期设置显示日期范围
+    let dateRangeText;
+    if (!hasExplicitDateRange) {
+        dateRangeText = "全部时间";
+    } else if (effectiveFilterStart && !effectiveFilterEnd) {
+        dateRangeText = `${effectiveFilterStart.toFormat("yyyy-MM-dd")} 之后`;
+    } else if (!effectiveFilterStart && effectiveFilterEnd) {
+        dateRangeText = `${effectiveFilterEnd.toFormat("yyyy-MM-dd")} 之前`;
+    } else {
+        dateRangeText = `${effectiveFilterStart.toFormat("yyyy-MM-dd")} ~ ${effectiveFilterEnd.toFormat("yyyy-MM-dd")}`;
+    }
 
     const summary = projectsContainer.createEl("p", {
         attr: { style: "color: var(--text-muted); margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--background-modifier-border);" }
     });
-    summary.textContent = `📊 共 ${displayedNormalProjects} 个项目，${displayedQuickProjects} 个快速项目 (${filterStartFormatted} ~ ${filterEndFormatted})`;
+    summary.textContent = `📊 共 ${displayedNormalProjects} 个项目，${displayedQuickProjects} 个快速项目 (${dateRangeText})`;
 }
 
 // 创建主容器

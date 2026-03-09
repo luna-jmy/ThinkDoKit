@@ -1,50 +1,180 @@
 {
   "choices": [
     {
-      "id": "01d6d2f3-19e2-498a-83f6-585394196c96",
-      "name": "快速添加",
+      "id": "c97a717c-2196-4a19-a581-22b69ce884b1",
+      "name": "QuickFunctions",
       "type": "Multi",
       "command": false,
       "choices": [
         {
-          "id": "e2081068-0deb-4fe7-89fd-92edf0bef8a1",
-          "name": "⏳ AddDayPlanner",
-          "type": "Capture",
+          "id": "b70a4374-7425-4d5a-aa47-2ec968edcddb",
+          "name": "AddGanttChart",
+          "type": "Macro",
           "command": true,
-          "appendLink": false,
-          "captureTo": "",
-          "captureToActiveFile": true,
-          "createFileIfItDoesntExist": {
-            "enabled": false,
-            "createWithTemplate": false,
-            "template": ""
+          "macro": {
+            "id": "716ab7c3-988f-47e6-88d5-2fa03efdba4d",
+            "name": "AddGanttChart",
+            "commands": [
+              {
+                "name": "gantt-with-svg-export2",
+                "type": "UserScript",
+                "id": "99800be9-4473-4726-be5a-578f9c4ae061",
+                "path": "900 Assets/960 Scripts/gantt-with-svg-export2.js",
+                "settings": {}
+              }
+            ]
           },
-          "format": {
-            "enabled": true,
-            "format": "\n- 09:00 - 10:00\n- 10:00 - 11:00\n- 11:00 - 12:00\n- 12:00 - 13:00 \n- 13:00 - 14:00\n- 14:00 - 15:00\n- 15:00 - 16:00\n- 16:00 - 17:00\n- 17:00 - 17:30 "
+          "runOnStartup": false
+        },
+        {
+          "id": "25a00424-eb1b-4a90-8ebc-da0183d36488",
+          "name": "UpdateInlineField",
+          "type": "Macro",
+          "command": true,
+          "macro": {
+            "id": "907a2f51-0bb0-448a-aed4-85d64e920d0b",
+            "name": "UpdateInlineField",
+            "commands": [
+              {
+                "name": "InlineFieldUpdate",
+                "type": "UserScript",
+                "id": "0929db75-6065-4075-bcfe-00442ec5ac4e",
+                "path": "900 Assets/960 Scripts/InlineFieldUpdate.js",
+                "settings": {}
+              }
+            ]
           },
-          "insertAfter": {
-            "enabled": true,
-            "after": "`button-sdayPlanner`",
-            "insertAtEnd": false,
-            "considerSubsections": false,
-            "createIfNotFound": false,
-            "createIfNotFoundLocation": "cursor"
+          "runOnStartup": false
+        },
+        {
+          "id": "de720c59-42be-49de-a6f1-fcafe28a5cb8",
+          "name": "🗑️ ClearReminder",
+          "type": "Macro",
+          "command": true,
+          "macro": {
+            "id": "30a7b4cd-158c-47a5-a784-aa9e9de341ac",
+            "name": "Macro-ClearReminder",
+            "commands": [
+              {
+                "name": "ClearReminder",
+                "type": "UserScript",
+                "id": "d5fc8db5-dfa5-4d11-9d3d-15259d32197f",
+                "path": "900 Assets/960 Scripts/ClearReminder.js",
+                "settings": {}
+              }
+            ]
           },
-          "newLineCapture": {
-            "enabled": false,
-            "direction": "below"
+          "runOnStartup": false
+        },
+        {
+          "id": "2c121d5a-5a5f-4578-bd96-2bbf2bd85f57",
+          "name": "ParagraphFormatting",
+          "type": "Macro",
+          "command": true,
+          "macro": {
+            "id": "6ecf3993-3b31-4f87-b338-efe4f301ea53",
+            "name": "ParagraphFormatting",
+            "commands": [
+              {
+                "name": "Paragraph-formatting",
+                "type": "UserScript",
+                "id": "377faaa3-b007-4017-abb7-b0012e13f0cc",
+                "path": "900 Assets/960 Scripts/Paragraph-formatting.js",
+                "settings": {}
+              }
+            ]
           },
-          "prepend": false,
-          "task": false,
-          "openFile": false,
-          "fileOpening": {
-            "location": "tab",
-            "direction": "vertical",
-            "mode": "default",
-            "focus": true
+          "runOnStartup": false
+        },
+        {
+          "id": "78b15697-e4c5-4eae-8435-e3c501a0f970",
+          "name": "YAMLHeaderUpdate",
+          "type": "Macro",
+          "command": true,
+          "macro": {
+            "id": "3523a06b-361a-4d44-8ee0-c2b09d319c5f",
+            "name": "YAMLHeaderUpdate",
+            "commands": [
+              {
+                "name": "YAMLHeaderUpdater4",
+                "type": "UserScript",
+                "id": "1090509e-1154-49a4-9a30-8f2da6851e12",
+                "path": "900 Assets/960 Scripts/YAMLHeaderUpdater4.js",
+                "settings": {}
+              }
+            ]
+          },
+          "runOnStartup": false
+        },
+        {
+          "id": "26acc0d2-ee2e-4040-a0d2-f46f75c6b94c",
+          "name": "JournalArchive",
+          "type": "Macro",
+          "command": true,
+          "runOnStartup": false,
+          "macro": {
+            "name": "JournalArchive",
+            "id": "f8cbdb26-9bb2-4ec9-9ed5-2fe7ddcc1e9d",
+            "commands": [
+              {
+                "name": "JournalArchive",
+                "type": "UserScript",
+                "id": "da1148d6-4aaa-4107-b0bd-c3f3cd02a390",
+                "path": "900 Assets/960 Scripts/JournalArchive.js",
+                "settings": {}
+              }
+            ]
           }
         },
+        {
+          "id": "60a8c253-1b3f-4124-adc0-8f52149404d8",
+          "name": "ClearEmptyFolder",
+          "type": "Macro",
+          "command": true,
+          "macro": {
+            "id": "ac7cfeb4-a763-4636-bd68-cf41942f38a6",
+            "name": "ClearEmptyFolder",
+            "commands": [
+              {
+                "name": "ClearEmptyFolder",
+                "type": "UserScript",
+                "id": "655efc34-c6a0-430d-96db-1b0231d7622e",
+                "path": "900 Assets/960 Scripts/ClearEmptyFolder.js",
+                "settings": {}
+              }
+            ]
+          },
+          "runOnStartup": false
+        },
+        {
+          "id": "77a81ea4-3608-48a2-b77b-97208d029124",
+          "name": "TaskRollover",
+          "type": "Macro",
+          "command": true,
+          "macro": {
+            "id": "0460da23-683d-466f-b1b3-c1df57ed86bc",
+            "name": "TaskRollover",
+            "commands": [
+              {
+                "name": "journal_tasks_rolling",
+                "type": "UserScript",
+                "id": "2d8cfbe9-0b54-4b39-808d-fd2ac97daee0",
+                "path": "900 Assets/960 Scripts/journal_tasks_rolling.js",
+                "settings": {}
+              }
+            ]
+          },
+          "runOnStartup": false
+        }
+      ],
+      "collapsed": true
+    },
+    {
+      "id": "01d6d2f3-19e2-498a-83f6-585394196c96",
+      "name": "QuickCapture",
+      "type": "Multi",
+      "command": false,
+      "choices": [
         {
           "id": "74470b26-dcad-4505-8ae8-67d4c4c30035",
           "name": "📅 AddDateToday",
@@ -101,7 +231,7 @@
           },
           "format": {
             "enabled": true,
-            "format": "- [ ] {{VALUE: 请输入要加入今日待办的任务}} ➕ {{date:YYYY-MM-DD}} 📅 {{date:YYYY-MM-DD}} #inbox \n"
+            "format": "{{VALUE: 请输入要加入今日待办的任务}} ➕ {{date:YYYY-MM-DD}} 📅 {{date:YYYY-MM-DD}} #inbox  "
           },
           "insertAfter": {
             "enabled": true,
@@ -112,7 +242,7 @@
             "createIfNotFoundLocation": "top"
           },
           "prepend": false,
-          "task": false,
+          "task": true,
           "openFileInNewTab": {
             "enabled": false,
             "direction": "vertical",
@@ -125,7 +255,8 @@
             "direction": "vertical",
             "focus": true,
             "mode": "default"
-          }
+          },
+          "activeFileWritePosition": "cursor"
         },
         {
           "id": "1ce42736-66cb-4a0c-8d0a-ed91097a46e9",
@@ -183,7 +314,7 @@
           },
           "format": {
             "enabled": true,
-            "format": "- [ ] {{value: 输入计划观看的电影名称}} #to-watch #film ➕ {{date:YYYY-MM-DD}}\n"
+            "format": "- {{value: 输入计划观看的电影/电视剧/动漫名称}} #to-watch ➕ {{date:YYYY-MM-DD}}\n"
           },
           "insertAfter": {
             "enabled": false,
@@ -251,8 +382,8 @@
           }
         },
         {
-          "id": "8e04693b-d6e1-4793-ba71-9ada20daeea5",
-          "name": "📖 AddBookToRead",
+          "id": "e6019dfd-1a13-4866-b4b3-12e9cd61f8d9",
+          "name": "⏳ AddDayPlanner",
           "type": "Capture",
           "command": true,
           "appendLink": false,
@@ -265,11 +396,50 @@
           },
           "format": {
             "enabled": true,
-            "format": "- [ ] {{value: 输入计划阅读的书籍名称}} #to-read ➕ {{date:YYYY-MM-DD}}\n"
+            "format": "\n- 09:00 - 10:00\n- 10:00 - 11:00\n- 11:00 - 12:00\n- 12:00 - 13:00 午休 & 冥想\n- 13:00 - 14:00\n- 14:00 - 15:00\n- 15:00 - 16:00\n- 16:00 - 17:00\n- 17:00 - 17:30 今日复盘&明日规划\n"
           },
           "insertAfter": {
+            "enabled": true,
+            "after": "`button-sdayPlanner`",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "cursor"
+          },
+          "newLineCapture": {
             "enabled": false,
-            "after": "",
+            "direction": "below"
+          },
+          "prepend": false,
+          "task": false,
+          "openFile": false,
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "mode": "default",
+            "focus": true
+          }
+        },
+        {
+          "id": "7bbc2a85-5095-4280-9b36-89a726a39fec",
+          "name": "🏷️ AddProjectMetadata",
+          "type": "Capture",
+          "command": false,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": ">🎯 目标 (Goal): 项目期望达成的具体成果: <% tp.frontmatter.goal %>\n>🏁 状态 (Status): <% tp.frontmatter.status %>\n>📅 截止日期 (Deadline): <% tp.frontmatter.due_date %>\n>🌱 所属领域 (Area): <% tp.frontmatter.area %>"
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "> [!info]- 项目元数据 (Metadata)",
             "insertAtEnd": false,
             "considerSubsections": false,
             "createIfNotFound": false,
@@ -289,14 +459,179 @@
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "activeFileWritePosition": "cursor"
+        },
+        {
+          "id": "ddf99b9d-42ca-457a-ae9b-2c9234c7fcd6",
+          "name": "添加本月重点",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "{{VALUE: 请输入本月重点}} ➕ {{date:YYYY-MM-DD}} "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "`button-smonthlyReminder`",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "top"
+          },
+          "prepend": false,
+          "task": true,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        },
+        {
+          "id": "e7464c00-b5b4-4d3d-8023-147cb02925cf",
+          "name": "添加本月目标",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "{{VALUE: 请输入本月目标}} ➕ {{date:YYYY-MM-DD}} "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "`button-smonthlyGoal`",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "top"
+          },
+          "prepend": false,
+          "task": true,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        },
+        {
+          "id": "290dbc6e-674f-4798-afc4-cc75b6425584",
+          "name": "添加娱乐",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "{{VALUE: 请输入内容}} ➕ {{date:YYYY-MM-DD}} "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "## 🎥 娱乐放松 / 亲子",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "cursor"
+          },
+          "prepend": false,
+          "task": true,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        },
+        {
+          "id": "6d372f32-8837-4cfd-b9f3-733c1aa1d2d1",
+          "name": "添加周计划",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "{{VALUE: 请输入本周计划}} ➕ {{date:YYYY-MM-DD}} "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "`button-sweeklyPlan`",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "top"
+          },
+          "prepend": false,
+          "task": true,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
           }
         }
       ],
-      "collapsed": false
+      "collapsed": true
     },
     {
       "id": "5b5ac9fe-eb8e-410a-bb32-2c8bc241ad39",
-      "name": "快速创建",
+      "name": "QuickCreation",
       "type": "Multi",
       "command": false,
       "choices": [
@@ -348,8 +683,8 @@
               {
                 "name": "Zettelkasten",
                 "type": "Choice",
-                "id": "7647d62b-1852-4565-98b2-5dd306d1243b",
-                "choiceId": "683afc1a-0144-45a6-8bcb-d1bcdc2aa115"
+                "id": "a0b50dfc-2252-4507-8e67-b7ae56d31636",
+                "choiceId": "19544603-a84a-4222-bfaa-55a3a1d9f317"
               },
               {
                 "name": "Wait",
@@ -452,7 +787,7 @@
           "folder": {
             "enabled": true,
             "folders": [
-              "200 Areas/220 ContentCreation/221 ContentIdeas"
+              "300 Resources/370 MyContent/ContentIdeas"
             ],
             "chooseWhenCreatingNote": false,
             "createInSameFolderAsActiveFile": false,
@@ -488,7 +823,7 @@
           "folder": {
             "enabled": true,
             "folders": [
-              "200 Areas/220 ContentCreation/222 ContentOutline"
+              "300 Resources/370 MyContent/ContentOutline"
             ],
             "chooseWhenCreatingNote": false,
             "createInSameFolderAsActiveFile": false,
@@ -524,7 +859,7 @@
           "folder": {
             "enabled": true,
             "folders": [
-              "200 Areas/210 ContentHub"
+              "300 Resources/370 MyContent"
             ],
             "chooseWhenCreatingNote": false,
             "createInSameFolderAsActiveFile": false,
@@ -560,79 +895,7 @@
           "folder": {
             "enabled": true,
             "folders": [
-              "300 Resources/370 Memos/371 WorkMemos"
-            ],
-            "chooseWhenCreatingNote": false,
-            "createInSameFolderAsActiveFile": false,
-            "chooseFromSubfolders": false
-          },
-          "appendLink": false,
-          "openFileInNewTab": {
-            "enabled": false,
-            "direction": "vertical",
-            "focus": true
-          },
-          "openFile": true,
-          "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
-          "fileOpening": {
-            "location": "tab",
-            "direction": "vertical",
-            "focus": true,
-            "mode": "default"
-          }
-        },
-        {
-          "id": "01cf29ab-4fad-4a6b-8e5a-e93f19f13e9f",
-          "name": "NewWorkMemo",
-          "type": "Template",
-          "command": true,
-          "templatePath": "900 Assets/910 Templates/TPL-WorkMemo.md",
-          "fileNameFormat": {
-            "enabled": false,
-            "format": ""
-          },
-          "folder": {
-            "enabled": true,
-            "folders": [
-              "300 Resources/370 Memos/371 WorkMemos"
-            ],
-            "chooseWhenCreatingNote": false,
-            "createInSameFolderAsActiveFile": false,
-            "chooseFromSubfolders": false
-          },
-          "appendLink": false,
-          "openFileInNewTab": {
-            "enabled": false,
-            "direction": "vertical",
-            "focus": true
-          },
-          "openFile": true,
-          "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
-          "fileOpening": {
-            "location": "tab",
-            "direction": "vertical",
-            "focus": true,
-            "mode": "default"
-          }
-        },
-        {
-          "id": "a31cf743-e42e-44a4-9a45-a01aa88e803d",
-          "name": "NewPersonalMemo",
-          "type": "Template",
-          "command": true,
-          "templatePath": "900 Assets/910 Templates/TPL-PersonalMemo.md",
-          "fileNameFormat": {
-            "enabled": false,
-            "format": ""
-          },
-          "folder": {
-            "enabled": true,
-            "folders": [
-              "300 Resources/370 Memos/372 PersonalMemos"
+              "300 Resources/360 WorkMemos/会议记录"
             ],
             "chooseWhenCreatingNote": false,
             "createInSameFolderAsActiveFile": false,
@@ -690,256 +953,114 @@
             "focus": true,
             "mode": "default"
           }
+        },
+        {
+          "id": "503c7e0b-ee6b-411e-abbb-0f6886018a0b",
+          "name": "NewContact",
+          "type": "Template",
+          "command": true,
+          "templatePath": "900 Assets/910 Templates/TPL-Contacts.md",
+          "fileNameFormat": {
+            "enabled": false,
+            "format": ""
+          },
+          "folder": {
+            "enabled": true,
+            "folders": [
+              "400 Archive/440 Contacts"
+            ],
+            "chooseWhenCreatingNote": false,
+            "createInSameFolderAsActiveFile": false,
+            "chooseFromSubfolders": false
+          },
+          "appendLink": false,
+          "openFile": true,
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "mode": "default",
+            "focus": true
+          },
+          "fileExistsMode": "Increment the file name",
+          "setFileExistsBehavior": false
+        },
+        {
+          "id": "bdde53ad-7b5e-486f-8473-e145c9532353",
+          "name": "NewWorkMemo",
+          "type": "Template",
+          "command": true,
+          "templatePath": "900 Assets/910 Templates/TPL-WorkMemo.md",
+          "fileNameFormat": {
+            "enabled": false,
+            "format": ""
+          },
+          "folder": {
+            "enabled": true,
+            "folders": [
+              "300 Resources/360 WorkMemos/工作备忘"
+            ],
+            "chooseWhenCreatingNote": false,
+            "createInSameFolderAsActiveFile": false,
+            "chooseFromSubfolders": false
+          },
+          "appendLink": false,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": true,
+          "openFileInMode": "default",
+          "fileExistsMode": "Increment the file name",
+          "setFileExistsBehavior": false,
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        },
+        {
+          "id": "0a9017b7-672e-4d93-9934-ea50e11b1c42",
+          "name": "NewPersonalMemo",
+          "type": "Template",
+          "command": true,
+          "templatePath": "900 Assets/910 Templates/TPL-PersonalMemo.md",
+          "fileNameFormat": {
+            "enabled": false,
+            "format": ""
+          },
+          "folder": {
+            "enabled": true,
+            "folders": [
+              "300 Resources/350 PersonalMemos"
+            ],
+            "chooseWhenCreatingNote": false,
+            "createInSameFolderAsActiveFile": false,
+            "chooseFromSubfolders": false
+          },
+          "appendLink": false,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": true,
+          "openFileInMode": "default",
+          "fileExistsMode": "Increment the file name",
+          "setFileExistsBehavior": false,
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
         }
       ],
-      "collapsed": false
+      "collapsed": true
     },
     {
-      "id": "de720c59-42be-49de-a6f1-fcafe28a5cb8",
-      "name": "🗑️ ClearReminder",
-      "type": "Macro",
-      "command": true,
-      "macro": {
-        "id": "30a7b4cd-158c-47a5-a784-aa9e9de341ac",
-        "name": "Macro-ClearReminder",
-        "commands": [
-          {
-            "name": "ClearReminder",
-            "type": "UserScript",
-            "id": "e568fdcd-5dc6-40eb-93b3-4ef72382d808",
-            "path": "900 Assets/960 Scripts/ClearReminder.js",
-            "settings": {}
-          }
-        ]
-      },
-      "runOnStartup": false
-    },
-    {
-      "id": "c749c12b-934c-4579-824c-54568edd21ed",
-      "name": "🔗 AddRelevantMonthLink",
-      "type": "Capture",
-      "command": false,
-      "appendLink": false,
-      "captureTo": "",
-      "captureToActiveFile": true,
-      "createFileIfItDoesntExist": {
-        "enabled": false,
-        "createWithTemplate": false,
-        "template": ""
-      },
-      "format": {
-        "enabled": true,
-        "format": "<%*\n// 获取 journal-date 属性值\nconst journalDate = tp.frontmatter[\"journal-date\"];\n\nif (journalDate) {\n    // 解析日期\n    const [year, month] = journalDate.split('-').map(Number);\n    \n    // 计算上一月\n    let prevYear = year;\n    let prevMonth = month - 1;\n    if (prevMonth < 1) {\n        prevMonth = 12;\n        prevYear--;\n    }\n    \n    // 计算下一月\n    let nextYear = year;\n    let nextMonth = month + 1;\n    if (nextMonth > 12) {\n        nextMonth = 1;\n        nextYear++;\n    }\n    \n    // 格式化为 YYYY-MM\n    const format = (y, m) => `${y}-${m.toString().padStart(2, '0')}`;\n    \n    // 输出结果\n    tR += `- 上一月: [[${format(prevYear, prevMonth)}]] 月度日志\\n- 下一月: [[${format(nextYear, nextMonth)}]] 月度日志`;\n} else {\n    tR += \"未找到 journal-date 属性\";\n}\n%>"
-      },
-      "insertAfter": {
-        "enabled": true,
-        "after": "## 🔗 相关日志",
-        "insertAtEnd": false,
-        "considerSubsections": false,
-        "createIfNotFound": false,
-        "createIfNotFoundLocation": "top"
-      },
-      "prepend": false,
-      "task": false,
-      "openFileInNewTab": {
-        "enabled": false,
-        "direction": "vertical",
-        "focus": true
-      },
-      "openFile": false,
-      "openFileInMode": "default",
-      "fileOpening": {
-        "location": "tab",
-        "direction": "vertical",
-        "focus": true,
-        "mode": "default"
-      }
-    },
-    {
-      "id": "7bbc2a85-5095-4280-9b36-89a726a39fec",
-      "name": "🏷️ AddProjectMetadata",
-      "type": "Capture",
-      "command": false,
-      "appendLink": false,
-      "captureTo": "",
-      "captureToActiveFile": true,
-      "createFileIfItDoesntExist": {
-        "enabled": false,
-        "createWithTemplate": false,
-        "template": ""
-      },
-      "format": {
-        "enabled": true,
-        "format": ">🎯 目标 (Goal): 项目期望达成的具体成果: <% tp.frontmatter.goal %>\n>🏁 状态 (Status): <% tp.frontmatter.status %>\n>📅 截止日期 (Deadline): <% tp.frontmatter.due_date %>\n>🌱 所属领域 (Area): <% tp.frontmatter.area %>"
-      },
-      "insertAfter": {
-        "enabled": true,
-        "after": "> [!info]- 项目元数据 (Metadata)",
-        "insertAtEnd": false,
-        "considerSubsections": false,
-        "createIfNotFound": false,
-        "createIfNotFoundLocation": "top"
-      },
-      "prepend": false,
-      "task": false,
-      "openFileInNewTab": {
-        "enabled": false,
-        "direction": "vertical",
-        "focus": true
-      },
-      "openFile": false,
-      "openFileInMode": "default",
-      "fileOpening": {
-        "location": "tab",
-        "direction": "vertical",
-        "focus": true,
-        "mode": "default"
-      }
-    },
-    {
-      "id": "dd93da28-8b70-4eee-b032-24545f1389ee",
-      "name": "添加两个会议待办任务查询",
-      "type": "Capture",
-      "command": false,
-      "appendLink": false,
-      "captureTo": "",
-      "captureToActiveFile": true,
-      "createFileIfItDoesntExist": {
-        "enabled": false,
-        "createWithTemplate": false,
-        "template": ""
-      },
-      "format": {
-        "enabled": true,
-        "format": "```tasks\nnot done\n(path includes {{value:输入会议记录1文件名}}) OR (path includes {{value:输入会议记录2文件名}})\nfilter by function task.status.symbol === ' '\nsort by path\nsort by priority reverse\ngroup by filename\nshort mode\n```\n"
-      },
-      "insertAfter": {
-        "enabled": false,
-        "after": "",
-        "insertAtEnd": false,
-        "considerSubsections": false,
-        "createIfNotFound": false,
-        "createIfNotFoundLocation": "top"
-      },
-      "prepend": false,
-      "task": false,
-      "openFileInNewTab": {
-        "enabled": false,
-        "direction": "vertical",
-        "focus": true
-      },
-      "openFile": false,
-      "openFileInMode": "default",
-      "fileOpening": {
-        "location": "tab",
-        "direction": "vertical",
-        "focus": true,
-        "mode": "default"
-      }
-    },
-    {
-      "id": "a69cc74d-7bd3-4ffb-a55b-5ae4143df4ed",
-      "name": "添加单个会议待办任务查询",
-      "type": "Capture",
-      "command": false,
-      "appendLink": false,
-      "captureTo": "",
-      "captureToActiveFile": true,
-      "createFileIfItDoesntExist": {
-        "enabled": false,
-        "createWithTemplate": false,
-        "template": ""
-      },
-      "format": {
-        "enabled": true,
-        "format": "```tasks\nnot done\npath includes {{value:输入会议记录文件名}}\nfilter by function task.status.symbol === ' '\nsort by path\nsort by priority reverse\nshort mode\n```\n"
-      },
-      "insertAfter": {
-        "enabled": false,
-        "after": "",
-        "insertAtEnd": false,
-        "considerSubsections": false,
-        "createIfNotFound": false,
-        "createIfNotFoundLocation": "top"
-      },
-      "prepend": false,
-      "task": false,
-      "openFileInNewTab": {
-        "enabled": false,
-        "direction": "vertical",
-        "focus": true
-      },
-      "openFile": false,
-      "openFileInMode": "default",
-      "fileOpening": {
-        "location": "tab",
-        "direction": "vertical",
-        "focus": true,
-        "mode": "default"
-      }
-    },
-    {
-      "id": "b70a4374-7425-4d5a-aa47-2ec968edcddb",
-      "name": "AddGanttChart",
-      "type": "Macro",
-      "command": true,
-      "macro": {
-        "id": "716ab7c3-988f-47e6-88d5-2fa03efdba4d",
-        "name": "AddGanttChart",
-        "commands": [
-          {
-            "name": "convertToMermaidGantt",
-            "type": "UserScript",
-            "id": "be53815a-1372-4924-bbe7-331d838cfaff",
-            "path": "900 Assets/960 Scripts/convertToMermaidGantt.js",
-            "settings": {}
-          }
-        ]
-      },
-      "runOnStartup": false
-    },
-    {
-      "id": "9fed4c88-e12e-49f5-85bc-74edac907d9b",
-      "name": "habits",
-      "type": "Macro",
-      "command": true,
-      "macro": {
-        "id": "bc2b3684-1acb-4738-8e9a-9218c1b9ae33",
-        "name": "habits",
-        "commands": [
-          {
-            "name": "YAMLHeaderUpdater",
-            "type": "UserScript",
-            "id": "0b2b8b45-99f0-4716-9f54-99ae476cd466",
-            "path": "900 Assets/960 Scripts/YAMLHeaderUpdater.js",
-            "settings": {}
-          }
-        ]
-      },
-      "runOnStartup": false
-    },
-    {
-      "id": "25a00424-eb1b-4a90-8ebc-da0183d36488",
-      "name": "UpdateInlineField",
-      "type": "Macro",
-      "command": true,
-      "macro": {
-        "id": "907a2f51-0bb0-448a-aed4-85d64e920d0b",
-        "name": "UpdateInlineField",
-        "commands": [
-          {
-            "name": "InlineFieldUpdate",
-            "type": "UserScript",
-            "id": "76c45f6d-aa71-43ef-b5fc-ab79324a114f",
-            "path": "900 Assets/960 Scripts/InlineFieldUpdate.js",
-            "settings": {}
-          }
-        ]
-      },
-      "runOnStartup": false
-    },
-    {
-      "id": "683afc1a-0144-45a6-8bcb-d1bcdc2aa115",
+      "id": "19544603-a84a-4222-bfaa-55a3a1d9f317",
       "name": "Zettelkasten",
       "type": "Template",
       "command": false,
@@ -958,30 +1079,154 @@
         "chooseFromSubfolders": false
       },
       "appendLink": false,
+      "openFileInNewTab": {
+        "enabled": false,
+        "direction": "vertical",
+        "focus": true
+      },
       "openFile": true,
+      "openFileInMode": "default",
+      "fileExistsMode": "Increment the file name",
+      "setFileExistsBehavior": false,
+      "fileOpening": {
+        "location": "tab",
+        "direction": "vertical",
+        "focus": true,
+        "mode": "default"
+      }
+    },
+    {
+      "id": "22db2c06-fc3d-4dc4-a639-5ea08d76e7e6",
+      "name": "更新时间轴参数",
+      "type": "Macro",
+      "command": true,
+      "macro": {
+        "id": "035d6680-82c3-47e9-9f46-085dce19071e",
+        "name": "更新时间轴参数",
+        "commands": [
+          {
+            "name": "quickadd_timeline_editor",
+            "type": "UserScript",
+            "id": "f79f281a-d809-4ebb-86fd-658e972282b3",
+            "path": "900 Assets/960 Scripts/quickadd_timeline_editor.js",
+            "settings": {}
+          }
+        ]
+      },
+      "runOnStartup": false
+    },
+    {
+      "id": "f825db4e-8ce2-40d2-a256-ef7d9130453b",
+      "name": "手动添加书摘",
+      "type": "Capture",
+      "command": true,
+      "appendLink": false,
+      "captureTo": "",
+      "captureToActiveFile": true,
+      "createFileIfItDoesntExist": {
+        "enabled": false,
+        "createWithTemplate": false,
+        "template": ""
+      },
+      "format": {
+        "enabled": true,
+        "format": "\n录入时间: {{DATE:YYYY-MM-DD}} {{TIME:HH:mm}} | 页码: {{VALUE:请输入页码}}\n\n{{VALUE:请输入书摘内容}}\n\n---\n"
+      },
+      "insertAfter": {
+        "enabled": false,
+        "after": "",
+        "insertAtEnd": false,
+        "considerSubsections": false,
+        "createIfNotFound": false,
+        "createIfNotFoundLocation": "top"
+      },
+      "newLineCapture": {
+        "enabled": false,
+        "direction": "below"
+      },
+      "prepend": false,
+      "task": false,
+      "openFile": false,
       "fileOpening": {
         "location": "tab",
         "direction": "vertical",
         "mode": "default",
         "focus": true
-      },
-      "fileExistsMode": "Increment the file name",
-      "setFileExistsBehavior": false
+      }
     },
     {
-      "id": "5bc4c0eb-8681-4ac8-9d05-a3584b735884",
+      "id": "5caa99d9-7f78-4f4a-ad8f-823ea1910575",
+      "name": "添加项目进度",
+      "type": "Capture",
+      "command": true,
+      "appendLink": false,
+      "captureTo": "",
+      "captureToActiveFile": true,
+      "createFileIfItDoesntExist": {
+        "enabled": false,
+        "createWithTemplate": false,
+        "template": ""
+      },
+      "format": {
+        "enabled": true,
+        "format": ">\n>- [Review时间::]\n>- [进展::]\n>- [问题::]\n>- [下一步计划::]\n>- [关键调整::]"
+      },
+      "insertAfter": {
+        "enabled": true,
+        "after": ">[!note]- ### 项目进度",
+        "insertAtEnd": false,
+        "considerSubsections": false,
+        "createIfNotFound": false,
+        "createIfNotFoundLocation": "top"
+      },
+      "newLineCapture": {
+        "enabled": false,
+        "direction": "below"
+      },
+      "prepend": false,
+      "task": false,
+      "openFile": false,
+      "fileOpening": {
+        "location": "tab",
+        "direction": "vertical",
+        "mode": "default",
+        "focus": true
+      }
+    },
+    {
+      "id": "6e34ee60-11da-4ea4-827d-fb366d89ad07",
+      "name": "GanttGenerator",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "GanttGenerator",
+        "id": "d4535e0c-8b74-48d4-8455-da14b87c4397",
+        "commands": [
+          {
+            "name": "gantt-with-svg-export",
+            "type": "UserScript",
+            "id": "abf72c86-9608-4683-a16d-a005876d79c6",
+            "path": "900 Assets/960 Scripts/gantt-with-svg-export.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "641e24c9-f923-46e5-af1e-9a99a72b9b42",
       "name": "NewProject",
       "type": "Macro",
       "command": true,
       "runOnStartup": false,
       "macro": {
         "name": "NewProject",
-        "id": "8e51b848-8794-446f-89b4-13a82a2397a4",
+        "id": "e2fe1d55-4cb8-4571-a6fe-30e6f7cd7172",
         "commands": [
           {
             "name": "createProject",
             "type": "UserScript",
-            "id": "6f796315-a6a0-450e-aa2e-7d901067c528",
+            "id": "2b996432-0c1b-4a8b-a1fa-3b714db6b00e",
             "path": "900 Assets/960 Scripts/createProject.js",
             "settings": {}
           }
@@ -989,59 +1234,19 @@
       }
     },
     {
-      "id": "da55fb91-e42f-4e26-820e-5b6a4d8ed713",
-      "name": "TaskRollover",
-      "type": "Macro",
-      "command": true,
-      "runOnStartup": false,
-      "macro": {
-        "name": "TaskRollover",
-        "id": "f18ec5a8-fda1-4de2-aa78-b9b0cac12fdc",
-        "commands": [
-          {
-            "name": "journal_tasks_rolling",
-            "type": "UserScript",
-            "id": "9065a5a1-88cf-4d2c-84a4-b2b41ecaa81f",
-            "path": "900 Assets/960 Scripts/journal_tasks_rolling.js",
-            "settings": {}
-          }
-        ]
-      }
-    },
-    {
-      "id": "7c0ba94a-cede-4102-99ac-c3a6e0e94445",
-      "name": "DailyTracker",
-      "type": "Macro",
-      "command": true,
-      "runOnStartup": false,
-      "macro": {
-        "name": "DailyTracker",
-        "id": "46b45ae8-ff6a-41b6-b952-a9d42b3e381c",
-        "commands": [
-          {
-            "name": "InlineFieldUpdate-tracker",
-            "type": "UserScript",
-            "id": "7ffc3a7f-386d-41db-8424-a8c089d4ee9b",
-            "path": "900 Assets/960 Scripts/InlineFieldUpdate-tracker.js",
-            "settings": {}
-          }
-        ]
-      }
-    },
-    {
-      "id": "cf05f9b3-bf20-4066-add7-3811be070bd7",
+      "id": "0018d0ca-ea4d-4b38-a588-5995a9b58501",
       "name": "DailyData",
       "type": "Macro",
       "command": true,
       "runOnStartup": false,
       "macro": {
         "name": "DailyData",
-        "id": "cb5a8ded-5d81-4c95-a5c6-57c1a073fb68",
+        "id": "ef1beb1c-e2fc-4abe-9f7f-32a55ce4d43b",
         "commands": [
           {
             "name": "InlineFieldUpdate-data",
             "type": "UserScript",
-            "id": "49d5f50d-9303-45b3-b5ed-0fd5b6d4e3c8",
+            "id": "85e1d159-35c9-4c18-8d07-8a2cfb1f6cc9",
             "path": "900 Assets/960 Scripts/InlineFieldUpdate-data.js",
             "settings": {}
           }
@@ -1049,40 +1254,100 @@
       }
     },
     {
-      "id": "5abe02aa-5e18-4409-87f3-5ecccf95c2e2",
-      "name": "JournalArchive",
+      "id": "f39dd3a5-da2b-4160-96fc-e39422652296",
+      "name": "DailyTracker",
       "type": "Macro",
       "command": true,
       "runOnStartup": false,
       "macro": {
-        "name": "JournalArchive",
-        "id": "1b45d4c1-4f8b-4c57-a989-f4685e47b0f0",
+        "name": "DailyTracker",
+        "id": "b1823d0a-7fd5-4bf5-998d-d574a2b5d2c4",
         "commands": [
           {
-            "name": "JournalArchive",
+            "name": "InlineFieldUpdate-tracker",
             "type": "UserScript",
-            "id": "5e9164d0-57cf-4091-9ccf-91a941040427",
-            "path": "900 Assets/960 Scripts/JournalArchive.js",
+            "id": "3e33d78c-40d0-443f-8c81-cd17010acb84",
+            "path": "900 Assets/960 Scripts/InlineFieldUpdate-tracker.js",
             "settings": {}
           }
         ]
       }
     },
     {
-      "id": "9048c594-e33a-4e76-8f29-a962834acf3f",
-      "name": "Snapshot",
+      "id": "1284cb01-c66a-465b-af7c-0de0e1645748",
+      "name": "Table2Bullets",
       "type": "Macro",
       "command": true,
       "runOnStartup": false,
       "macro": {
-        "name": "Snapshot",
-        "id": "af411c7d-f488-4b47-bd8d-f1ac00d8143c",
+        "name": "Table2Bullets",
+        "id": "5e4f1648-7f80-4cad-acf5-7782a9ec3ce1",
         "commands": [
           {
-            "name": "SnapshotDataview",
+            "name": "obsidian_table_to_bullet",
             "type": "UserScript",
-            "id": "bae9d25a-6abf-488e-8d57-442bdfd34f15",
-            "path": "900 Assets/960 Scripts/SnapshotDataview.js",
+            "id": "2057e906-59d1-4a32-bb38-b76d146c174c",
+            "path": "900 Assets/960 Scripts/obsidian_table_to_bullet.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "533a98ab-99d0-4ae2-a724-b0a47d30e475",
+      "name": "AddFolderLinks",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "AddFolderLinks",
+        "id": "22fc8121-ddf8-4e88-a05f-48745cd7cc28",
+        "commands": [
+          {
+            "name": "obsidian_add_folder_links",
+            "type": "UserScript",
+            "id": "91f0b614-087a-462f-8ace-7a6f40fd8f35",
+            "path": "900 Assets/960 Scripts/obsidian_add_folder_links.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "9150f2e2-8c8b-4dad-8ad4-98bd55dd430b",
+      "name": "MoveLinkedNotes",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "MoveLinkedNotes",
+        "id": "0a53f0b6-eb9b-486c-90ce-945e36df4013",
+        "commands": [
+          {
+            "name": "obsidian_move_linked_notes",
+            "type": "UserScript",
+            "id": "94fa67b5-266b-4d64-918f-41c3bd799341",
+            "path": "900 Assets/960 Scripts/obsidian_move_linked_notes.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "98840eb9-2eda-4875-8deb-0c43d65738df",
+      "name": "ArchiveFolderAssets",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "ArchiveFolderAssets",
+        "id": "1adbd500-7b5d-492a-8189-60da89c39d5a",
+        "commands": [
+          {
+            "name": "obsidian_archive_attachments",
+            "type": "UserScript",
+            "id": "ebe15377-2f79-4ec3-bb62-115c443b14cb",
+            "path": "900 Assets/960 Scripts/obsidian_archive_attachments.js",
             "settings": {}
           }
         ]
@@ -1092,7 +1357,7 @@
   "inputPrompt": "single-line",
   "devMode": false,
   "templateFolderPath": "900 Assets/910 Templates",
-  "announceUpdates": false,
+  "announceUpdates": "none",
   "version": "2.9.4",
   "globalVariables": {},
   "onePageInputEnabled": false,
@@ -1150,7 +1415,8 @@
             "name": "gpt-4o-mini",
             "maxTokens": 128000
           }
-        ]
+        ],
+        "modelSource": "auto"
       }
     ]
   },
@@ -1162,6 +1428,9 @@
     "setVersionAfterUpdateModalRelease": true,
     "addDefaultAIProviders": true,
     "removeMacroIndirection": true,
-    "migrateFileOpeningSettings": true
-  }
+    "migrateFileOpeningSettings": true,
+    "setProviderModelDiscoveryMode": true
+  },
+  "showInputCancellationNotification": false,
+  "enableTemplatePropertyTypes": false
 }

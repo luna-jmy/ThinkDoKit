@@ -1,11 +1,11 @@
 ---
-created: <% tp.date.now("YYYY-MM-DD") %>
-project-id: "{{date:YYYYMM}}"
+created: 2026-03-09
+project-id: "202603"
 area:
 type: project
 objective:
-status: <% tp.system.suggester(["未开始/待启动","起草/构思中","执行中","暂停","完成","取消","归档"],["inbox","draft","active","on-hold","completed","cancelled","archived"], "请选择项目状态") %>
-priority: <% tp.system.suggester(["最高","高","中","低","最低"],["1","2","3","4","5"],false,"请选择任务优先级") %>
+status: inbox
+priority: 3
 start_date:
 due_date:
 completion_date:
@@ -17,7 +17,7 @@ project-leader:
 project-members:
 ---
 
-# 🚧 项目: <% tp.file.title %>
+# 🚧 项目: test
 
 ## 🎯 项目目标
 >*项目的最终成果描述或项目期望达成的具体成果*

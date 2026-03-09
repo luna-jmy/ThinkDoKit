@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "4509724f8bf84da7",
+        "id": "c6f3327d96069a47",
         "type": "tabs",
         "children": [
           {
-            "id": "e7a7b303c61786dc",
+            "id": "36fff19fc1d82ca7",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "900 Assets/ThinkDoKit 更新日志.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "ThinkDoKit 更新日志"
+              "title": "新标签页"
             }
           }
         ]
@@ -78,7 +74,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 204.5
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -95,8 +91,8 @@
             "state": {
               "type": "journal-calendar",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "journal-calendar"
+              "icon": "calendar-days",
+              "title": "Calendar"
             }
           },
           {
@@ -143,7 +139,7 @@
             }
           },
           {
-            "id": "0a41c3f0682549ca",
+            "id": "69d7fadb733d785c",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -157,47 +153,16 @@
             }
           },
           {
-            "id": "1f612d824505fa41",
+            "id": "b4ba1f8cc7b576e3",
             "type": "leaf",
             "state": {
               "type": "review-queue-list-view",
               "state": {},
               "icon": "SpacedRepIcon",
               "title": "笔记复习序列"
-            }
-          },
-          {
-            "id": "d2ba6a555288c81d",
-            "type": "leaf",
-            "state": {
-              "type": "review-queue-list-view",
-              "state": {},
-              "icon": "SpacedRepIcon",
-              "title": "笔记复习序列"
-            }
-          },
-          {
-            "id": "0f7362ad9427d882",
-            "type": "leaf",
-            "state": {
-              "type": "journal-calendar",
-              "state": {},
-              "icon": "calendar-days",
-              "title": "Calendar"
-            }
-          },
-          {
-            "id": "87cb0312d79dce5a",
-            "type": "leaf",
-            "state": {
-              "type": "planner-timeline",
-              "state": {},
-              "icon": "calendar-with-checkmark",
-              "title": "Timeline"
             }
           }
-        ],
-        "currentTab": 5
+        ]
       },
       {
         "id": "ab6e053c3b226343",
@@ -210,13 +175,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "900 Assets/920 Queries/任务中心.md",
+                "file": "900 Assets/ThinkDoKit 更新日志.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "任务中心 的大纲"
+              "title": "👉从这里开始 Start from here! 的大纲"
             }
           },
           {
@@ -239,11 +204,9 @@
             "type": "leaf",
             "state": {
               "type": "file-properties",
-              "state": {
-                "file": "900 Assets/ThinkDoKit 更新日志.md"
-              },
+              "state": {},
               "icon": "lucide-info",
-              "title": "ThinkDoKit 更新日志的笔记属性"
+              "title": "笔记属性"
             }
           },
           {
@@ -252,8 +215,8 @@
             "state": {
               "type": "planner-timeline",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "planner-timeline"
+              "icon": "calendar-with-checkmark",
+              "title": "Timeline"
             }
           }
         ],
@@ -261,11 +224,16 @@
       }
     ],
     "direction": "horizontal",
-    "width": 258.5
+    "width": 248.5
   },
   "left-ribbon": {
     "hiddenItems": {
-      "bases:创建新数据库": false,
+      "bases:新建数据库": false,
+      "homepage:Open homepage": false,
+      "pomodoro-timer:Toggle timer panel": false,
+      "obsidian-spaced-repetition:复习卡片": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "obsidian-excalidraw-plugin:新建绘图文件": false,
       "graph:查看关系图谱": false,
       "canvas:新建白板": false,
       "daily-notes:打开/创建今天的日记": false,
@@ -275,56 +243,51 @@
       "random-note:开始漫游笔记": false,
       "audio-recorder:开始/结束录音": false,
       "workspaces:管理工作区布局": false,
-      "switcher:打开快速切换": false,
       "templater-obsidian:Templater": false,
-      "obsidian-spaced-repetition:复习卡片": false,
-      "homepage:Open homepage": false,
+      "switcher:打开快速切换": false,
       "obsidian-day-planner:Open Timeline": false,
       "obsidian-day-planner:Open Multi-Day View": false,
-      "table-editor-obsidian:Advanced Tables Toolbar": false,
-      "obsidian-excalidraw-plugin:新建绘图文件": false,
-      "pomodoro-timer:Toggle timer panel": false,
       "obsidian-memos:Thino": false
     }
   },
-  "active": "e7a7b303c61786dc",
+  "active": "36fff19fc1d82ca7",
   "lastOpenFiles": [
-    "👉从这里开始 Start from here!.md",
-    "500 Journal/540 Daily/2026-02-17.md",
-    "900 Assets/920 Queries/项目中心（升级）.md",
-    "900 Assets/920 Queries/项目任务查询.md",
     "900 Assets/920 Queries/任务中心.md",
+    "500 Journal/540 Daily/2026-03-09.md",
+    "900 Assets/920 Queries/按钮中心.md",
+    "500 Journal/540 Daily/2026-03-07.md",
+    "900 Assets/920 Queries/Inbox清单中心.md",
+    "900 Assets/920 Queries/项目任务查询.md",
+    "900 Assets/920 Queries/任务月历.md",
+    "900 Assets/920 Queries/闪卡统计.md",
+    "900 Assets/920 Queries/项目中心（升级）.md",
+    "100 Projects/测试项目20260309.md",
+    "未命名.md",
+    "100 Projects/202501项目1/测试项目1.md",
+    "100 Projects/202511无主文件项目/未命名.md",
+    "100 Projects/202512项目9/测试项目2.md",
+    "100 Projects/20260309test/09test.md",
+    "👉从这里开始 Start from here!.md",
     "900 Assets/ThinkDoKit 更新日志.md",
+    "100 Projects/20260309test/123.md",
+    "100 Projects/202603test/test.md",
+    "900 Assets/910 Templates/TPL-Project.md",
+    "100 Projects/202603test",
+    "100 Projects/20260309test",
+    "900 Assets/960 Scripts/gantt-with-svg-export.js",
+    "900 Assets/960 Scripts/obsidian_table_to_bullet.js",
+    "100 Projects/202503项目4/测试项目3.md",
+    "500 Journal/540 Daily/2026-02-17.md",
     "000 Inbox/🧪 DataviewJS Tabs 最终结论.md",
     "000 Inbox/🧪 DataviewJS Tabs 最终版.md",
     "000 Inbox/🧪 DataviewJS Tabs 纯CSS方案.md",
     "000 Inbox/🧪 DataviewJS Tabs 超简修复版.md",
-    "000 Inbox/🧪 DataviewJS Tabs 测试.md",
-    "000 Inbox/🧪 DataviewJS Tabs 测试修复.md",
-    "000 Inbox/🧪 DataviewJS Tabs 事件委托修复.md",
-    "600 Zettelkasten/20250604220020 - 副本.md",
-    "500 Journal/520 Monthly/2026-01.md",
-    "500 Journal/530 Weekly/2026-W4.md",
-    "000 Inbox/未命名看板.md",
-    "600 Zettelkasten/20250605124838 - 副本.md",
-    "600 Zettelkasten/20250604220020.md",
     "900 Assets/960 Scripts/tab-task-view.js",
-    "500 Journal/540 Daily/2026-01-23.md",
-    "500 Journal/540 Daily/2026-01-19.md",
-    "900 Assets/910 Templates/TPL-Annual.md",
-    "900 Assets/910 Templates/TPL-Monthly.md",
-    "900 Assets/910 Templates/TPL-Weekly.md",
-    "900 Assets/910 Templates/TPL-Daily.md",
-    "500 Journal/540 Daily/2026-01-20.md",
     "900 Assets/960 Scripts/dynamic-chart-kanban3.js",
     "900 Assets/960 Scripts/dynamic-chart.js",
     "900 Assets/960 Scripts/annual-daily-task-stats.js",
     "900 Assets/960 Scripts/monthly-archive-task-stats.js",
     "900 Assets/960 Scripts/wheel-of-life-interactive.js",
-    "900 Assets/960 Scripts/weekly-archive-task-stats.js",
-    "900 Assets/960 Scripts/SnapshotDataview.js",
-    "900 Assets/960 Scripts/JournalArchive.js",
-    "900 Assets/960 Scripts/MonthlyArchive.js",
     "内容创作工作台设计.canvas",
     "知识管理工作台设计.canvas",
     "900 Assets/990 Attachments/unnamed (1) 1.png",
