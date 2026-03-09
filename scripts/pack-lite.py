@@ -6,6 +6,7 @@ Only packages .obsidian and selected subfolders from 900 Assets
 """
 
 import shutil
+import os
 import zipfile
 from pathlib import Path
 from datetime import datetime
@@ -13,6 +14,7 @@ from datetime import datetime
 # Configuration
 VERSION = "1.2.1"
 TARGET = f"ThinkDoKit-Lite-{VERSION}.zip"
+EXCLUDE_FILES = {".DS_Store"}
 
 # Auto-detect paths based on script location
 SCRIPT_DIR = Path(__file__).parent.resolve()
@@ -60,12 +62,11 @@ def create_zip(source_dir, output_file):
     with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as zipf:
         for root, _, files in os.walk(source_dir):
             for file in files:
+                if file in EXCLUDE_FILES:
+                    continue
                 file_path = Path(root) / file
                 arcname = file_path.relative_to(source_dir)
                 zipf.write(file_path, arcname)
-
-
-import os
 
 
 def main():

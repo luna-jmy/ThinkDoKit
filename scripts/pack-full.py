@@ -6,6 +6,7 @@ Packages .obsidian, 900 Assets (full) and fixed folder structure
 """
 
 import shutil
+import os
 import zipfile
 from pathlib import Path
 from datetime import datetime
@@ -13,6 +14,7 @@ from datetime import datetime
 # Configuration
 VERSION = "1.2.1"
 TARGET = f"ThinkDoKit-Full-{VERSION}.zip"
+EXCLUDE_FILES = {".DS_Store"}
 
 # Auto-detect paths based on script location
 SCRIPT_DIR = Path(__file__).parent.resolve()
@@ -98,6 +100,8 @@ def create_zip(source_dir, output_file):
         for root, dirs, files in os.walk(source_dir):
             # Add files
             for file in files:
+                if file in EXCLUDE_FILES:
+                    continue
                 file_path = Path(root) / file
                 arcname = file_path.relative_to(source_dir)
                 zipf.write(file_path, arcname)
@@ -110,10 +114,6 @@ def create_zip(source_dir, output_file):
                     # Add empty directory to ZIP
                     arcname = str(dir_path.relative_to(source_dir)) + "/"
                     zipf.writestr(zipfile.ZipInfo(arcname), "")
-
-
-import os
-
 
 def main():
     print("=" * 60)

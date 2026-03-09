@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "c6f3327d96069a47",
+        "id": "4509724f8bf84da7",
         "type": "tabs",
         "children": [
           {
-            "id": "36fff19fc1d82ca7",
+            "id": "e7a7b303c61786dc",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "900 Assets/ThinkDoKit 更新日志.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "ThinkDoKit 更新日志"
             }
           }
         ]
@@ -70,7 +74,8 @@
               "title": "书签"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -162,7 +167,8 @@
               "title": "笔记复习序列"
             }
           }
-        ]
+        ],
+        "currentTab": 5
       },
       {
         "id": "ab6e053c3b226343",
@@ -204,9 +210,11 @@
             "type": "leaf",
             "state": {
               "type": "file-properties",
-              "state": {},
+              "state": {
+                "file": "900 Assets/ThinkDoKit 更新日志.md"
+              },
               "icon": "lucide-info",
-              "title": "笔记属性"
+              "title": "ThinkDoKit 更新日志的笔记属性"
             }
           },
           {
@@ -250,25 +258,25 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "36fff19fc1d82ca7",
+  "active": "e7a7b303c61786dc",
   "lastOpenFiles": [
-    "900 Assets/920 Queries/任务中心.md",
     "500 Journal/540 Daily/2026-03-09.md",
+    "100 Projects/测试项目20260309.md",
+    "900 Assets/920 Queries/项目中心（升级）.md",
+    "900 Assets/ThinkDoKit 更新日志.md",
+    "900 Assets/920 Queries/任务中心.md",
     "900 Assets/920 Queries/按钮中心.md",
     "500 Journal/540 Daily/2026-03-07.md",
     "900 Assets/920 Queries/Inbox清单中心.md",
     "900 Assets/920 Queries/项目任务查询.md",
     "900 Assets/920 Queries/任务月历.md",
     "900 Assets/920 Queries/闪卡统计.md",
-    "900 Assets/920 Queries/项目中心（升级）.md",
-    "100 Projects/测试项目20260309.md",
     "未命名.md",
     "100 Projects/202501项目1/测试项目1.md",
     "100 Projects/202511无主文件项目/未命名.md",
     "100 Projects/202512项目9/测试项目2.md",
     "100 Projects/20260309test/09test.md",
     "👉从这里开始 Start from here!.md",
-    "900 Assets/ThinkDoKit 更新日志.md",
     "100 Projects/20260309test/123.md",
     "100 Projects/202603test/test.md",
     "900 Assets/910 Templates/TPL-Project.md",
