@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 
 # Configuration
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 TARGET = f"ThinkDoKit-Demo-{VERSION}.zip"
 EXCLUDE_DIRS = {".trash"}
 

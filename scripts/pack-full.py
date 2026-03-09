@@ -11,7 +11,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Configuration
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 TARGET = f"ThinkDoKit-Full-{VERSION}.zip"
 
 # Auto-detect paths based on script location
