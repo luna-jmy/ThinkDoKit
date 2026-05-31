@@ -64,6 +64,7 @@
     "excalidraw-export-internal-links": "checkbox",
     "Social": "number",
     "Finance": "number",
-    "Spiritual": "number"
+    "Spiritual": "number",
+    "TQ_show_toolbar": "checkbox"
   }
 }

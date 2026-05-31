@@ -662,13 +662,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -729,13 +730,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -765,13 +767,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -801,13 +804,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -837,13 +841,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -873,13 +878,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -909,13 +915,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -945,13 +952,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -981,8 +989,9 @@
             "mode": "default",
             "focus": true
           },
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false
+          "fileExistsBehavior": {
+            "kind": "prompt"
+          }
         },
         {
           "id": "bdde53ad-7b5e-486f-8473-e145c9532353",
@@ -1011,13 +1020,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         },
         {
@@ -1047,13 +1057,14 @@
           },
           "openFile": true,
           "openFileInMode": "default",
-          "fileExistsMode": "Increment the file name",
-          "setFileExistsBehavior": false,
           "fileOpening": {
             "location": "tab",
             "direction": "vertical",
             "focus": true,
             "mode": "default"
+          },
+          "fileExistsBehavior": {
+            "kind": "prompt"
           }
         }
       ],
@@ -1086,13 +1097,14 @@
       },
       "openFile": true,
       "openFileInMode": "default",
-      "fileExistsMode": "Increment the file name",
-      "setFileExistsBehavior": false,
       "fileOpening": {
         "location": "tab",
         "direction": "vertical",
         "focus": true,
         "mode": "default"
+      },
+      "fileExistsBehavior": {
+        "kind": "prompt"
       }
     },
     {
@@ -1355,15 +1367,30 @@
     }
   ],
   "inputPrompt": "single-line",
+  "persistInputPromptDrafts": true,
+  "useSelectionAsCaptureValue": true,
   "devMode": false,
   "templateFolderPath": "900 Assets/910 Templates",
   "announceUpdates": "none",
-  "version": "2.9.4",
+  "version": "2.12.3",
   "globalVariables": {},
   "onePageInputEnabled": false,
   "disableOnlineFeatures": false,
   "enableRibbonIcon": false,
   "showCaptureNotification": true,
+  "showInputCancellationNotification": false,
+  "enableTemplatePropertyTypes": false,
+  "dateAliases": {
+    "t": "today",
+    "tm": "tomorrow",
+    "yd": "yesterday",
+    "nw": "next week",
+    "nm": "next month",
+    "ny": "next year",
+    "lw": "last week",
+    "lm": "last month",
+    "ly": "last year"
+  },
   "ai": {
     "defaultModel": "Ask me",
     "defaultSystemPrompt": "As an AI assistant within Obsidian, your primary goal is to help users manage their ideas and knowledge more effectively. Format your responses using Markdown syntax. Please use the [[Obsidian]] link format. You can write aliases for the links by writing [[Obsidian|the alias after the pipe symbol]]. To use mathematical notation, use LaTeX syntax. LaTeX syntax for larger equations should be on separate lines, surrounded with double dollar signs ($$). You can also inline math expressions by wrapping it in $ symbols. For example, use $$w_{ij}^{\text{new}}:=w_{ij}^{\text{current}}+etacdotdelta_jcdot x_{ij}$$ on a separate line, but you can write \"($eta$ = learning rate, $delta_j$ = error term, $x_{ij}$ = input)\" inline.",
@@ -1429,8 +1456,11 @@
     "addDefaultAIProviders": true,
     "removeMacroIndirection": true,
     "migrateFileOpeningSettings": true,
-    "setProviderModelDiscoveryMode": true
+    "setProviderModelDiscoveryMode": true,
+    "consolidateFileExistsBehavior": true,
+    "repairTemplateFileExistsBehavior": true,
+    "backfillFileOpeningDefaults": true,
+    "migrateProviderApiKeysToSecretStorage": true
   },
-  "showInputCancellationNotification": false,
-  "enableTemplatePropertyTypes": false
+  "macros": []
 }
