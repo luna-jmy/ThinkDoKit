@@ -4800,6 +4800,7 @@ var en = {
   RESPONSE_RECEIVED: "Response received.",
   NO_DECK_EXISTS: "No deck exists for ${deckName}",
   ALL_CAUGHT_UP: "You're all caught up now :D.",
+  REVIEW_REMINDER_NOTICE: "Flashcards are ready to review. Return to Obsidian to continue learning.",
   // scheduling.ts
   DAYS_STR_IVL: "${interval} day(s)",
   MONTHS_STR_IVL: "${interval} month(s)",
@@ -4874,6 +4875,23 @@ var en = {
   REVIEW_DECK_ORDER_PREV_DECK_COMPLETE_SEQUENTIAL: "Sequentially (once all cards in previous deck reviewed)",
   REVIEW_DECK_ORDER_PREV_DECK_COMPLETE_RANDOM: "Randomly (once all cards in previous deck reviewed)",
   REVIEW_DECK_ORDER_RANDOM_DECK_AND_CARD: "Random card from random deck",
+  REVIEW_REMINDERS: "Review reminders",
+  REVIEW_REMINDERS_DESC: "Periodically checks for new or due flashcards and reminds you when cards are ready to review.",
+  REVIEW_REMINDER_CHECK_ON_STARTUP: "Check immediately on startup",
+  REVIEW_REMINDER_CHECK_ON_STARTUP_DESC: "Runs one check when Obsidian startup layout is ready, without waiting for the first interval.",
+  REVIEW_REMINDER_INTERVAL: "Reminder interval (minutes)",
+  REVIEW_REMINDER_INTERVAL_DESC: "Checks every N minutes. Minimum 1 minute, maximum 1440 minutes.",
+  REVIEW_REMINDER_INTERVAL_MIN_WARNING: "Reminder interval must be a number between 1 and 1440.",
+  REVIEW_REMINDER_MESSAGE: "Reminder message",
+  REVIEW_REMINDER_MESSAGE_DESC: "Optional custom message shown in the reminder notice. Leave empty to use the default message.",
+  REVIEW_REMINDER_AUTO_OPEN: "Automatically open review",
+  REVIEW_REMINDER_AUTO_OPEN_DESC: "When enabled, reminders open the existing flashcard review session directly.",
+  REVIEW_REMINDER_SHOW_NOTICE: "Show notice when reminding",
+  REVIEW_REMINDER_SHOW_NOTICE_DESC: "Displays a temporary notice when a review reminder fires.",
+  REVIEW_REMINDER_PLAY_SOUND: "Play sound when reminding",
+  REVIEW_REMINDER_PLAY_SOUND_DESC: "Plays a short alert sound when a review reminder fires.",
+  REVIEW_REMINDER_BOUNCE_DOCK: "Bounce dock icon when reminding",
+  REVIEW_REMINDER_BOUNCE_DOCK_DESC: "On desktop, bounces the dock icon when a review reminder fires.",
   DISABLE_CLOZE_CARDS: "Disable cloze cards?",
   CONVERT_CLOZE_PATTERNS_TO_INPUTS: "Convert cloze patterns to input fields",
   CONVERT_CLOZE_PATTERNS_TO_INPUTS_DESC: "Replace cloze patterns with input fields when reviewing cloze cards.",
@@ -8558,6 +8576,7 @@ var zhCN = {
   RESPONSE_RECEIVED: "\u53CD\u9988\u5DF2\u6536\u5230",
   NO_DECK_EXISTS: "\u6CA1\u6709 ${deckName} \u5361\u7EC4",
   ALL_CAUGHT_UP: "\u90FD\u590D\u4E60\u5B8C\u5566\uFF0C\u4F60\u771F\u68D2\uFF01",
+  REVIEW_REMINDER_NOTICE: "\u95EA\u5361\u5DF2\u7ECF\u53EF\u4EE5\u590D\u4E60\u4E86\u3002\u56DE\u5230 Obsidian \u7EE7\u7EED\u5B66\u4E60\u3002",
   // scheduling.ts
   DAYS_STR_IVL: "${interval}\u5929",
   MONTHS_STR_IVL: "${interval}\u6708",
@@ -8619,6 +8638,23 @@ var zhCN = {
   REVIEW_DECK_ORDER_PREV_DECK_COMPLETE_SEQUENTIAL: "\u987A\u5E8F (\u5728\u524D\u4E00\u5361\u7247\u7EC4\u5185\u5361\u7247\u90FD\u590D\u4E60\u5B8C\u540E)",
   REVIEW_DECK_ORDER_PREV_DECK_COMPLETE_RANDOM: "\u4E71\u5E8F (\u5728\u524D\u4E00\u5361\u7247\u7EC4\u5185\u5361\u7247\u90FD\u590D\u4E60\u5B8C\u540E)",
   REVIEW_DECK_ORDER_RANDOM_DECK_AND_CARD: "\u5361\u7247\u7EC4\u53CA\u5361\u7247\u90FD\u4E71\u5E8F",
+  REVIEW_REMINDERS: "\u590D\u4E60\u63D0\u9192",
+  REVIEW_REMINDERS_DESC: "\u5B9A\u671F\u68C0\u67E5\u662F\u5426\u6709\u65B0\u7684\u6216\u5230\u671F\u7684\u95EA\u5361\uFF0C\u5E76\u5728\u53EF\u4EE5\u590D\u4E60\u65F6\u63D0\u9192\u4F60\u3002",
+  REVIEW_REMINDER_CHECK_ON_STARTUP: "\u542F\u52A8\u540E\u7ACB\u5373\u68C0\u67E5",
+  REVIEW_REMINDER_CHECK_ON_STARTUP_DESC: "\u5728 Obsidian \u5E03\u5C40\u5C31\u7EEA\u540E\u7ACB\u5373\u6267\u884C\u4E00\u6B21\u68C0\u67E5\uFF0C\u4E0D\u7B49\u5F85\u9996\u6B21\u5468\u671F\u89E6\u53D1\u3002",
+  REVIEW_REMINDER_INTERVAL: "\u63D0\u9192\u95F4\u9694\uFF08\u5206\u949F\uFF09",
+  REVIEW_REMINDER_INTERVAL_DESC: "\u6BCF N \u5206\u949F\u68C0\u67E5\u4E00\u6B21\u3002\u6700\u5C0F 1 \u5206\u949F\uFF0C\u6700\u5927 1440 \u5206\u949F\u3002",
+  REVIEW_REMINDER_INTERVAL_MIN_WARNING: "\u63D0\u9192\u95F4\u9694\u5FC5\u987B\u662F 1 \u5230 1440 \u4E4B\u95F4\u7684\u6570\u5B57\u3002",
+  REVIEW_REMINDER_MESSAGE: "\u63D0\u9192\u6D88\u606F",
+  REVIEW_REMINDER_MESSAGE_DESC: "\u53EF\u9009\u7684\u81EA\u5B9A\u4E49\u63D0\u9192\u6587\u6848\u3002\u7559\u7A7A\u65F6\u4F7F\u7528\u9ED8\u8BA4\u6D88\u606F\u3002",
+  REVIEW_REMINDER_AUTO_OPEN: "\u81EA\u52A8\u6253\u5F00\u590D\u4E60",
+  REVIEW_REMINDER_AUTO_OPEN_DESC: "\u542F\u7528\u540E\uFF0C\u63D0\u9192\u89E6\u53D1\u65F6\u4F1A\u76F4\u63A5\u6253\u5F00\u73B0\u6709\u7684\u95EA\u5361\u590D\u4E60\u754C\u9762\u3002",
+  REVIEW_REMINDER_SHOW_NOTICE: "\u63D0\u9192\u65F6\u663E\u793A\u901A\u77E5",
+  REVIEW_REMINDER_SHOW_NOTICE_DESC: "\u63D0\u9192\u89E6\u53D1\u65F6\u663E\u793A\u4E00\u4E2A\u4E34\u65F6\u901A\u77E5\u3002",
+  REVIEW_REMINDER_PLAY_SOUND: "\u63D0\u9192\u65F6\u64AD\u653E\u58F0\u97F3",
+  REVIEW_REMINDER_PLAY_SOUND_DESC: "\u63D0\u9192\u89E6\u53D1\u65F6\u64AD\u653E\u4E00\u6BB5\u7B80\u77ED\u63D0\u793A\u97F3\u3002",
+  REVIEW_REMINDER_BOUNCE_DOCK: "\u63D0\u9192\u65F6\u5F39\u8DF3 Dock \u56FE\u6807",
+  REVIEW_REMINDER_BOUNCE_DOCK_DESC: "\u5728\u684C\u9762\u7AEF\uFF0C\u63D0\u9192\u89E6\u53D1\u65F6\u5F39\u8DF3 Dock \u56FE\u6807\u3002",
   DISABLE_CLOZE_CARDS: "\u4E0D\u8FDB\u884C\u5B8C\u5F62\u586B\u7A7A",
   CONVERT_CLOZE_PATTERNS_TO_INPUTS: "Convert cloze patterns to input fields",
   CONVERT_CLOZE_PATTERNS_TO_INPUTS_DESC: "Replace cloze patterns with input fields when reviewing cloze cards.",
@@ -11991,10 +12027,14 @@ var SRTabView = class extends import_obsidian17.ItemView {
     super(leaf);
     this.reviewQueueLoader = null;
     this.contentManager = null;
+    this.plugin = null;
     this.viewContainerEl = null;
     this.viewContentEl = null;
-    if (plugin.dataManager === null || plugin.dataManager.data === null)
-      throw new Error("SR plugin or data not initialized!!!");
+    this.settings = null;
+    if (!plugin.isDataManagerLoaded()) {
+      this.leaf.detach();
+      return;
+    }
     this.plugin = plugin;
     this.navigation = false;
     this.settings = plugin.dataManager.data.settings;
@@ -12055,6 +12095,10 @@ var SRTabView = class extends import_obsidian17.ItemView {
         "--view-bottom-fade-mask",
         "linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, #000000 calc(16px - 0px))"
       );
+    }
+    if (this.settings === null || this.plugin === null) {
+      this.leaf.detach();
+      return;
     }
     this.contentManager = new ContentManager(
       this.app,
@@ -14043,6 +14087,14 @@ var DEFAULT_SETTINGS = {
   multilineReversedCardSeparator: "??",
   multilineCardEndMarker: "",
   editLaterTag: void 0,
+  enableReviewReminders: false,
+  reviewReminderIntervalMinutes: 5,
+  reviewReminderCheckOnStartup: false,
+  reviewReminderMessage: "",
+  reviewReminderAutoOpen: true,
+  reviewReminderShowNotice: true,
+  reviewReminderPlaySound: true,
+  reviewReminderBounceDock: true,
   randomizeCardOrder: void 0,
   // notes
   enableNoteReviewPaneOnStartup: true,
@@ -14125,6 +14177,30 @@ function upgradeSettings(settings) {
   }
   if (settings.fsrsDesiredRetention === null || settings.fsrsDesiredRetention === void 0) {
     settings.fsrsDesiredRetention = DEFAULT_SETTINGS.fsrsDesiredRetention;
+  }
+  if (settings.enableReviewReminders === null || settings.enableReviewReminders === void 0) {
+    settings.enableReviewReminders = DEFAULT_SETTINGS.enableReviewReminders;
+  }
+  if (settings.reviewReminderIntervalMinutes === null || settings.reviewReminderIntervalMinutes === void 0 || settings.reviewReminderIntervalMinutes < 1) {
+    settings.reviewReminderIntervalMinutes = DEFAULT_SETTINGS.reviewReminderIntervalMinutes;
+  }
+  if (settings.reviewReminderCheckOnStartup === null || settings.reviewReminderCheckOnStartup === void 0) {
+    settings.reviewReminderCheckOnStartup = DEFAULT_SETTINGS.reviewReminderCheckOnStartup;
+  }
+  if (settings.reviewReminderMessage === null || settings.reviewReminderMessage === void 0) {
+    settings.reviewReminderMessage = DEFAULT_SETTINGS.reviewReminderMessage;
+  }
+  if (settings.reviewReminderAutoOpen === null || settings.reviewReminderAutoOpen === void 0) {
+    settings.reviewReminderAutoOpen = DEFAULT_SETTINGS.reviewReminderAutoOpen;
+  }
+  if (settings.reviewReminderShowNotice === null || settings.reviewReminderShowNotice === void 0) {
+    settings.reviewReminderShowNotice = DEFAULT_SETTINGS.reviewReminderShowNotice;
+  }
+  if (settings.reviewReminderPlaySound === null || settings.reviewReminderPlaySound === void 0) {
+    settings.reviewReminderPlaySound = DEFAULT_SETTINGS.reviewReminderPlaySound;
+  }
+  if (settings.reviewReminderBounceDock === null || settings.reviewReminderBounceDock === void 0) {
+    settings.reviewReminderBounceDock = DEFAULT_SETTINGS.reviewReminderBounceDock;
   }
 }
 var SettingsUtil = class _SettingsUtil {
@@ -15207,6 +15283,95 @@ var SchedulingPage = class extends SettingsPage {
       openPage,
       scrollListener
     );
+    new import_obsidian24.SettingGroup(this.containerEl).setHeading(t("REVIEW_REMINDERS")).addSetting((setting) => {
+      setting.setName(t("REVIEW_REMINDERS")).setDesc(t("REVIEW_REMINDERS_DESC")).addToggle(
+        (toggle) => toggle.setValue(this.dataManager.data.settings.enableReviewReminders).onChange(async (value) => {
+          this.dataManager.data.settings.enableReviewReminders = value;
+          await this.dataManager.savePluginData();
+          this.plugin.restartReviewReminders();
+          this.display();
+        })
+      );
+    }).addSetting((setting) => {
+      setting.setName(t("REVIEW_REMINDER_CHECK_ON_STARTUP")).setDesc(t("REVIEW_REMINDER_CHECK_ON_STARTUP_DESC")).addToggle(
+        (toggle) => toggle.setValue(this.dataManager.data.settings.reviewReminderCheckOnStartup).setDisabled(!this.dataManager.data.settings.enableReviewReminders).onChange(async (value) => {
+          this.dataManager.data.settings.reviewReminderCheckOnStartup = value;
+          await this.dataManager.savePluginData();
+          this.plugin.restartReviewReminders();
+        })
+      );
+    }).addSetting((setting) => {
+      setting.setName(t("REVIEW_REMINDER_INTERVAL")).setDesc(t("REVIEW_REMINDER_INTERVAL_DESC")).addText((text) => {
+        text.setValue(
+          this.dataManager.data.settings.reviewReminderIntervalMinutes.toString()
+        );
+        text.inputEl.type = "number";
+        text.inputEl.min = "1";
+        text.inputEl.max = "1440";
+        text.inputEl.step = "1";
+        text.setDisabled(!this.dataManager.data.settings.enableReviewReminders);
+        const commitIntervalValue = (value) => {
+          this.applySettingsUpdate(async () => {
+            const parsedValue = Number.parseInt(value);
+            if (Number.isNaN(parsedValue) || parsedValue < 1 || parsedValue > 1440) {
+              new import_obsidian24.Notice(t("REVIEW_REMINDER_INTERVAL_MIN_WARNING"));
+              text.setValue(
+                this.dataManager.data.settings.reviewReminderIntervalMinutes.toString()
+              );
+              return;
+            }
+            this.dataManager.data.settings.reviewReminderIntervalMinutes = parsedValue;
+            await this.dataManager.savePluginData();
+            this.plugin.restartReviewReminders();
+          });
+        };
+        text.inputEl.addEventListener("blur", () => {
+          commitIntervalValue(text.getValue());
+        });
+        text.inputEl.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            commitIntervalValue(text.getValue());
+          }
+        });
+      });
+    }).addSetting((setting) => {
+      setting.setName(t("REVIEW_REMINDER_MESSAGE")).setDesc(t("REVIEW_REMINDER_MESSAGE_DESC")).addTextArea(
+        (text) => text.setValue(this.dataManager.data.settings.reviewReminderMessage).setDisabled(!this.dataManager.data.settings.enableReviewReminders).onChange((value) => {
+          this.applySettingsUpdate(async () => {
+            this.dataManager.data.settings.reviewReminderMessage = value;
+            await this.dataManager.savePluginData();
+          });
+        })
+      );
+    }).addSetting((setting) => {
+      setting.setName(t("REVIEW_REMINDER_AUTO_OPEN")).setDesc(t("REVIEW_REMINDER_AUTO_OPEN_DESC")).addToggle(
+        (toggle) => toggle.setValue(this.dataManager.data.settings.reviewReminderAutoOpen).setDisabled(!this.dataManager.data.settings.enableReviewReminders).onChange(async (value) => {
+          this.dataManager.data.settings.reviewReminderAutoOpen = value;
+          await this.dataManager.savePluginData();
+        })
+      );
+    }).addSetting((setting) => {
+      setting.setName(t("REVIEW_REMINDER_SHOW_NOTICE")).setDesc(t("REVIEW_REMINDER_SHOW_NOTICE_DESC")).addToggle(
+        (toggle) => toggle.setValue(this.dataManager.data.settings.reviewReminderShowNotice).setDisabled(!this.dataManager.data.settings.enableReviewReminders).onChange(async (value) => {
+          this.dataManager.data.settings.reviewReminderShowNotice = value;
+          await this.dataManager.savePluginData();
+        })
+      );
+    }).addSetting((setting) => {
+      setting.setName(t("REVIEW_REMINDER_PLAY_SOUND")).setDesc(t("REVIEW_REMINDER_PLAY_SOUND_DESC")).addToggle(
+        (toggle) => toggle.setValue(this.dataManager.data.settings.reviewReminderPlaySound).setDisabled(!this.dataManager.data.settings.enableReviewReminders).onChange(async (value) => {
+          this.dataManager.data.settings.reviewReminderPlaySound = value;
+          await this.dataManager.savePluginData();
+        })
+      );
+    }).addSetting((setting) => {
+      setting.setName(t("REVIEW_REMINDER_BOUNCE_DOCK")).setDesc(t("REVIEW_REMINDER_BOUNCE_DOCK_DESC")).addToggle(
+        (toggle) => toggle.setValue(this.dataManager.data.settings.reviewReminderBounceDock).setDisabled(!this.dataManager.data.settings.enableReviewReminders).onChange(async (value) => {
+          this.dataManager.data.settings.reviewReminderBounceDock = value;
+          await this.dataManager.savePluginData();
+        })
+      );
+    });
     const algorithmGroup = new import_obsidian24.SettingGroup(this.containerEl).setHeading(t("ALGORITHM"));
     algorithmGroup.addSetting((setting) => {
       const algoSettingEl = setting.setName(t("ALGORITHM")).setDesc("").addDropdown(
@@ -30668,7 +30833,7 @@ var StatusBarManager = class {
 
 // src/ui/tab-view-manager.tsx
 var TabViewManager = class {
-  // Add any needed resourced
+  // Add any needed resource
   constructor(plugin) {
     this.reviewQueueLoader = null;
     // Add any new other tab view types to this, then they'll be automatically registered
@@ -30681,7 +30846,6 @@ var TabViewManager = class {
       }
     ];
     this.plugin = plugin;
-    this.registerAllTabViews();
   }
   /**
    * Opens the Spaced Repetition tab view in the application.
@@ -30748,6 +30912,7 @@ var UIManager2 = class {
     this.plugin = plugin;
     appIcon();
     this.tabViewManager = new TabViewManager(this.plugin);
+    this.tabViewManager.registerAllTabViews();
     this.sidebarManager = new SidebarManager(this.plugin);
     this.statusBarManager = new StatusBarManager(this.plugin);
     this.plugin.registerEvent(
@@ -30782,14 +30947,16 @@ var UIManager2 = class {
       settings.showUpdateAvailableStatusBarItem
     );
     if (settings.showStatusBar) {
-      this.statusBarManager.setCount(
-        this.plugin.dataManager.osrCore.remainingDeckTree.getRepItemCount(
-          2 /* AnyItem */,
-          true
-        ),
-        settings.showStatusBar && settings.showCardStatusBarItem,
-        "card-review"
-      );
+      if (this.plugin.dataManager.osrCore.remainingDeckTree !== null) {
+        this.statusBarManager.setCount(
+          this.plugin.dataManager.osrCore.remainingDeckTree.getRepItemCount(
+            2 /* AnyItem */,
+            true
+          ),
+          settings.showStatusBar && settings.showCardStatusBarItem,
+          "card-review"
+        );
+      }
       this.statusBarManager.setCount(
         this.plugin.dataManager.osrCore.noteReviewQueue.dueNotesCount,
         settings.showStatusBar && settings.showNoteStatusBarItem,
@@ -30838,6 +31005,159 @@ var UIManager2 = class {
   setContentManager(contentManager) {
     this.contentManager = contentManager;
   }
+  /**
+   * Brings the current Obsidian window to the foreground on desktop.
+   *
+   * Reminders can optionally auto-open review, so we try to focus the existing app window
+   * instead of spawning a detached-looking modal behind another application.
+   */
+  focusObsidianWindow() {
+    var _a2, _b, _c, _d, _e, _f, _g, _h;
+    if (!import_obsidian32.Platform.isDesktopApp) {
+      return;
+    }
+    const activeLeaf = this.plugin.app.workspace.activeLeaf;
+    if (activeLeaf !== null) {
+      this.plugin.app.workspace.setActiveLeaf(activeLeaf, { focus: true });
+      (_b = (_a2 = activeLeaf.getContainer()) == null ? void 0 : _a2.win) == null ? void 0 : _b.focus();
+    }
+    (_c = activeDocument.defaultView) == null ? void 0 : _c.focus();
+    const electronWindow = this.getElectronWindow();
+    if (electronWindow !== null) {
+      if ((_d = electronWindow.isMinimized) == null ? void 0 : _d.call(electronWindow)) {
+        (_e = electronWindow.restore) == null ? void 0 : _e.call(electronWindow);
+      }
+      (_f = electronWindow.show) == null ? void 0 : _f.call(electronWindow);
+      (_g = electronWindow.focus) == null ? void 0 : _g.call(electronWindow);
+      (_h = electronWindow.moveTop) == null ? void 0 : _h.call(electronWindow);
+    }
+  }
+  /**
+   * Resolves the current Electron window using either the modern or legacy remote bridge.
+   *
+   * Different Obsidian/Electron combinations expose window APIs through `@electron/remote`
+   * or `electron.remote`, so the reminder feature probes both paths and degrades quietly.
+   */
+  getElectronWindow() {
+    var _a2, _b, _c, _d;
+    const requireFn = (_a2 = activeDocument.defaultView) == null ? void 0 : _a2.require;
+    if (requireFn === void 0) {
+      return null;
+    }
+    try {
+      const remoteModule = requireFn("@electron/remote");
+      const currentWindow = (_b = remoteModule == null ? void 0 : remoteModule.getCurrentWindow) == null ? void 0 : _b.call(remoteModule);
+      if (currentWindow !== null && currentWindow !== void 0) {
+        return currentWindow;
+      }
+    } catch (e2) {
+    }
+    try {
+      const electronModule = requireFn("electron");
+      const currentWindow = (_d = (_c = electronModule == null ? void 0 : electronModule.remote) == null ? void 0 : _c.getCurrentWindow) == null ? void 0 : _d.call(_c);
+      if (currentWindow !== null && currentWindow !== void 0) {
+        return currentWindow;
+      }
+    } catch (e2) {
+    }
+    return null;
+  }
+  /**
+   * Dispatches the configured reminder attention signals.
+   *
+   * Notice, sound, dock bounce, and optional auto-open are deliberately separated so users can
+   * enable only the channels that make sense for their workflow.
+   */
+  async notifyReviewReminder() {
+    const settings = this.plugin.dataManager.data.settings;
+    const reminderMessage = settings.reviewReminderMessage.trim() || t("REVIEW_REMINDER_NOTICE");
+    if (settings.reviewReminderShowNotice) {
+      new import_obsidian32.Notice(reminderMessage, 5e3);
+    }
+    if (settings.reviewReminderPlaySound) {
+      await this.playReviewReminderBeep();
+    }
+    if (settings.reviewReminderBounceDock) {
+      this.bounceDockIcon();
+    }
+  }
+  /**
+   * Plays a short synthesized alert tone for desktop reminders.
+   *
+   * Web Audio availability differs across Electron environments, so this stays best-effort and
+   * exits silently when audio cannot be initialized or resumed.
+   */
+  async playReviewReminderBeep() {
+    var _a2, _b;
+    if (!import_obsidian32.Platform.isDesktopApp) {
+      return;
+    }
+    const windowObject = activeDocument.defaultView;
+    const AudioContextCtor = (_b = (_a2 = windowObject == null ? void 0 : windowObject.AudioContext) != null ? _a2 : windowObject == null ? void 0 : windowObject.webkitAudioContext) != null ? _b : null;
+    if (AudioContextCtor === null) {
+      return;
+    }
+    let context = null;
+    try {
+      context = new AudioContextCtor();
+      if (context.state === "suspended") {
+        await context.resume();
+      }
+      if (context.state !== "running") {
+        return;
+      }
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = 880;
+      gainNode.gain.setValueAtTime(1e-4, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.08, context.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(1e-4, context.currentTime + 0.35);
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.35);
+      await new Promise((resolve2) => {
+        oscillator.onended = () => resolve2();
+      });
+    } catch (e2) {
+    } finally {
+      if (context !== null && context.state !== "closed") {
+        void context.close().catch(() => {
+        });
+      }
+    }
+  }
+  /**
+   * Requests a dock bounce on desktop when reminders fire.
+   *
+   * As with window focusing, we support both remote APIs because plugin hosts may expose either
+   * `@electron/remote` or the legacy `electron.remote` bridge.
+   */
+  bounceDockIcon() {
+    var _a2, _b, _c, _d, _e, _f;
+    if (!import_obsidian32.Platform.isDesktopApp) {
+      return;
+    }
+    const requireFn = (_a2 = activeDocument.defaultView) == null ? void 0 : _a2.require;
+    if (requireFn === void 0) {
+      return;
+    }
+    let electronApp = null;
+    try {
+      const remoteModule = requireFn("@electron/remote");
+      electronApp = (_b = remoteModule == null ? void 0 : remoteModule.app) != null ? _b : null;
+    } catch (e2) {
+    }
+    if (electronApp === null) {
+      try {
+        const electronModule = requireFn("electron");
+        electronApp = (_d = (_c = electronModule == null ? void 0 : electronModule.remote) == null ? void 0 : _c.app) != null ? _d : null;
+      } catch (e2) {
+      }
+    }
+    (_f = (_e = electronApp == null ? void 0 : electronApp.dock) == null ? void 0 : _e.bounce) == null ? void 0 : _f.call(_e, "informational");
+  }
   async openDeckContainer(mode, singleNote) {
     if (this.plugin.dataManager.osrCore === null)
       throw new Error("SR plugin or OSR app core not initialized!!!");
@@ -30846,6 +31166,7 @@ var UIManager2 = class {
     if (this.plugin.dataManager.syncLock) {
       return;
     }
+    this.focusObsidianWindow();
     await this.plugin.dataManager.sync();
     const settings = this.plugin.dataManager.data.settings;
     const isMobile = import_obsidian32.Platform.isMobile || EmulatedPlatform().isMobile;
@@ -30861,11 +31182,13 @@ var UIManager2 = class {
     } else {
       this.openFlashcardModal(reviewQueueLoader);
     }
+    this.focusObsidianWindow();
   }
   openFlashcardModal(reviewQueueLoader) {
     if (this.plugin.dataManager.data === null)
       throw new Error("SR plugin or data not initialized!!!");
     this.setSRViewInFocus(true);
+    this.focusObsidianWindow();
     new SRModalView(
       this.plugin.app,
       this.plugin,
@@ -36534,6 +36857,8 @@ var SRPlugin = class _SRPlugin extends import_obsidian39.Plugin {
     this._nextNoteReviewHandler = null;
     this._commandManager = null;
     this.isInitialized = false;
+    this.reviewReminderTimer = null;
+    this.isReviewReminderChecking = false;
   }
   onload() {
     this.uiManager = new UIManager2(this);
@@ -36556,6 +36881,7 @@ var SRPlugin = class _SRPlugin extends import_obsidian39.Plugin {
       await this.uiManager.onLayoutReady();
       this.commandManager.onLayoutReady();
       this.isInitialized = true;
+      this.restartReviewReminders();
     });
   }
   get uiManager() {
@@ -36591,9 +36917,20 @@ var SRPlugin = class _SRPlugin extends import_obsidian39.Plugin {
     return this._dataManager !== null;
   }
   onunload() {
+    this.stopReviewReminders();
     this.app.workspace.getLeavesOfType(REVIEW_QUEUE_VIEW_TYPE).forEach((leaf) => leaf.detach());
     this.uiManager.destroy();
     this.commandManager.onunload();
+  }
+  restartReviewReminders() {
+    this.stopReviewReminders();
+    this.startReviewReminders();
+  }
+  addCustomHotkeys() {
+    this.commandManager.addCustomHotkeys();
+  }
+  removeCustomHotkeys() {
+    this.commandManager.removeCustomHotkeys();
   }
   getPreparedReviewSequencer(fullDeckTree, remainingDeckTree, reviewMode) {
     const deckIterator = _SRPlugin.createDeckTreeIterator(
@@ -36639,6 +36976,101 @@ var SRPlugin = class _SRPlugin extends import_obsidian39.Plugin {
     if (this.dataManager.data.settings.enableNoteReviewPaneOnStartup) {
       this.uiManager.sidebarManager.redraw();
     }
+  }
+  /**
+   * Starts the periodic review-reminder loop once the plugin is fully initialized.
+   *
+   * The reminder feature depends on loaded settings, synced review data, and a ready UI.
+   * Running it earlier risks duplicate startup checks or reminders based on stale state.
+   */
+  startReviewReminders() {
+    if (!this.isInitialized || !this.dataManager.data.settings.enableReviewReminders) {
+      return;
+    }
+    if (this.dataManager.data.settings.reviewReminderCheckOnStartup) {
+      void this.checkReviewReminders();
+    }
+    const intervalMinutes = Math.min(
+      Math.max(this.dataManager.data.settings.reviewReminderIntervalMinutes, 1),
+      1440
+    );
+    this.reviewReminderTimer = window.setInterval(
+      () => {
+        void this.checkReviewReminders();
+      },
+      intervalMinutes * 60 * 1e3
+    );
+  }
+  /**
+   * Stops the reminder interval and clears the in-flight guard.
+   *
+   * The guard is reset here as well so that disabling and immediately re-enabling reminders
+   * never leaves the scheduler stuck in a "currently checking" state.
+   */
+  stopReviewReminders() {
+    if (this.reviewReminderTimer !== null) {
+      window.clearInterval(this.reviewReminderTimer);
+      this.reviewReminderTimer = null;
+    }
+    this.isReviewReminderChecking = false;
+  }
+  /**
+   * Performs a single reminder check.
+   *
+   * We intentionally short-circuit when SR is already open, the user is editing text, or a
+   * sync is already running. In those states, a reminder would be either redundant or
+   * disruptive, and auto-opening review would compete with the user's current context.
+   */
+  async checkReviewReminders() {
+    if (!this.isInitialized || !this.isDataManagerLoaded() || !this.dataManager.isOsrCoreLoaded() || this.isReviewReminderChecking || !this.dataManager.data.settings.enableReviewReminders) {
+      return;
+    }
+    if (this.uiManager.uiState !== 0 /* Closed */ || this.uiManager.isSRInFocus) {
+      return;
+    }
+    if (this.isUserEditingText() || this.dataManager.syncLock) {
+      return;
+    }
+    this.isReviewReminderChecking = true;
+    try {
+      await this.dataManager.sync();
+      const remainingDeckTree = this.dataManager.osrCore.remainingDeckTree;
+      if (remainingDeckTree === null) {
+        return;
+      }
+      const reviewCardCount = remainingDeckTree.getDistinctRepItemCount(
+        2 /* AnyItem */,
+        true
+      );
+      if (reviewCardCount <= 0 || this.uiManager.uiState !== 0 /* Closed */ || this.uiManager.isSRInFocus || this.isUserEditingText()) {
+        return;
+      }
+      await this.uiManager.notifyReviewReminder();
+      if (this.dataManager.data.settings.reviewReminderAutoOpen) {
+        await this.uiManager.openDeckContainer(1 /* Review */);
+      }
+    } finally {
+      this.isReviewReminderChecking = false;
+    }
+  }
+  /**
+   * Detects whether the user is actively typing in Obsidian.
+   *
+   * The reminder flow uses this to avoid stealing focus or opening review while the user is in
+   * a text field, contenteditable surface, or CodeMirror-backed editor.
+   */
+  isUserEditingText() {
+    const activeElement = activeDocument.activeElement;
+    if (activeElement === null) {
+      return false;
+    }
+    if (activeElement instanceof HTMLTextAreaElement || activeElement instanceof HTMLInputElement) {
+      return true;
+    }
+    if (activeElement instanceof HTMLElement) {
+      return activeElement.isContentEditable || activeElement.closest(".cm-editor, .markdown-source-view") !== null;
+    }
+    return false;
   }
   static createDeckTreeIterator(settings) {
     let cardOrder = RepItemOrder[settings.flashcardCardOrder];

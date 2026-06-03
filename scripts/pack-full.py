@@ -12,7 +12,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Configuration
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 TARGET = f"ThinkDoKit-Full-{VERSION}.zip"
 EXCLUDE_FILES = {".DS_Store"}
 

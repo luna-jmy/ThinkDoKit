@@ -1,0 +1,39 @@
+{
+  "scanFolders": [],
+  "excludeFolders": [
+    "900 Assets",
+    "400 Archive",
+    "700 Books"
+  ],
+  "defaultView": "eisenhower",
+  "includeCompleted": false,
+  "openLocation": "tab",
+  "completionMarkers": [
+    "x",
+    "X",
+    "i",
+    "n",
+    "!",
+    "p",
+    "c",
+    ">",
+    "<"
+  ],
+  "cancelledMarkers": [
+    "-",
+    "/"
+  ],
+  "listGroupByFolder": true,
+  "listGroupByFolderDepth": 2,
+  "newTaskTargetPath": "500 Journal/540 Daily/YYYY-MM-DD.md",
+  "newTaskTargetHeading": "## 👀 GTD任务看板",
+  "trackCompletionDate": false,
+  "urgentDaysRange": 3,
+  "showCalendarWeekends": true,
+  "showCalendarMonthWeekends": true,
+  "calendarListShowFullMonth": false,
+  "showCalendarInProcessTasks": true,
+  "calendarFirstDayOfWeek": "monday",
+  "dueDateDisplayRange": 1,
+  "hideFutureStartTasks": false
+}
