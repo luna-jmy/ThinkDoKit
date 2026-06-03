@@ -10,6 +10,7 @@ The format is based on Keep a Changelog, and version numbers follow the release 
 
 - Added the in-house `Task Matrix` Obsidian plugin
 - Added standard repository documents in the project root
+- Added Apache 2.0 licensing metadata for the repository
 
 ### Changed
 
@@ -17,6 +18,11 @@ The format is based on Keep a Changelog, and version numbers follow the release 
 - Moved key user-facing docs into `vault/900 Assets/950 Readme/`
 - Updated packaging scripts to version `1.2.2`
 - Continued excluding `.DS_Store` from release archives
+- Updated bundled Obsidian plugin files and related configuration
+
+### Removed
+
+- Removed the separate `vault-english/` distribution tree
 
 ## [1.2.1] - 2026-03-09
 
@@ -37,4 +43,4 @@ The format is based on Keep a Changelog, and version numbers follow the release 
 
 - Updated QuickAdd configuration, templates, queries and project scripts
 
-For the detailed Chinese release notes used inside the vault, see `vault/900 Assets/950 Readme/ThinkDoKit 更新日志.md`.
+For end-user release notes inside the vault, see `vault/900 Assets/950 Readme/ThinkDoKit 更新日志.md`.

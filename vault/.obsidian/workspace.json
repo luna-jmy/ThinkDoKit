@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "6176137f0735b68a",
+        "id": "03799b57e6f43738",
         "type": "tabs",
         "children": [
           {
-            "id": "e65728cd59c772d8",
+            "id": "e0680db384dd856e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "900 Assets/950 Readme/ThinkDoKit 更新日志.md",
-                "mode": "source",
+                "file": "900 Assets/920 Queries/项目中心（升级）.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ThinkDoKit 更新日志"
+              "title": "项目中心（升级）"
             }
           }
         ]
@@ -71,7 +71,10 @@
             "type": "leaf",
             "state": {
               "type": "bookmarks",
-              "state": {},
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
               "icon": "lucide-bookmark",
               "title": "书签"
             }
@@ -190,7 +193,7 @@
                 "file": "900 Assets/920 Queries/项目中心（升级）.md"
               },
               "icon": "lucide-info",
-              "title": "👉从这里开始 Start from here!的笔记属性"
+              "title": "笔记属性"
             }
           },
           {
@@ -204,7 +207,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -236,35 +239,35 @@
       "obsidian-memos:Thino": false
     }
   },
-  "active": "e65728cd59c772d8",
+  "active": "c2bbd590909f709a",
   "lastOpenFiles": [
-    "👉从这里开始 Start from here!.md",
-    "900 Assets/920 Queries/按钮中心.md",
+    "900 Assets/920 Queries/任务中心.md",
     "900 Assets/920 Queries/项目中心（升级）.md",
+    "900 Assets/920 Queries/按钮中心.md",
+    "900 Assets/920 Queries/笔记数据库.base",
+    "900 Assets/920 Queries/Keywords Query.md",
+    "900 Assets/920 Queries/日志数据统计.md",
+    "900 Assets/920 Queries/闪卡统计.md",
+    "900 Assets/920 Queries/我的书架.md",
+    "900 Assets/920 Queries/任务月历.md",
+    "900 Assets/920 Queries/项目任务查询.md",
+    "900 Assets/920 Queries/Inbox清单中心.md",
+    "900 Assets/950 Readme/ThinkDoKit 更新日志.md",
+    "👉从这里开始 Start from here!.md",
     "Excalidraw/Drawing 2026-06-03 20.53.37.excalidraw.md",
     "Excalidraw/Drawing 2026-06-03 20.50.11.excalidraw.md",
     "Excalidraw/Drawing 2026-06-03 20.33.44.excalidraw.md",
-    "900 Assets/950 Readme/ThinkDoKit 更新日志.md",
     "900 Assets/950 Readme/ThinkDoKit（知行盒子）使用指南.md",
     "Excalidraw/Drawing 2026-06-03 20.21.08.excalidraw.md",
     "Excalidraw/Drawing 2026-05-31 23.07.27.excalidraw.md",
     "Excalidraw",
     "500 Journal/540 Daily/2026-03-09.md",
     "100 Projects/测试项目20260309.md",
-    "900 Assets/920 Queries/任务中心.md",
     "500 Journal/540 Daily/2026-03-07.md",
-    "900 Assets/920 Queries/Inbox清单中心.md",
-    "900 Assets/920 Queries/项目任务查询.md",
-    "900 Assets/920 Queries/任务月历.md",
-    "900 Assets/920 Queries/闪卡统计.md",
     "未命名.md",
     "100 Projects/202501项目1/测试项目1.md",
     "100 Projects/202511无主文件项目/未命名.md",
     "100 Projects/202512项目9/测试项目2.md",
-    "100 Projects/20260309test/09test.md",
-    "100 Projects/20260309test/123.md",
-    "100 Projects/202603test/test.md",
-    "900 Assets/910 Templates/TPL-Project.md",
     "100 Projects/202603test",
     "100 Projects/20260309test",
     "900 Assets/960 Scripts/gantt-with-svg-export.js",
@@ -273,7 +276,6 @@
     "900 Assets/960 Scripts/dynamic-chart-kanban3.js",
     "900 Assets/960 Scripts/dynamic-chart.js",
     "900 Assets/960 Scripts/annual-daily-task-stats.js",
-    "900 Assets/960 Scripts/monthly-archive-task-stats.js",
     "内容创作工作台设计.canvas",
     "知识管理工作台设计.canvas",
     "900 Assets/990 Attachments/unnamed (1) 1.png",

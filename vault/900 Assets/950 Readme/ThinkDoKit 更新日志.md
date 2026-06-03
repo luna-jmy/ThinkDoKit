@@ -5,17 +5,11 @@ obsidianUIMode: preview
 ---
 
 ## 1.2.2 Update
-- 新增功能：
-	- 新增自有插件 `Task Matrix`
-		- 提供任务矩阵看板视图
-		- 支持列表、GTD、四象限等任务管理场景
-- 更新优化：
-	- 中英文内容方案调整为共用同一个 vault，移除独立的 `vault-english`
-	- 打包脚本同步更新为 `1.2.2`
-	- 打包时继续排除 `.DS_Store` 文件，避免 macOS 缓存文件进入发布包
-	- Obsidian 插件配置更新，并同步纳入最新 vault 配置
-- 文档整理：
-	- 使用指南、更新日志、快速入门 Tips 统一整理到 `900 Assets/950 Readme`
+- 新增功能
+	- 新增自有插件 `Task Matrix`，支持任务矩阵看板视图，可用于列表、GTD、四象限等任务管理场景
+- 更新优化
+	- Obsidian 插件与配置已同步更新到最新版本
+	- 使用指南、更新日志、快速入门 Tips 已统一整理到 `900 Assets/950 Readme`
 
 ## 1.2.0 Update
 - 新增功能：

@@ -1,0 +1,95 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, for example v1.2.2"
+        required: true
+        type: string
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve release tag
+        id: tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate packaged version
+        shell: bash
+        run: |
+          TAG="${{ steps.tag.outputs.value }}"
+          VERSION="${TAG#v}"
+          python3 - <<'PY' "$VERSION"
+          import re
+          import sys
+          from pathlib import Path
+
+          expected = sys.argv[1]
+          files = [
+              Path("scripts/pack-full.py"),
+              Path("scripts/pack-lite.py"),
+              Path("scripts/pack-demo.py"),
+          ]
+
+          versions = {}
+          for path in files:
+              content = path.read_text(encoding="utf-8")
+              match = re.search(r'^VERSION = "([^"]+)"', content, re.M)
+              if not match:
+                  raise SystemExit(f"Missing VERSION in {path}")
+              versions[str(path)] = match.group(1)
+
+          unique_versions = set(versions.values())
+          if len(unique_versions) != 1:
+              raise SystemExit(f"Version mismatch across scripts: {versions}")
+
+          actual = unique_versions.pop()
+          if actual != expected:
+              raise SystemExit(
+                  f"Tag version {expected} does not match packaging version {actual}"
+              )
+
+          print(f"Validated release version: {actual}")
+          PY
+
+      - name: Build release packages
+        run: |
+          python3 scripts/pack-full.py
+          python3 scripts/pack-lite.py
+          python3 scripts/pack-demo.py
+
+      - name: Create or update GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.value }}
+          name: ${{ steps.tag.outputs.value }}
+          generate_release_notes: true
+          files: |
+            releases/ThinkDoKit-Full-*.zip
+            releases/ThinkDoKit-Lite-*.zip
+            releases/ThinkDoKit-Demo-*.zip
+          overwrite_files: true

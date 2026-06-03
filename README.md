@@ -24,6 +24,12 @@ python3 scripts/pack-demo.py
 
 生成的 ZIP 会写入 `releases/` 目录。
 
+## Release Workflow
+
+- Push a tag like `v1.2.2` to trigger the GitHub release workflow automatically
+- Or run the `release` workflow manually in GitHub Actions and provide a tag
+- The workflow builds all three packages and uploads them to the matching GitHub Release
+
 ## Project Structure
 
 ```text
