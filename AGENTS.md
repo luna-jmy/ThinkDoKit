@@ -147,8 +147,9 @@ ThinkDoKit/
 │   └── 900 Assets/      # Templates, queries, scripts
 │       ├── 910 Templates/
 │       ├── 920 Queries/
-│       ├── 950 Readme/
+│       ├── 950 Readme/     # Vault-wide guides (ThinkDoKit guide, theme usage) — synced from working vault
 │       └── 960 Scripts/    # Dataview JS and QuickAdd scripts
+├── seed/                # Demo content & base vault configs (NOT in vault/) — overlaid at packaging
 ├── releases/            # Generated ZIP distributions
 └── .github/             # GitHub workflows
 ```
@@ -216,7 +217,7 @@ await app.vault.modify(activeFile, updatedContent);
 3. Use `dv` and `app` globals
 4. Handle errors with user messages
 5. Test in Obsidian via Dataview code block
-6. Document usage in `vault/900 Assets/950 Readme/` if complex
+6. Document usage in `vault/300 Resources/310 Scripts&Readme/` if complex (plugin/script docs go to 310; 950 Readme is reserved for vault-wide guides)
 
 ### QuickAdd Script
 1. Create `.js` file in `vault/900 Assets/960 Scripts/`
