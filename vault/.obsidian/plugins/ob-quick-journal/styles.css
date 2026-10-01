@@ -1,0 +1,299 @@
+/* ============================================================================
+ * Quick Journal —— 插件样式
+ *
+ * 硬约束（与系列内 cw- / pm- / tm- 同一口径）：
+ * - 所有选择器都限制在 `qj-` 前缀类名下，无全局选择器；
+ * - 不使用 `!important`，不抬 z-index；
+ * - 颜色 / 间距 / 圆角一律取 Obsidian 主题变量，明暗主题自动适配。
+ * ==========================================================================*/
+
+.qj-summary-root {
+	padding: var(--size-4-2);
+}
+
+/* ── 工具栏 ────────────────────────────────────────────────────────────── */
+
+.qj-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin-bottom: var(--size-4-4);
+	padding-bottom: var(--size-2-3);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.qj-toolbar-nav {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin-left: auto;
+}
+
+.qj-toolbar-key {
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+	min-width: 5em;
+	text-align: center;
+}
+
+.qj-btn {
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: var(--size-2-1) var(--size-4-2);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+}
+
+.qj-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-btn.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.qj-icon-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: var(--size-2-1);
+}
+
+/* ── 卡片区 ─────────────────────────────────────────────────────────────── */
+
+.qj-period-header {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	margin-bottom: var(--size-2-3);
+}
+
+.qj-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: var(--size-4-3);
+}
+
+.qj-card {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	padding: var(--size-4-3);
+}
+
+.qj-card-title {
+	font-weight: var(--font-bold);
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	margin-bottom: var(--size-2-3);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.qj-metric-grid {
+	display: flex;
+	gap: var(--size-4-4);
+}
+
+.qj-metric {
+	display: flex;
+	flex-direction: column;
+}
+
+.qj-metric-value {
+	font-size: var(--font-ui-larger);
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+}
+
+.qj-metric-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.qj-muted {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.qj-empty {
+	color: var(--text-muted);
+	padding: var(--size-4-6);
+	text-align: center;
+}
+
+/* ── 打卡 / 数据行 ─────────────────────────────────────────────────────── */
+
+.qj-checkin-row,
+.qj-data-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	padding: var(--size-2-1) 0;
+}
+
+.qj-checkin-label {
+	flex: 0 0 6em;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+}
+
+.qj-bar {
+	flex: 1 1 auto;
+	display: flex;
+	height: 6px;
+	border-radius: var(--radius-s);
+	overflow: hidden;
+	background: var(--background-modifier-border);
+	min-width: 4em;
+}
+
+.qj-bar-yes {
+	background: var(--text-success, var(--interactive-accent));
+}
+
+.qj-bar-no {
+	background: var(--text-faint, var(--background-modifier-border));
+}
+
+.qj-checkin-count,
+.qj-data-value {
+	flex: 0 0 auto;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+/* ── 表单（捕获弹窗） ──────────────────────────────────────────────────── */
+
+.qj-form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	padding: var(--size-2-2) 0;
+}
+
+.qj-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-1);
+}
+
+.qj-field-label {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+}
+
+.qj-input {
+	width: 100%;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: var(--size-2-2) var(--size-2-3);
+	color: var(--text-normal);
+	font-size: var(--font-ui-medium);
+}
+
+.qj-textarea {
+	min-height: 5em;
+	resize: vertical;
+}
+
+.qj-boolseg {
+	display: flex;
+	gap: var(--size-2-2);
+}
+
+.qj-boolseg-btn {
+	flex: 1;
+	font-size: var(--font-ui-medium);
+	padding: var(--size-4-2);
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	color: var(--text-normal);
+}
+
+.qj-boolseg-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-boolseg-btn.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.qj-bool-skip {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.qj-form-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--size-2-2);
+	margin-top: var(--size-2-2);
+}
+
+.qj-btn-primary {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.qj-btn-primary:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.qj-btn-icon {
+	display: inline-flex;
+	margin-left: var(--size-2-1);
+}
+
+/* ── 动作选择 ──────────────────────────────────────────────────────────── */
+
+.qj-action-list {
+	display: flex;
+	flex-direction: column;
+	padding: var(--size-2-2) 0;
+}
+
+.qj-action-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	color: var(--text-normal);
+}
+
+.qj-action-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-action-icon {
+	color: var(--text-accent, var(--text-muted));
+}
+
+.qj-action-name {
+	font-size: var(--font-ui-medium);
+}
+
+.qj-confirm-body {
+	white-space: pre-wrap;
+	color: var(--text-normal);
+}
+
+/* ── 设置 ──────────────────────────────────────────────────────────────── */
+
+.qj-setting-note {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}

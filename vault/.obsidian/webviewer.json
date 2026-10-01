@@ -1,5 +1,7 @@
 {
   "openExternalURLs": true,
   "enableAdblocking": true,
-  "markdownPath": "300 Resources/310 Clipplings"
+  "markdownPath": "300 Resources/310 Clippings",
+  "homepage": "https://www.zhihu.com",
+  "searchEngine": "google"
 }

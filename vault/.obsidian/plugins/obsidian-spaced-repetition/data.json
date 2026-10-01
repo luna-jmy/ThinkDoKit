@@ -6,27 +6,36 @@
       "#book"
     ],
     "flashcardTagsToIgnore": [],
-    "convertFoldersToDecks": true,
-    "burySiblingCards": false,
+    "convertFoldersToDecks": false,
+    "burySiblingCards": true,
     "flashcardCardOrder": "DueFirstRandom",
-    "flashcardDeckOrder": "PrevDeckComplete_Sequential",
+    "flashcardDeckOrder": "PrevDeckComplete_Random",
     "convertClozePatternsToInputs": false,
-    "convertHighlightsToClozes": true,
+    "convertHighlightsToClozes": false,
     "convertBoldTextToClozes": false,
     "convertCurlyBracketsToClozes": false,
     "clozePatterns": [
-      "==[123;;]answer[;;hint]=="
+      "{{[123::]answer[::hint]}}"
     ],
     "singleLineCardSeparator": ";;",
     "singleLineReversedCardSeparator": ";;;",
     "multilineCardSeparator": "?",
     "multilineReversedCardSeparator": "??",
     "multilineCardEndMarker": "",
+    "enableReviewReminders": false,
+    "reviewReminderIntervalMinutes": 5,
+    "reviewReminderCheckOnStartup": false,
+    "reviewReminderMessage": "",
+    "reviewReminderAutoOpen": true,
+    "reviewReminderShowNotice": true,
+    "reviewReminderPlaySound": true,
+    "reviewReminderBounceDock": true,
     "randomizeCardOrder": null,
     "enableNoteReviewPaneOnStartup": true,
     "tagsToReview": [
       "#review",
-      "#zenttelkasen"
+      "#zenttelkasen",
+      "#llmwiki"
     ],
     "noteTagsToIgnore": [],
     "noteFoldersToIgnore": [
@@ -37,17 +46,10 @@
       "400 Archive/",
       "500 Journal/",
       "000 Inbox/",
-      "300 Resources/310 Clippings",
-      "300 Resources/320 References",
-      "300 Resources/340 Courses",
-      "300 Resources/350 Articles",
-      "300 Resources/360 PersonalMemos",
-      "300 Resources/360 WorkMemos",
-      "300 Resources/370 MyContent",
-      "300 Resources/390 EverythingElse"
+      "300 Resources/"
     ],
-    "openRandomNote": false,
-    "autoNextNote": false,
+    "openRandomNote": true,
+    "autoNextNote": true,
     "showFileMenuReviewOptions": true,
     "deleteTagsOnSchedulingDataDeletion": false,
     "maxNDaysNotesReviewQueue": 365,
@@ -59,8 +61,8 @@
     "initiallyExpandAllSubdecksInTree": true,
     "showContextInCards": true,
     "showIntervalInReviewButtons": true,
-    "flashcardHeightPercentage": 50,
-    "flashcardWidthPercentage": 40,
+    "flashcardHeightPercentage": 55.03875968992248,
+    "flashcardWidthPercentage": 54.97076023391813,
     "flashcardHeightPercentageMobile": 100,
     "flashcardWidthPercentageMobile": 100,
     "flashcardAgainText": "Again",
@@ -91,7 +93,7 @@
     "preferredDateFormatForNoteReviewQueue": "MMM DD YYYY",
     "preferredLocale": "-"
   },
-  "buryDate": "2026-06-03",
+  "buryDate": "2026-10-01",
   "buryList": [],
   "historyDeck": null,
   "scheduleData": {

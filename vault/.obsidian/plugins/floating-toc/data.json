@@ -5,11 +5,13 @@
   "isLoadOnMobile": true,
   "isLeft": false,
   "isDefaultPin": false,
-  "isTooltip": true,
+  "isTooltip": false,
   "defaultCollapsedLevel": 6,
   "expandAllSubheadings": false,
   "isDefaultHide": false,
   "enableHeadingNowrap": false,
-  "barStyle": "enable-edge-style",
-  "enableBarHeadingText": false
+  "barStyle": "enable-bar-icon",
+  "enableBarHeadingText": false,
+  "enableContentOffset": false,
+  "enableDragReorder": false
 }

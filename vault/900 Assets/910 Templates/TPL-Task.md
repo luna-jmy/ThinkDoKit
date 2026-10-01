@@ -10,7 +10,7 @@ area:
 context: 
 deadline: 
 scheduled: 
-created: 
+created: 2025-09-18
 completed: false
 completion_date:
 ---

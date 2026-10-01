@@ -210,12 +210,12 @@ var require_common = __commonJS({
       createDebug.skips = [];
       createDebug.formatters = {};
       function selectColor(namespace) {
-        let hash3 = 0;
+        let hash = 0;
         for (let i = 0; i < namespace.length; i++) {
-          hash3 = (hash3 << 5) - hash3 + namespace.charCodeAt(i);
-          hash3 |= 0;
+          hash = (hash << 5) - hash + namespace.charCodeAt(i);
+          hash |= 0;
         }
-        return createDebug.colors[Math.abs(hash3) % createDebug.colors.length];
+        return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
       }
       createDebug.selectColor = selectColor;
       function createDebug(namespace) {
@@ -578,11 +578,6 @@ var require_follow_redirects = __commonJS({
     } catch (error) {
       useNativeURL = error.code === "ERR_INVALID_URL";
     }
-    var sensitiveHeaders = [
-      "Authorization",
-      "Proxy-Authorization",
-      "Cookie"
-    ];
     var preservedUrlFields = [
       "auth",
       "host",
@@ -630,7 +625,6 @@ var require_follow_redirects = __commonJS({
           self.emit("error", cause instanceof RedirectionError ? cause : new RedirectionError({ cause }));
         }
       };
-      this._headerFilter = new RegExp("^(?:" + sensitiveHeaders.concat(options.sensitiveHeaders).map(escapeRegex2).join("|") + ")$", "i");
       this._performRequest();
     }
     RedirectableRequest.prototype = Object.create(Writable.prototype);
@@ -768,9 +762,6 @@ var require_follow_redirects = __commonJS({
       if (!options.headers) {
         options.headers = {};
       }
-      if (!isArray(options.sensitiveHeaders)) {
-        options.sensitiveHeaders = [];
-      }
       if (options.host) {
         if (!options.hostname) {
           options.hostname = options.host;
@@ -867,7 +858,7 @@ var require_follow_redirects = __commonJS({
       this._isRedirect = true;
       spreadUrlObject(redirectUrl, this._options);
       if (redirectUrl.protocol !== currentUrlParts.protocol && redirectUrl.protocol !== "https:" || redirectUrl.host !== currentHost && !isSubdomain(redirectUrl.host, currentHost)) {
-        removeMatchingHeaders(this._headerFilter, this._options.headers);
+        removeMatchingHeaders(/^(?:(?:proxy-)?authorization|cookie)$/i, this._options.headers);
       }
       if (isFunction(beforeRedirect)) {
         var responseDetails = {
@@ -1016,9 +1007,6 @@ var require_follow_redirects = __commonJS({
       var dot = subdomain.length - domain.length - 1;
       return dot > 0 && subdomain[dot] === "." && subdomain.endsWith(domain);
     }
-    function isArray(value) {
-      return value instanceof Array;
-    }
     function isString2(value) {
       return typeof value === "string" || value instanceof String;
     }
@@ -1030,9 +1018,6 @@ var require_follow_redirects = __commonJS({
     }
     function isURL(value) {
       return URL2 && value instanceof URL2;
-    }
-    function escapeRegex2(regex) {
-      return regex.replace(/[\]\\/()*+?.$]/g, "\\$&");
     }
     module2.exports = wrap2({ http: http2, https: https2 });
     module2.exports.wrap = wrap2;
@@ -1394,9 +1379,9 @@ var require_turndown = __commonJS({
         var prefix = options.bulletListMarker + "   ";
         var parent2 = node.parentNode;
         if (parent2.nodeName === "OL") {
-          var start2 = parent2.getAttribute("start");
+          var start = parent2.getAttribute("start");
           var index2 = Array.prototype.indexOf.call(parent2.children, node);
-          prefix = (start2 ? Number(start2) + index2 : index2 + 1) + ".  ";
+          prefix = (start ? Number(start) + index2 : index2 + 1) + ".  ";
         }
         return prefix + content + (node.nextSibling && !/\n$/.test(content) ? "\n" : "");
       }
@@ -1443,22 +1428,22 @@ var require_turndown = __commonJS({
         var href = node.getAttribute("href");
         var title = node.title ? ' "' + node.title + '"' : "";
         var replacement;
-        var reference2;
+        var reference;
         switch (options.linkReferenceStyle) {
           case "collapsed":
             replacement = "[" + content + "][]";
-            reference2 = "[" + content + "]: " + href + title;
+            reference = "[" + content + "]: " + href + title;
             break;
           case "shortcut":
             replacement = "[" + content + "]";
-            reference2 = "[" + content + "]: " + href + title;
+            reference = "[" + content + "]: " + href + title;
             break;
           default:
             var id = this.references.length + 1;
             replacement = "[" + content + "][" + id + "]";
-            reference2 = "[" + id + "]: " + href + title;
+            reference = "[" + id + "]: " + href + title;
         }
-        this.references.push(reference2);
+        this.references.push(reference);
         return replacement;
       },
       references: [],
@@ -1566,9 +1551,9 @@ var require_turndown = __commonJS({
           return rule;
         return this.defaultRule;
       },
-      forEach: function(fn2) {
+      forEach: function(fn) {
         for (var i = 0; i < this.array.length; i++)
-          fn2(this.array[i], i);
+          fn(this.array[i], i);
       }
     };
     function findRule(rules2, node, options) {
@@ -2043,9 +2028,9 @@ ${str}
       service.addRule("media-enex", {
         filter: (node) => node.nodeName === "DIV" && node.getAttribute("node") === "EN-MEDIA" && !!node.getAttribute("hash") && !!node.getAttribute("type"),
         replacement: (str, ele) => {
-          const hash3 = ele.getAttribute("hash");
+          const hash = ele.getAttribute("hash");
           const type = ele.getAttribute("type") || "";
-          const filename = `${hash3}${mime_1.default.getExtension(type)}`;
+          const filename = `${hash}${mime_1.default.getExtension(type)}`;
           const isImage = mime_1.default.isImage(type);
           if (isImage) {
             return `<img src="@attachment/${filename}" />`;
@@ -2128,6 +2113,2092 @@ ${str}
       return html3;
     };
     exports.default = html2markdown2;
+  }
+});
+
+// node_modules/qrcode/lib/can-promise.js
+var require_can_promise = __commonJS({
+  "node_modules/qrcode/lib/can-promise.js"(exports, module2) {
+    module2.exports = function() {
+      return typeof Promise === "function" && Promise.prototype && Promise.prototype.then;
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/utils.js
+var require_utils = __commonJS({
+  "node_modules/qrcode/lib/core/utils.js"(exports) {
+    var toSJISFunction;
+    var CODEWORDS_COUNT = [
+      0,
+      26,
+      44,
+      70,
+      100,
+      134,
+      172,
+      196,
+      242,
+      292,
+      346,
+      404,
+      466,
+      532,
+      581,
+      655,
+      733,
+      815,
+      901,
+      991,
+      1085,
+      1156,
+      1258,
+      1364,
+      1474,
+      1588,
+      1706,
+      1828,
+      1921,
+      2051,
+      2185,
+      2323,
+      2465,
+      2611,
+      2761,
+      2876,
+      3034,
+      3196,
+      3362,
+      3532,
+      3706
+    ];
+    exports.getSymbolSize = function getSymbolSize(version) {
+      if (!version)
+        throw new Error('"version" cannot be null or undefined');
+      if (version < 1 || version > 40)
+        throw new Error('"version" should be in range from 1 to 40');
+      return version * 4 + 17;
+    };
+    exports.getSymbolTotalCodewords = function getSymbolTotalCodewords(version) {
+      return CODEWORDS_COUNT[version];
+    };
+    exports.getBCHDigit = function(data2) {
+      let digit = 0;
+      while (data2 !== 0) {
+        digit++;
+        data2 >>>= 1;
+      }
+      return digit;
+    };
+    exports.setToSJISFunction = function setToSJISFunction(f) {
+      if (typeof f !== "function") {
+        throw new Error('"toSJISFunc" is not a valid function.');
+      }
+      toSJISFunction = f;
+    };
+    exports.isKanjiModeEnabled = function() {
+      return typeof toSJISFunction !== "undefined";
+    };
+    exports.toSJIS = function toSJIS(kanji) {
+      return toSJISFunction(kanji);
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/error-correction-level.js
+var require_error_correction_level = __commonJS({
+  "node_modules/qrcode/lib/core/error-correction-level.js"(exports) {
+    exports.L = { bit: 1 };
+    exports.M = { bit: 0 };
+    exports.Q = { bit: 3 };
+    exports.H = { bit: 2 };
+    function fromString(string) {
+      if (typeof string !== "string") {
+        throw new Error("Param is not a string");
+      }
+      const lcStr = string.toLowerCase();
+      switch (lcStr) {
+        case "l":
+        case "low":
+          return exports.L;
+        case "m":
+        case "medium":
+          return exports.M;
+        case "q":
+        case "quartile":
+          return exports.Q;
+        case "h":
+        case "high":
+          return exports.H;
+        default:
+          throw new Error("Unknown EC Level: " + string);
+      }
+    }
+    exports.isValid = function isValid(level) {
+      return level && typeof level.bit !== "undefined" && level.bit >= 0 && level.bit < 4;
+    };
+    exports.from = function from(value, defaultValue) {
+      if (exports.isValid(value)) {
+        return value;
+      }
+      try {
+        return fromString(value);
+      } catch (e) {
+        return defaultValue;
+      }
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/bit-buffer.js
+var require_bit_buffer = __commonJS({
+  "node_modules/qrcode/lib/core/bit-buffer.js"(exports, module2) {
+    function BitBuffer() {
+      this.buffer = [];
+      this.length = 0;
+    }
+    BitBuffer.prototype = {
+      get: function(index2) {
+        const bufIndex = Math.floor(index2 / 8);
+        return (this.buffer[bufIndex] >>> 7 - index2 % 8 & 1) === 1;
+      },
+      put: function(num, length) {
+        for (let i = 0; i < length; i++) {
+          this.putBit((num >>> length - i - 1 & 1) === 1);
+        }
+      },
+      getLengthInBits: function() {
+        return this.length;
+      },
+      putBit: function(bit) {
+        const bufIndex = Math.floor(this.length / 8);
+        if (this.buffer.length <= bufIndex) {
+          this.buffer.push(0);
+        }
+        if (bit) {
+          this.buffer[bufIndex] |= 128 >>> this.length % 8;
+        }
+        this.length++;
+      }
+    };
+    module2.exports = BitBuffer;
+  }
+});
+
+// node_modules/qrcode/lib/core/bit-matrix.js
+var require_bit_matrix = __commonJS({
+  "node_modules/qrcode/lib/core/bit-matrix.js"(exports, module2) {
+    function BitMatrix(size) {
+      if (!size || size < 1) {
+        throw new Error("BitMatrix size must be defined and greater than 0");
+      }
+      this.size = size;
+      this.data = new Uint8Array(size * size);
+      this.reservedBit = new Uint8Array(size * size);
+    }
+    BitMatrix.prototype.set = function(row, col, value, reserved) {
+      const index2 = row * this.size + col;
+      this.data[index2] = value;
+      if (reserved)
+        this.reservedBit[index2] = true;
+    };
+    BitMatrix.prototype.get = function(row, col) {
+      return this.data[row * this.size + col];
+    };
+    BitMatrix.prototype.xor = function(row, col, value) {
+      this.data[row * this.size + col] ^= value;
+    };
+    BitMatrix.prototype.isReserved = function(row, col) {
+      return this.reservedBit[row * this.size + col];
+    };
+    module2.exports = BitMatrix;
+  }
+});
+
+// node_modules/qrcode/lib/core/alignment-pattern.js
+var require_alignment_pattern = __commonJS({
+  "node_modules/qrcode/lib/core/alignment-pattern.js"(exports) {
+    var getSymbolSize = require_utils().getSymbolSize;
+    exports.getRowColCoords = function getRowColCoords(version) {
+      if (version === 1)
+        return [];
+      const posCount = Math.floor(version / 7) + 2;
+      const size = getSymbolSize(version);
+      const intervals = size === 145 ? 26 : Math.ceil((size - 13) / (2 * posCount - 2)) * 2;
+      const positions = [size - 7];
+      for (let i = 1; i < posCount - 1; i++) {
+        positions[i] = positions[i - 1] - intervals;
+      }
+      positions.push(6);
+      return positions.reverse();
+    };
+    exports.getPositions = function getPositions(version) {
+      const coords = [];
+      const pos = exports.getRowColCoords(version);
+      const posLength = pos.length;
+      for (let i = 0; i < posLength; i++) {
+        for (let j = 0; j < posLength; j++) {
+          if (i === 0 && j === 0 || i === 0 && j === posLength - 1 || i === posLength - 1 && j === 0) {
+            continue;
+          }
+          coords.push([pos[i], pos[j]]);
+        }
+      }
+      return coords;
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/finder-pattern.js
+var require_finder_pattern = __commonJS({
+  "node_modules/qrcode/lib/core/finder-pattern.js"(exports) {
+    var getSymbolSize = require_utils().getSymbolSize;
+    var FINDER_PATTERN_SIZE = 7;
+    exports.getPositions = function getPositions(version) {
+      const size = getSymbolSize(version);
+      return [
+        [0, 0],
+        [size - FINDER_PATTERN_SIZE, 0],
+        [0, size - FINDER_PATTERN_SIZE]
+      ];
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/mask-pattern.js
+var require_mask_pattern = __commonJS({
+  "node_modules/qrcode/lib/core/mask-pattern.js"(exports) {
+    exports.Patterns = {
+      PATTERN000: 0,
+      PATTERN001: 1,
+      PATTERN010: 2,
+      PATTERN011: 3,
+      PATTERN100: 4,
+      PATTERN101: 5,
+      PATTERN110: 6,
+      PATTERN111: 7
+    };
+    var PenaltyScores = {
+      N1: 3,
+      N2: 3,
+      N3: 40,
+      N4: 10
+    };
+    exports.isValid = function isValid(mask) {
+      return mask != null && mask !== "" && !isNaN(mask) && mask >= 0 && mask <= 7;
+    };
+    exports.from = function from(value) {
+      return exports.isValid(value) ? parseInt(value, 10) : void 0;
+    };
+    exports.getPenaltyN1 = function getPenaltyN1(data2) {
+      const size = data2.size;
+      let points = 0;
+      let sameCountCol = 0;
+      let sameCountRow = 0;
+      let lastCol = null;
+      let lastRow = null;
+      for (let row = 0; row < size; row++) {
+        sameCountCol = sameCountRow = 0;
+        lastCol = lastRow = null;
+        for (let col = 0; col < size; col++) {
+          let module3 = data2.get(row, col);
+          if (module3 === lastCol) {
+            sameCountCol++;
+          } else {
+            if (sameCountCol >= 5)
+              points += PenaltyScores.N1 + (sameCountCol - 5);
+            lastCol = module3;
+            sameCountCol = 1;
+          }
+          module3 = data2.get(col, row);
+          if (module3 === lastRow) {
+            sameCountRow++;
+          } else {
+            if (sameCountRow >= 5)
+              points += PenaltyScores.N1 + (sameCountRow - 5);
+            lastRow = module3;
+            sameCountRow = 1;
+          }
+        }
+        if (sameCountCol >= 5)
+          points += PenaltyScores.N1 + (sameCountCol - 5);
+        if (sameCountRow >= 5)
+          points += PenaltyScores.N1 + (sameCountRow - 5);
+      }
+      return points;
+    };
+    exports.getPenaltyN2 = function getPenaltyN2(data2) {
+      const size = data2.size;
+      let points = 0;
+      for (let row = 0; row < size - 1; row++) {
+        for (let col = 0; col < size - 1; col++) {
+          const last2 = data2.get(row, col) + data2.get(row, col + 1) + data2.get(row + 1, col) + data2.get(row + 1, col + 1);
+          if (last2 === 4 || last2 === 0)
+            points++;
+        }
+      }
+      return points * PenaltyScores.N2;
+    };
+    exports.getPenaltyN3 = function getPenaltyN3(data2) {
+      const size = data2.size;
+      let points = 0;
+      let bitsCol = 0;
+      let bitsRow = 0;
+      for (let row = 0; row < size; row++) {
+        bitsCol = bitsRow = 0;
+        for (let col = 0; col < size; col++) {
+          bitsCol = bitsCol << 1 & 2047 | data2.get(row, col);
+          if (col >= 10 && (bitsCol === 1488 || bitsCol === 93))
+            points++;
+          bitsRow = bitsRow << 1 & 2047 | data2.get(col, row);
+          if (col >= 10 && (bitsRow === 1488 || bitsRow === 93))
+            points++;
+        }
+      }
+      return points * PenaltyScores.N3;
+    };
+    exports.getPenaltyN4 = function getPenaltyN4(data2) {
+      let darkCount = 0;
+      const modulesCount = data2.data.length;
+      for (let i = 0; i < modulesCount; i++)
+        darkCount += data2.data[i];
+      const k = Math.abs(Math.ceil(darkCount * 100 / modulesCount / 5) - 10);
+      return k * PenaltyScores.N4;
+    };
+    function getMaskAt(maskPattern, i, j) {
+      switch (maskPattern) {
+        case exports.Patterns.PATTERN000:
+          return (i + j) % 2 === 0;
+        case exports.Patterns.PATTERN001:
+          return i % 2 === 0;
+        case exports.Patterns.PATTERN010:
+          return j % 3 === 0;
+        case exports.Patterns.PATTERN011:
+          return (i + j) % 3 === 0;
+        case exports.Patterns.PATTERN100:
+          return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 === 0;
+        case exports.Patterns.PATTERN101:
+          return i * j % 2 + i * j % 3 === 0;
+        case exports.Patterns.PATTERN110:
+          return (i * j % 2 + i * j % 3) % 2 === 0;
+        case exports.Patterns.PATTERN111:
+          return (i * j % 3 + (i + j) % 2) % 2 === 0;
+        default:
+          throw new Error("bad maskPattern:" + maskPattern);
+      }
+    }
+    exports.applyMask = function applyMask(pattern, data2) {
+      const size = data2.size;
+      for (let col = 0; col < size; col++) {
+        for (let row = 0; row < size; row++) {
+          if (data2.isReserved(row, col))
+            continue;
+          data2.xor(row, col, getMaskAt(pattern, row, col));
+        }
+      }
+    };
+    exports.getBestMask = function getBestMask(data2, setupFormatFunc) {
+      const numPatterns = Object.keys(exports.Patterns).length;
+      let bestPattern = 0;
+      let lowerPenalty = Infinity;
+      for (let p = 0; p < numPatterns; p++) {
+        setupFormatFunc(p);
+        exports.applyMask(p, data2);
+        const penalty = exports.getPenaltyN1(data2) + exports.getPenaltyN2(data2) + exports.getPenaltyN3(data2) + exports.getPenaltyN4(data2);
+        exports.applyMask(p, data2);
+        if (penalty < lowerPenalty) {
+          lowerPenalty = penalty;
+          bestPattern = p;
+        }
+      }
+      return bestPattern;
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/error-correction-code.js
+var require_error_correction_code = __commonJS({
+  "node_modules/qrcode/lib/core/error-correction-code.js"(exports) {
+    var ECLevel = require_error_correction_level();
+    var EC_BLOCKS_TABLE = [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      1,
+      2,
+      2,
+      4,
+      1,
+      2,
+      4,
+      4,
+      2,
+      4,
+      4,
+      4,
+      2,
+      4,
+      6,
+      5,
+      2,
+      4,
+      6,
+      6,
+      2,
+      5,
+      8,
+      8,
+      4,
+      5,
+      8,
+      8,
+      4,
+      5,
+      8,
+      11,
+      4,
+      8,
+      10,
+      11,
+      4,
+      9,
+      12,
+      16,
+      4,
+      9,
+      16,
+      16,
+      6,
+      10,
+      12,
+      18,
+      6,
+      10,
+      17,
+      16,
+      6,
+      11,
+      16,
+      19,
+      6,
+      13,
+      18,
+      21,
+      7,
+      14,
+      21,
+      25,
+      8,
+      16,
+      20,
+      25,
+      8,
+      17,
+      23,
+      25,
+      9,
+      17,
+      23,
+      34,
+      9,
+      18,
+      25,
+      30,
+      10,
+      20,
+      27,
+      32,
+      12,
+      21,
+      29,
+      35,
+      12,
+      23,
+      34,
+      37,
+      12,
+      25,
+      34,
+      40,
+      13,
+      26,
+      35,
+      42,
+      14,
+      28,
+      38,
+      45,
+      15,
+      29,
+      40,
+      48,
+      16,
+      31,
+      43,
+      51,
+      17,
+      33,
+      45,
+      54,
+      18,
+      35,
+      48,
+      57,
+      19,
+      37,
+      51,
+      60,
+      19,
+      38,
+      53,
+      63,
+      20,
+      40,
+      56,
+      66,
+      21,
+      43,
+      59,
+      70,
+      22,
+      45,
+      62,
+      74,
+      24,
+      47,
+      65,
+      77,
+      25,
+      49,
+      68,
+      81
+    ];
+    var EC_CODEWORDS_TABLE = [
+      7,
+      10,
+      13,
+      17,
+      10,
+      16,
+      22,
+      28,
+      15,
+      26,
+      36,
+      44,
+      20,
+      36,
+      52,
+      64,
+      26,
+      48,
+      72,
+      88,
+      36,
+      64,
+      96,
+      112,
+      40,
+      72,
+      108,
+      130,
+      48,
+      88,
+      132,
+      156,
+      60,
+      110,
+      160,
+      192,
+      72,
+      130,
+      192,
+      224,
+      80,
+      150,
+      224,
+      264,
+      96,
+      176,
+      260,
+      308,
+      104,
+      198,
+      288,
+      352,
+      120,
+      216,
+      320,
+      384,
+      132,
+      240,
+      360,
+      432,
+      144,
+      280,
+      408,
+      480,
+      168,
+      308,
+      448,
+      532,
+      180,
+      338,
+      504,
+      588,
+      196,
+      364,
+      546,
+      650,
+      224,
+      416,
+      600,
+      700,
+      224,
+      442,
+      644,
+      750,
+      252,
+      476,
+      690,
+      816,
+      270,
+      504,
+      750,
+      900,
+      300,
+      560,
+      810,
+      960,
+      312,
+      588,
+      870,
+      1050,
+      336,
+      644,
+      952,
+      1110,
+      360,
+      700,
+      1020,
+      1200,
+      390,
+      728,
+      1050,
+      1260,
+      420,
+      784,
+      1140,
+      1350,
+      450,
+      812,
+      1200,
+      1440,
+      480,
+      868,
+      1290,
+      1530,
+      510,
+      924,
+      1350,
+      1620,
+      540,
+      980,
+      1440,
+      1710,
+      570,
+      1036,
+      1530,
+      1800,
+      570,
+      1064,
+      1590,
+      1890,
+      600,
+      1120,
+      1680,
+      1980,
+      630,
+      1204,
+      1770,
+      2100,
+      660,
+      1260,
+      1860,
+      2220,
+      720,
+      1316,
+      1950,
+      2310,
+      750,
+      1372,
+      2040,
+      2430
+    ];
+    exports.getBlocksCount = function getBlocksCount(version, errorCorrectionLevel) {
+      switch (errorCorrectionLevel) {
+        case ECLevel.L:
+          return EC_BLOCKS_TABLE[(version - 1) * 4 + 0];
+        case ECLevel.M:
+          return EC_BLOCKS_TABLE[(version - 1) * 4 + 1];
+        case ECLevel.Q:
+          return EC_BLOCKS_TABLE[(version - 1) * 4 + 2];
+        case ECLevel.H:
+          return EC_BLOCKS_TABLE[(version - 1) * 4 + 3];
+        default:
+          return void 0;
+      }
+    };
+    exports.getTotalCodewordsCount = function getTotalCodewordsCount(version, errorCorrectionLevel) {
+      switch (errorCorrectionLevel) {
+        case ECLevel.L:
+          return EC_CODEWORDS_TABLE[(version - 1) * 4 + 0];
+        case ECLevel.M:
+          return EC_CODEWORDS_TABLE[(version - 1) * 4 + 1];
+        case ECLevel.Q:
+          return EC_CODEWORDS_TABLE[(version - 1) * 4 + 2];
+        case ECLevel.H:
+          return EC_CODEWORDS_TABLE[(version - 1) * 4 + 3];
+        default:
+          return void 0;
+      }
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/galois-field.js
+var require_galois_field = __commonJS({
+  "node_modules/qrcode/lib/core/galois-field.js"(exports) {
+    var EXP_TABLE = new Uint8Array(512);
+    var LOG_TABLE = new Uint8Array(256);
+    (function initTables() {
+      let x = 1;
+      for (let i = 0; i < 255; i++) {
+        EXP_TABLE[i] = x;
+        LOG_TABLE[x] = i;
+        x <<= 1;
+        if (x & 256) {
+          x ^= 285;
+        }
+      }
+      for (let i = 255; i < 512; i++) {
+        EXP_TABLE[i] = EXP_TABLE[i - 255];
+      }
+    })();
+    exports.log = function log2(n) {
+      if (n < 1)
+        throw new Error("log(" + n + ")");
+      return LOG_TABLE[n];
+    };
+    exports.exp = function exp(n) {
+      return EXP_TABLE[n];
+    };
+    exports.mul = function mul(x, y) {
+      if (x === 0 || y === 0)
+        return 0;
+      return EXP_TABLE[LOG_TABLE[x] + LOG_TABLE[y]];
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/polynomial.js
+var require_polynomial = __commonJS({
+  "node_modules/qrcode/lib/core/polynomial.js"(exports) {
+    var GF = require_galois_field();
+    exports.mul = function mul(p1, p2) {
+      const coeff = new Uint8Array(p1.length + p2.length - 1);
+      for (let i = 0; i < p1.length; i++) {
+        for (let j = 0; j < p2.length; j++) {
+          coeff[i + j] ^= GF.mul(p1[i], p2[j]);
+        }
+      }
+      return coeff;
+    };
+    exports.mod = function mod(divident, divisor) {
+      let result = new Uint8Array(divident);
+      while (result.length - divisor.length >= 0) {
+        const coeff = result[0];
+        for (let i = 0; i < divisor.length; i++) {
+          result[i] ^= GF.mul(divisor[i], coeff);
+        }
+        let offset = 0;
+        while (offset < result.length && result[offset] === 0)
+          offset++;
+        result = result.slice(offset);
+      }
+      return result;
+    };
+    exports.generateECPolynomial = function generateECPolynomial(degree) {
+      let poly = new Uint8Array([1]);
+      for (let i = 0; i < degree; i++) {
+        poly = exports.mul(poly, new Uint8Array([1, GF.exp(i)]));
+      }
+      return poly;
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/reed-solomon-encoder.js
+var require_reed_solomon_encoder = __commonJS({
+  "node_modules/qrcode/lib/core/reed-solomon-encoder.js"(exports, module2) {
+    var Polynomial = require_polynomial();
+    function ReedSolomonEncoder(degree) {
+      this.genPoly = void 0;
+      this.degree = degree;
+      if (this.degree)
+        this.initialize(this.degree);
+    }
+    ReedSolomonEncoder.prototype.initialize = function initialize(degree) {
+      this.degree = degree;
+      this.genPoly = Polynomial.generateECPolynomial(this.degree);
+    };
+    ReedSolomonEncoder.prototype.encode = function encode(data2) {
+      if (!this.genPoly) {
+        throw new Error("Encoder not initialized");
+      }
+      const paddedData = new Uint8Array(data2.length + this.degree);
+      paddedData.set(data2);
+      const remainder = Polynomial.mod(paddedData, this.genPoly);
+      const start = this.degree - remainder.length;
+      if (start > 0) {
+        const buff = new Uint8Array(this.degree);
+        buff.set(remainder, start);
+        return buff;
+      }
+      return remainder;
+    };
+    module2.exports = ReedSolomonEncoder;
+  }
+});
+
+// node_modules/qrcode/lib/core/version-check.js
+var require_version_check = __commonJS({
+  "node_modules/qrcode/lib/core/version-check.js"(exports) {
+    exports.isValid = function isValid(version) {
+      return !isNaN(version) && version >= 1 && version <= 40;
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/regex.js
+var require_regex = __commonJS({
+  "node_modules/qrcode/lib/core/regex.js"(exports) {
+    var numeric = "[0-9]+";
+    var alphanumeric = "[A-Z $%*+\\-./:]+";
+    var kanji = "(?:[u3000-u303F]|[u3040-u309F]|[u30A0-u30FF]|[uFF00-uFFEF]|[u4E00-u9FAF]|[u2605-u2606]|[u2190-u2195]|u203B|[u2010u2015u2018u2019u2025u2026u201Cu201Du2225u2260]|[u0391-u0451]|[u00A7u00A8u00B1u00B4u00D7u00F7])+";
+    kanji = kanji.replace(/u/g, "\\u");
+    var byte = "(?:(?![A-Z0-9 $%*+\\-./:]|" + kanji + ")(?:.|[\r\n]))+";
+    exports.KANJI = new RegExp(kanji, "g");
+    exports.BYTE_KANJI = new RegExp("[^A-Z0-9 $%*+\\-./:]+", "g");
+    exports.BYTE = new RegExp(byte, "g");
+    exports.NUMERIC = new RegExp(numeric, "g");
+    exports.ALPHANUMERIC = new RegExp(alphanumeric, "g");
+    var TEST_KANJI = new RegExp("^" + kanji + "$");
+    var TEST_NUMERIC = new RegExp("^" + numeric + "$");
+    var TEST_ALPHANUMERIC = new RegExp("^[A-Z0-9 $%*+\\-./:]+$");
+    exports.testKanji = function testKanji(str) {
+      return TEST_KANJI.test(str);
+    };
+    exports.testNumeric = function testNumeric(str) {
+      return TEST_NUMERIC.test(str);
+    };
+    exports.testAlphanumeric = function testAlphanumeric(str) {
+      return TEST_ALPHANUMERIC.test(str);
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/mode.js
+var require_mode = __commonJS({
+  "node_modules/qrcode/lib/core/mode.js"(exports) {
+    var VersionCheck = require_version_check();
+    var Regex = require_regex();
+    exports.NUMERIC = {
+      id: "Numeric",
+      bit: 1 << 0,
+      ccBits: [10, 12, 14]
+    };
+    exports.ALPHANUMERIC = {
+      id: "Alphanumeric",
+      bit: 1 << 1,
+      ccBits: [9, 11, 13]
+    };
+    exports.BYTE = {
+      id: "Byte",
+      bit: 1 << 2,
+      ccBits: [8, 16, 16]
+    };
+    exports.KANJI = {
+      id: "Kanji",
+      bit: 1 << 3,
+      ccBits: [8, 10, 12]
+    };
+    exports.MIXED = {
+      bit: -1
+    };
+    exports.getCharCountIndicator = function getCharCountIndicator(mode, version) {
+      if (!mode.ccBits)
+        throw new Error("Invalid mode: " + mode);
+      if (!VersionCheck.isValid(version)) {
+        throw new Error("Invalid version: " + version);
+      }
+      if (version >= 1 && version < 10)
+        return mode.ccBits[0];
+      else if (version < 27)
+        return mode.ccBits[1];
+      return mode.ccBits[2];
+    };
+    exports.getBestModeForData = function getBestModeForData(dataStr) {
+      if (Regex.testNumeric(dataStr))
+        return exports.NUMERIC;
+      else if (Regex.testAlphanumeric(dataStr))
+        return exports.ALPHANUMERIC;
+      else if (Regex.testKanji(dataStr))
+        return exports.KANJI;
+      else
+        return exports.BYTE;
+    };
+    exports.toString = function toString2(mode) {
+      if (mode && mode.id)
+        return mode.id;
+      throw new Error("Invalid mode");
+    };
+    exports.isValid = function isValid(mode) {
+      return mode && mode.bit && mode.ccBits;
+    };
+    function fromString(string) {
+      if (typeof string !== "string") {
+        throw new Error("Param is not a string");
+      }
+      const lcStr = string.toLowerCase();
+      switch (lcStr) {
+        case "numeric":
+          return exports.NUMERIC;
+        case "alphanumeric":
+          return exports.ALPHANUMERIC;
+        case "kanji":
+          return exports.KANJI;
+        case "byte":
+          return exports.BYTE;
+        default:
+          throw new Error("Unknown mode: " + string);
+      }
+    }
+    exports.from = function from(value, defaultValue) {
+      if (exports.isValid(value)) {
+        return value;
+      }
+      try {
+        return fromString(value);
+      } catch (e) {
+        return defaultValue;
+      }
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/version.js
+var require_version = __commonJS({
+  "node_modules/qrcode/lib/core/version.js"(exports) {
+    var Utils = require_utils();
+    var ECCode = require_error_correction_code();
+    var ECLevel = require_error_correction_level();
+    var Mode = require_mode();
+    var VersionCheck = require_version_check();
+    var G18 = 1 << 12 | 1 << 11 | 1 << 10 | 1 << 9 | 1 << 8 | 1 << 5 | 1 << 2 | 1 << 0;
+    var G18_BCH = Utils.getBCHDigit(G18);
+    function getBestVersionForDataLength(mode, length, errorCorrectionLevel) {
+      for (let currentVersion = 1; currentVersion <= 40; currentVersion++) {
+        if (length <= exports.getCapacity(currentVersion, errorCorrectionLevel, mode)) {
+          return currentVersion;
+        }
+      }
+      return void 0;
+    }
+    function getReservedBitsCount(mode, version) {
+      return Mode.getCharCountIndicator(mode, version) + 4;
+    }
+    function getTotalBitsFromDataArray(segments, version) {
+      let totalBits = 0;
+      segments.forEach(function(data2) {
+        const reservedBits = getReservedBitsCount(data2.mode, version);
+        totalBits += reservedBits + data2.getBitsLength();
+      });
+      return totalBits;
+    }
+    function getBestVersionForMixedData(segments, errorCorrectionLevel) {
+      for (let currentVersion = 1; currentVersion <= 40; currentVersion++) {
+        const length = getTotalBitsFromDataArray(segments, currentVersion);
+        if (length <= exports.getCapacity(currentVersion, errorCorrectionLevel, Mode.MIXED)) {
+          return currentVersion;
+        }
+      }
+      return void 0;
+    }
+    exports.from = function from(value, defaultValue) {
+      if (VersionCheck.isValid(value)) {
+        return parseInt(value, 10);
+      }
+      return defaultValue;
+    };
+    exports.getCapacity = function getCapacity(version, errorCorrectionLevel, mode) {
+      if (!VersionCheck.isValid(version)) {
+        throw new Error("Invalid QR Code version");
+      }
+      if (typeof mode === "undefined")
+        mode = Mode.BYTE;
+      const totalCodewords = Utils.getSymbolTotalCodewords(version);
+      const ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel);
+      const dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8;
+      if (mode === Mode.MIXED)
+        return dataTotalCodewordsBits;
+      const usableBits = dataTotalCodewordsBits - getReservedBitsCount(mode, version);
+      switch (mode) {
+        case Mode.NUMERIC:
+          return Math.floor(usableBits / 10 * 3);
+        case Mode.ALPHANUMERIC:
+          return Math.floor(usableBits / 11 * 2);
+        case Mode.KANJI:
+          return Math.floor(usableBits / 13);
+        case Mode.BYTE:
+        default:
+          return Math.floor(usableBits / 8);
+      }
+    };
+    exports.getBestVersionForData = function getBestVersionForData(data2, errorCorrectionLevel) {
+      let seg;
+      const ecl = ECLevel.from(errorCorrectionLevel, ECLevel.M);
+      if (Array.isArray(data2)) {
+        if (data2.length > 1) {
+          return getBestVersionForMixedData(data2, ecl);
+        }
+        if (data2.length === 0) {
+          return 1;
+        }
+        seg = data2[0];
+      } else {
+        seg = data2;
+      }
+      return getBestVersionForDataLength(seg.mode, seg.getLength(), ecl);
+    };
+    exports.getEncodedBits = function getEncodedBits(version) {
+      if (!VersionCheck.isValid(version) || version < 7) {
+        throw new Error("Invalid QR Code version");
+      }
+      let d = version << 12;
+      while (Utils.getBCHDigit(d) - G18_BCH >= 0) {
+        d ^= G18 << Utils.getBCHDigit(d) - G18_BCH;
+      }
+      return version << 12 | d;
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/format-info.js
+var require_format_info = __commonJS({
+  "node_modules/qrcode/lib/core/format-info.js"(exports) {
+    var Utils = require_utils();
+    var G15 = 1 << 10 | 1 << 8 | 1 << 5 | 1 << 4 | 1 << 2 | 1 << 1 | 1 << 0;
+    var G15_MASK = 1 << 14 | 1 << 12 | 1 << 10 | 1 << 4 | 1 << 1;
+    var G15_BCH = Utils.getBCHDigit(G15);
+    exports.getEncodedBits = function getEncodedBits(errorCorrectionLevel, mask) {
+      const data2 = errorCorrectionLevel.bit << 3 | mask;
+      let d = data2 << 10;
+      while (Utils.getBCHDigit(d) - G15_BCH >= 0) {
+        d ^= G15 << Utils.getBCHDigit(d) - G15_BCH;
+      }
+      return (data2 << 10 | d) ^ G15_MASK;
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/numeric-data.js
+var require_numeric_data = __commonJS({
+  "node_modules/qrcode/lib/core/numeric-data.js"(exports, module2) {
+    var Mode = require_mode();
+    function NumericData(data2) {
+      this.mode = Mode.NUMERIC;
+      this.data = data2.toString();
+    }
+    NumericData.getBitsLength = function getBitsLength(length) {
+      return 10 * Math.floor(length / 3) + (length % 3 ? length % 3 * 3 + 1 : 0);
+    };
+    NumericData.prototype.getLength = function getLength() {
+      return this.data.length;
+    };
+    NumericData.prototype.getBitsLength = function getBitsLength() {
+      return NumericData.getBitsLength(this.data.length);
+    };
+    NumericData.prototype.write = function write(bitBuffer) {
+      let i, group, value;
+      for (i = 0; i + 3 <= this.data.length; i += 3) {
+        group = this.data.substr(i, 3);
+        value = parseInt(group, 10);
+        bitBuffer.put(value, 10);
+      }
+      const remainingNum = this.data.length - i;
+      if (remainingNum > 0) {
+        group = this.data.substr(i);
+        value = parseInt(group, 10);
+        bitBuffer.put(value, remainingNum * 3 + 1);
+      }
+    };
+    module2.exports = NumericData;
+  }
+});
+
+// node_modules/qrcode/lib/core/alphanumeric-data.js
+var require_alphanumeric_data = __commonJS({
+  "node_modules/qrcode/lib/core/alphanumeric-data.js"(exports, module2) {
+    var Mode = require_mode();
+    var ALPHA_NUM_CHARS = [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "P",
+      "Q",
+      "R",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Y",
+      "Z",
+      " ",
+      "$",
+      "%",
+      "*",
+      "+",
+      "-",
+      ".",
+      "/",
+      ":"
+    ];
+    function AlphanumericData(data2) {
+      this.mode = Mode.ALPHANUMERIC;
+      this.data = data2;
+    }
+    AlphanumericData.getBitsLength = function getBitsLength(length) {
+      return 11 * Math.floor(length / 2) + 6 * (length % 2);
+    };
+    AlphanumericData.prototype.getLength = function getLength() {
+      return this.data.length;
+    };
+    AlphanumericData.prototype.getBitsLength = function getBitsLength() {
+      return AlphanumericData.getBitsLength(this.data.length);
+    };
+    AlphanumericData.prototype.write = function write(bitBuffer) {
+      let i;
+      for (i = 0; i + 2 <= this.data.length; i += 2) {
+        let value = ALPHA_NUM_CHARS.indexOf(this.data[i]) * 45;
+        value += ALPHA_NUM_CHARS.indexOf(this.data[i + 1]);
+        bitBuffer.put(value, 11);
+      }
+      if (this.data.length % 2) {
+        bitBuffer.put(ALPHA_NUM_CHARS.indexOf(this.data[i]), 6);
+      }
+    };
+    module2.exports = AlphanumericData;
+  }
+});
+
+// node_modules/qrcode/lib/core/byte-data.js
+var require_byte_data = __commonJS({
+  "node_modules/qrcode/lib/core/byte-data.js"(exports, module2) {
+    var Mode = require_mode();
+    function ByteData(data2) {
+      this.mode = Mode.BYTE;
+      if (typeof data2 === "string") {
+        this.data = new TextEncoder().encode(data2);
+      } else {
+        this.data = new Uint8Array(data2);
+      }
+    }
+    ByteData.getBitsLength = function getBitsLength(length) {
+      return length * 8;
+    };
+    ByteData.prototype.getLength = function getLength() {
+      return this.data.length;
+    };
+    ByteData.prototype.getBitsLength = function getBitsLength() {
+      return ByteData.getBitsLength(this.data.length);
+    };
+    ByteData.prototype.write = function(bitBuffer) {
+      for (let i = 0, l = this.data.length; i < l; i++) {
+        bitBuffer.put(this.data[i], 8);
+      }
+    };
+    module2.exports = ByteData;
+  }
+});
+
+// node_modules/qrcode/lib/core/kanji-data.js
+var require_kanji_data = __commonJS({
+  "node_modules/qrcode/lib/core/kanji-data.js"(exports, module2) {
+    var Mode = require_mode();
+    var Utils = require_utils();
+    function KanjiData(data2) {
+      this.mode = Mode.KANJI;
+      this.data = data2;
+    }
+    KanjiData.getBitsLength = function getBitsLength(length) {
+      return length * 13;
+    };
+    KanjiData.prototype.getLength = function getLength() {
+      return this.data.length;
+    };
+    KanjiData.prototype.getBitsLength = function getBitsLength() {
+      return KanjiData.getBitsLength(this.data.length);
+    };
+    KanjiData.prototype.write = function(bitBuffer) {
+      let i;
+      for (i = 0; i < this.data.length; i++) {
+        let value = Utils.toSJIS(this.data[i]);
+        if (value >= 33088 && value <= 40956) {
+          value -= 33088;
+        } else if (value >= 57408 && value <= 60351) {
+          value -= 49472;
+        } else {
+          throw new Error("Invalid SJIS character: " + this.data[i] + "\nMake sure your charset is UTF-8");
+        }
+        value = (value >>> 8 & 255) * 192 + (value & 255);
+        bitBuffer.put(value, 13);
+      }
+    };
+    module2.exports = KanjiData;
+  }
+});
+
+// node_modules/dijkstrajs/dijkstra.js
+var require_dijkstra = __commonJS({
+  "node_modules/dijkstrajs/dijkstra.js"(exports, module2) {
+    "use strict";
+    var dijkstra = {
+      single_source_shortest_paths: function(graph, s, d) {
+        var predecessors = {};
+        var costs = {};
+        costs[s] = 0;
+        var open = dijkstra.PriorityQueue.make();
+        open.push(s, 0);
+        var closest2, u, v, cost_of_s_to_u, adjacent_nodes, cost_of_e, cost_of_s_to_u_plus_cost_of_e, cost_of_s_to_v, first_visit;
+        while (!open.empty()) {
+          closest2 = open.pop();
+          u = closest2.value;
+          cost_of_s_to_u = closest2.cost;
+          adjacent_nodes = graph[u] || {};
+          for (v in adjacent_nodes) {
+            if (adjacent_nodes.hasOwnProperty(v)) {
+              cost_of_e = adjacent_nodes[v];
+              cost_of_s_to_u_plus_cost_of_e = cost_of_s_to_u + cost_of_e;
+              cost_of_s_to_v = costs[v];
+              first_visit = typeof costs[v] === "undefined";
+              if (first_visit || cost_of_s_to_v > cost_of_s_to_u_plus_cost_of_e) {
+                costs[v] = cost_of_s_to_u_plus_cost_of_e;
+                open.push(v, cost_of_s_to_u_plus_cost_of_e);
+                predecessors[v] = u;
+              }
+            }
+          }
+        }
+        if (typeof d !== "undefined" && typeof costs[d] === "undefined") {
+          var msg = ["Could not find a path from ", s, " to ", d, "."].join("");
+          throw new Error(msg);
+        }
+        return predecessors;
+      },
+      extract_shortest_path_from_predecessor_list: function(predecessors, d) {
+        var nodes = [];
+        var u = d;
+        var predecessor;
+        while (u) {
+          nodes.push(u);
+          predecessor = predecessors[u];
+          u = predecessors[u];
+        }
+        nodes.reverse();
+        return nodes;
+      },
+      find_path: function(graph, s, d) {
+        var predecessors = dijkstra.single_source_shortest_paths(graph, s, d);
+        return dijkstra.extract_shortest_path_from_predecessor_list(predecessors, d);
+      },
+      PriorityQueue: {
+        make: function(opts) {
+          var T = dijkstra.PriorityQueue, t = {}, key;
+          opts = opts || {};
+          for (key in T) {
+            if (T.hasOwnProperty(key)) {
+              t[key] = T[key];
+            }
+          }
+          t.queue = [];
+          t.sorter = opts.sorter || T.default_sorter;
+          return t;
+        },
+        default_sorter: function(a, b) {
+          return a.cost - b.cost;
+        },
+        push: function(value, cost) {
+          var item = { value, cost };
+          this.queue.push(item);
+          this.queue.sort(this.sorter);
+        },
+        pop: function() {
+          return this.queue.shift();
+        },
+        empty: function() {
+          return this.queue.length === 0;
+        }
+      }
+    };
+    if (typeof module2 !== "undefined") {
+      module2.exports = dijkstra;
+    }
+  }
+});
+
+// node_modules/qrcode/lib/core/segments.js
+var require_segments = __commonJS({
+  "node_modules/qrcode/lib/core/segments.js"(exports) {
+    var Mode = require_mode();
+    var NumericData = require_numeric_data();
+    var AlphanumericData = require_alphanumeric_data();
+    var ByteData = require_byte_data();
+    var KanjiData = require_kanji_data();
+    var Regex = require_regex();
+    var Utils = require_utils();
+    var dijkstra = require_dijkstra();
+    function getStringByteLength(str) {
+      return unescape(encodeURIComponent(str)).length;
+    }
+    function getSegments(regex, mode, str) {
+      const segments = [];
+      let result;
+      while ((result = regex.exec(str)) !== null) {
+        segments.push({
+          data: result[0],
+          index: result.index,
+          mode,
+          length: result[0].length
+        });
+      }
+      return segments;
+    }
+    function getSegmentsFromString(dataStr) {
+      const numSegs = getSegments(Regex.NUMERIC, Mode.NUMERIC, dataStr);
+      const alphaNumSegs = getSegments(Regex.ALPHANUMERIC, Mode.ALPHANUMERIC, dataStr);
+      let byteSegs;
+      let kanjiSegs;
+      if (Utils.isKanjiModeEnabled()) {
+        byteSegs = getSegments(Regex.BYTE, Mode.BYTE, dataStr);
+        kanjiSegs = getSegments(Regex.KANJI, Mode.KANJI, dataStr);
+      } else {
+        byteSegs = getSegments(Regex.BYTE_KANJI, Mode.BYTE, dataStr);
+        kanjiSegs = [];
+      }
+      const segs = numSegs.concat(alphaNumSegs, byteSegs, kanjiSegs);
+      return segs.sort(function(s1, s2) {
+        return s1.index - s2.index;
+      }).map(function(obj) {
+        return {
+          data: obj.data,
+          mode: obj.mode,
+          length: obj.length
+        };
+      });
+    }
+    function getSegmentBitsLength(length, mode) {
+      switch (mode) {
+        case Mode.NUMERIC:
+          return NumericData.getBitsLength(length);
+        case Mode.ALPHANUMERIC:
+          return AlphanumericData.getBitsLength(length);
+        case Mode.KANJI:
+          return KanjiData.getBitsLength(length);
+        case Mode.BYTE:
+          return ByteData.getBitsLength(length);
+      }
+    }
+    function mergeSegments(segs) {
+      return segs.reduce(function(acc, curr) {
+        const prevSeg = acc.length - 1 >= 0 ? acc[acc.length - 1] : null;
+        if (prevSeg && prevSeg.mode === curr.mode) {
+          acc[acc.length - 1].data += curr.data;
+          return acc;
+        }
+        acc.push(curr);
+        return acc;
+      }, []);
+    }
+    function buildNodes(segs) {
+      const nodes = [];
+      for (let i = 0; i < segs.length; i++) {
+        const seg = segs[i];
+        switch (seg.mode) {
+          case Mode.NUMERIC:
+            nodes.push([
+              seg,
+              { data: seg.data, mode: Mode.ALPHANUMERIC, length: seg.length },
+              { data: seg.data, mode: Mode.BYTE, length: seg.length }
+            ]);
+            break;
+          case Mode.ALPHANUMERIC:
+            nodes.push([
+              seg,
+              { data: seg.data, mode: Mode.BYTE, length: seg.length }
+            ]);
+            break;
+          case Mode.KANJI:
+            nodes.push([
+              seg,
+              { data: seg.data, mode: Mode.BYTE, length: getStringByteLength(seg.data) }
+            ]);
+            break;
+          case Mode.BYTE:
+            nodes.push([
+              { data: seg.data, mode: Mode.BYTE, length: getStringByteLength(seg.data) }
+            ]);
+        }
+      }
+      return nodes;
+    }
+    function buildGraph(nodes, version) {
+      const table = {};
+      const graph = { start: {} };
+      let prevNodeIds = ["start"];
+      for (let i = 0; i < nodes.length; i++) {
+        const nodeGroup = nodes[i];
+        const currentNodeIds = [];
+        for (let j = 0; j < nodeGroup.length; j++) {
+          const node = nodeGroup[j];
+          const key = "" + i + j;
+          currentNodeIds.push(key);
+          table[key] = { node, lastCount: 0 };
+          graph[key] = {};
+          for (let n = 0; n < prevNodeIds.length; n++) {
+            const prevNodeId = prevNodeIds[n];
+            if (table[prevNodeId] && table[prevNodeId].node.mode === node.mode) {
+              graph[prevNodeId][key] = getSegmentBitsLength(table[prevNodeId].lastCount + node.length, node.mode) - getSegmentBitsLength(table[prevNodeId].lastCount, node.mode);
+              table[prevNodeId].lastCount += node.length;
+            } else {
+              if (table[prevNodeId])
+                table[prevNodeId].lastCount = node.length;
+              graph[prevNodeId][key] = getSegmentBitsLength(node.length, node.mode) + 4 + Mode.getCharCountIndicator(node.mode, version);
+            }
+          }
+        }
+        prevNodeIds = currentNodeIds;
+      }
+      for (let n = 0; n < prevNodeIds.length; n++) {
+        graph[prevNodeIds[n]].end = 0;
+      }
+      return { map: graph, table };
+    }
+    function buildSingleSegment(data2, modesHint) {
+      let mode;
+      const bestMode = Mode.getBestModeForData(data2);
+      mode = Mode.from(modesHint, bestMode);
+      if (mode !== Mode.BYTE && mode.bit < bestMode.bit) {
+        throw new Error('"' + data2 + '" cannot be encoded with mode ' + Mode.toString(mode) + ".\n Suggested mode is: " + Mode.toString(bestMode));
+      }
+      if (mode === Mode.KANJI && !Utils.isKanjiModeEnabled()) {
+        mode = Mode.BYTE;
+      }
+      switch (mode) {
+        case Mode.NUMERIC:
+          return new NumericData(data2);
+        case Mode.ALPHANUMERIC:
+          return new AlphanumericData(data2);
+        case Mode.KANJI:
+          return new KanjiData(data2);
+        case Mode.BYTE:
+          return new ByteData(data2);
+      }
+    }
+    exports.fromArray = function fromArray(array) {
+      return array.reduce(function(acc, seg) {
+        if (typeof seg === "string") {
+          acc.push(buildSingleSegment(seg, null));
+        } else if (seg.data) {
+          acc.push(buildSingleSegment(seg.data, seg.mode));
+        }
+        return acc;
+      }, []);
+    };
+    exports.fromString = function fromString(data2, version) {
+      const segs = getSegmentsFromString(data2, Utils.isKanjiModeEnabled());
+      const nodes = buildNodes(segs);
+      const graph = buildGraph(nodes, version);
+      const path = dijkstra.find_path(graph.map, "start", "end");
+      const optimizedSegs = [];
+      for (let i = 1; i < path.length - 1; i++) {
+        optimizedSegs.push(graph.table[path[i]].node);
+      }
+      return exports.fromArray(mergeSegments(optimizedSegs));
+    };
+    exports.rawSplit = function rawSplit(data2) {
+      return exports.fromArray(getSegmentsFromString(data2, Utils.isKanjiModeEnabled()));
+    };
+  }
+});
+
+// node_modules/qrcode/lib/core/qrcode.js
+var require_qrcode = __commonJS({
+  "node_modules/qrcode/lib/core/qrcode.js"(exports) {
+    var Utils = require_utils();
+    var ECLevel = require_error_correction_level();
+    var BitBuffer = require_bit_buffer();
+    var BitMatrix = require_bit_matrix();
+    var AlignmentPattern = require_alignment_pattern();
+    var FinderPattern = require_finder_pattern();
+    var MaskPattern = require_mask_pattern();
+    var ECCode = require_error_correction_code();
+    var ReedSolomonEncoder = require_reed_solomon_encoder();
+    var Version = require_version();
+    var FormatInfo = require_format_info();
+    var Mode = require_mode();
+    var Segments = require_segments();
+    function setupFinderPattern(matrix, version) {
+      const size = matrix.size;
+      const pos = FinderPattern.getPositions(version);
+      for (let i = 0; i < pos.length; i++) {
+        const row = pos[i][0];
+        const col = pos[i][1];
+        for (let r = -1; r <= 7; r++) {
+          if (row + r <= -1 || size <= row + r)
+            continue;
+          for (let c = -1; c <= 7; c++) {
+            if (col + c <= -1 || size <= col + c)
+              continue;
+            if (r >= 0 && r <= 6 && (c === 0 || c === 6) || c >= 0 && c <= 6 && (r === 0 || r === 6) || r >= 2 && r <= 4 && c >= 2 && c <= 4) {
+              matrix.set(row + r, col + c, true, true);
+            } else {
+              matrix.set(row + r, col + c, false, true);
+            }
+          }
+        }
+      }
+    }
+    function setupTimingPattern(matrix) {
+      const size = matrix.size;
+      for (let r = 8; r < size - 8; r++) {
+        const value = r % 2 === 0;
+        matrix.set(r, 6, value, true);
+        matrix.set(6, r, value, true);
+      }
+    }
+    function setupAlignmentPattern(matrix, version) {
+      const pos = AlignmentPattern.getPositions(version);
+      for (let i = 0; i < pos.length; i++) {
+        const row = pos[i][0];
+        const col = pos[i][1];
+        for (let r = -2; r <= 2; r++) {
+          for (let c = -2; c <= 2; c++) {
+            if (r === -2 || r === 2 || c === -2 || c === 2 || r === 0 && c === 0) {
+              matrix.set(row + r, col + c, true, true);
+            } else {
+              matrix.set(row + r, col + c, false, true);
+            }
+          }
+        }
+      }
+    }
+    function setupVersionInfo(matrix, version) {
+      const size = matrix.size;
+      const bits = Version.getEncodedBits(version);
+      let row, col, mod;
+      for (let i = 0; i < 18; i++) {
+        row = Math.floor(i / 3);
+        col = i % 3 + size - 8 - 3;
+        mod = (bits >> i & 1) === 1;
+        matrix.set(row, col, mod, true);
+        matrix.set(col, row, mod, true);
+      }
+    }
+    function setupFormatInfo(matrix, errorCorrectionLevel, maskPattern) {
+      const size = matrix.size;
+      const bits = FormatInfo.getEncodedBits(errorCorrectionLevel, maskPattern);
+      let i, mod;
+      for (i = 0; i < 15; i++) {
+        mod = (bits >> i & 1) === 1;
+        if (i < 6) {
+          matrix.set(i, 8, mod, true);
+        } else if (i < 8) {
+          matrix.set(i + 1, 8, mod, true);
+        } else {
+          matrix.set(size - 15 + i, 8, mod, true);
+        }
+        if (i < 8) {
+          matrix.set(8, size - i - 1, mod, true);
+        } else if (i < 9) {
+          matrix.set(8, 15 - i - 1 + 1, mod, true);
+        } else {
+          matrix.set(8, 15 - i - 1, mod, true);
+        }
+      }
+      matrix.set(size - 8, 8, 1, true);
+    }
+    function setupData(matrix, data2) {
+      const size = matrix.size;
+      let inc = -1;
+      let row = size - 1;
+      let bitIndex = 7;
+      let byteIndex = 0;
+      for (let col = size - 1; col > 0; col -= 2) {
+        if (col === 6)
+          col--;
+        while (true) {
+          for (let c = 0; c < 2; c++) {
+            if (!matrix.isReserved(row, col - c)) {
+              let dark = false;
+              if (byteIndex < data2.length) {
+                dark = (data2[byteIndex] >>> bitIndex & 1) === 1;
+              }
+              matrix.set(row, col - c, dark);
+              bitIndex--;
+              if (bitIndex === -1) {
+                byteIndex++;
+                bitIndex = 7;
+              }
+            }
+          }
+          row += inc;
+          if (row < 0 || size <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    }
+    function createData(version, errorCorrectionLevel, segments) {
+      const buffer = new BitBuffer();
+      segments.forEach(function(data2) {
+        buffer.put(data2.mode.bit, 4);
+        buffer.put(data2.getLength(), Mode.getCharCountIndicator(data2.mode, version));
+        data2.write(buffer);
+      });
+      const totalCodewords = Utils.getSymbolTotalCodewords(version);
+      const ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel);
+      const dataTotalCodewordsBits = (totalCodewords - ecTotalCodewords) * 8;
+      if (buffer.getLengthInBits() + 4 <= dataTotalCodewordsBits) {
+        buffer.put(0, 4);
+      }
+      while (buffer.getLengthInBits() % 8 !== 0) {
+        buffer.putBit(0);
+      }
+      const remainingByte = (dataTotalCodewordsBits - buffer.getLengthInBits()) / 8;
+      for (let i = 0; i < remainingByte; i++) {
+        buffer.put(i % 2 ? 17 : 236, 8);
+      }
+      return createCodewords(buffer, version, errorCorrectionLevel);
+    }
+    function createCodewords(bitBuffer, version, errorCorrectionLevel) {
+      const totalCodewords = Utils.getSymbolTotalCodewords(version);
+      const ecTotalCodewords = ECCode.getTotalCodewordsCount(version, errorCorrectionLevel);
+      const dataTotalCodewords = totalCodewords - ecTotalCodewords;
+      const ecTotalBlocks = ECCode.getBlocksCount(version, errorCorrectionLevel);
+      const blocksInGroup2 = totalCodewords % ecTotalBlocks;
+      const blocksInGroup1 = ecTotalBlocks - blocksInGroup2;
+      const totalCodewordsInGroup1 = Math.floor(totalCodewords / ecTotalBlocks);
+      const dataCodewordsInGroup1 = Math.floor(dataTotalCodewords / ecTotalBlocks);
+      const dataCodewordsInGroup2 = dataCodewordsInGroup1 + 1;
+      const ecCount = totalCodewordsInGroup1 - dataCodewordsInGroup1;
+      const rs = new ReedSolomonEncoder(ecCount);
+      let offset = 0;
+      const dcData = new Array(ecTotalBlocks);
+      const ecData = new Array(ecTotalBlocks);
+      let maxDataSize = 0;
+      const buffer = new Uint8Array(bitBuffer.buffer);
+      for (let b = 0; b < ecTotalBlocks; b++) {
+        const dataSize = b < blocksInGroup1 ? dataCodewordsInGroup1 : dataCodewordsInGroup2;
+        dcData[b] = buffer.slice(offset, offset + dataSize);
+        ecData[b] = rs.encode(dcData[b]);
+        offset += dataSize;
+        maxDataSize = Math.max(maxDataSize, dataSize);
+      }
+      const data2 = new Uint8Array(totalCodewords);
+      let index2 = 0;
+      let i, r;
+      for (i = 0; i < maxDataSize; i++) {
+        for (r = 0; r < ecTotalBlocks; r++) {
+          if (i < dcData[r].length) {
+            data2[index2++] = dcData[r][i];
+          }
+        }
+      }
+      for (i = 0; i < ecCount; i++) {
+        for (r = 0; r < ecTotalBlocks; r++) {
+          data2[index2++] = ecData[r][i];
+        }
+      }
+      return data2;
+    }
+    function createSymbol(data2, version, errorCorrectionLevel, maskPattern) {
+      let segments;
+      if (Array.isArray(data2)) {
+        segments = Segments.fromArray(data2);
+      } else if (typeof data2 === "string") {
+        let estimatedVersion = version;
+        if (!estimatedVersion) {
+          const rawSegments = Segments.rawSplit(data2);
+          estimatedVersion = Version.getBestVersionForData(rawSegments, errorCorrectionLevel);
+        }
+        segments = Segments.fromString(data2, estimatedVersion || 40);
+      } else {
+        throw new Error("Invalid data");
+      }
+      const bestVersion = Version.getBestVersionForData(segments, errorCorrectionLevel);
+      if (!bestVersion) {
+        throw new Error("The amount of data is too big to be stored in a QR Code");
+      }
+      if (!version) {
+        version = bestVersion;
+      } else if (version < bestVersion) {
+        throw new Error("\nThe chosen QR Code version cannot contain this amount of data.\nMinimum version required to store current data is: " + bestVersion + ".\n");
+      }
+      const dataBits = createData(version, errorCorrectionLevel, segments);
+      const moduleCount = Utils.getSymbolSize(version);
+      const modules = new BitMatrix(moduleCount);
+      setupFinderPattern(modules, version);
+      setupTimingPattern(modules);
+      setupAlignmentPattern(modules, version);
+      setupFormatInfo(modules, errorCorrectionLevel, 0);
+      if (version >= 7) {
+        setupVersionInfo(modules, version);
+      }
+      setupData(modules, dataBits);
+      if (isNaN(maskPattern)) {
+        maskPattern = MaskPattern.getBestMask(modules, setupFormatInfo.bind(null, modules, errorCorrectionLevel));
+      }
+      MaskPattern.applyMask(maskPattern, modules);
+      setupFormatInfo(modules, errorCorrectionLevel, maskPattern);
+      return {
+        modules,
+        version,
+        errorCorrectionLevel,
+        maskPattern,
+        segments
+      };
+    }
+    exports.create = function create(data2, options) {
+      if (typeof data2 === "undefined" || data2 === "") {
+        throw new Error("No input text");
+      }
+      let errorCorrectionLevel = ECLevel.M;
+      let version;
+      let mask;
+      if (typeof options !== "undefined") {
+        errorCorrectionLevel = ECLevel.from(options.errorCorrectionLevel, ECLevel.M);
+        version = Version.from(options.version);
+        mask = MaskPattern.from(options.maskPattern);
+        if (options.toSJISFunc) {
+          Utils.setToSJISFunction(options.toSJISFunc);
+        }
+      }
+      return createSymbol(data2, version, errorCorrectionLevel, mask);
+    };
+  }
+});
+
+// node_modules/qrcode/lib/renderer/utils.js
+var require_utils2 = __commonJS({
+  "node_modules/qrcode/lib/renderer/utils.js"(exports) {
+    function hex2rgba(hex) {
+      if (typeof hex === "number") {
+        hex = hex.toString();
+      }
+      if (typeof hex !== "string") {
+        throw new Error("Color should be defined as hex string");
+      }
+      let hexCode = hex.slice().replace("#", "").split("");
+      if (hexCode.length < 3 || hexCode.length === 5 || hexCode.length > 8) {
+        throw new Error("Invalid hex color: " + hex);
+      }
+      if (hexCode.length === 3 || hexCode.length === 4) {
+        hexCode = Array.prototype.concat.apply([], hexCode.map(function(c) {
+          return [c, c];
+        }));
+      }
+      if (hexCode.length === 6)
+        hexCode.push("F", "F");
+      const hexValue = parseInt(hexCode.join(""), 16);
+      return {
+        r: hexValue >> 24 & 255,
+        g: hexValue >> 16 & 255,
+        b: hexValue >> 8 & 255,
+        a: hexValue & 255,
+        hex: "#" + hexCode.slice(0, 6).join("")
+      };
+    }
+    exports.getOptions = function getOptions(options) {
+      if (!options)
+        options = {};
+      if (!options.color)
+        options.color = {};
+      const margin = typeof options.margin === "undefined" || options.margin === null || options.margin < 0 ? 4 : options.margin;
+      const width = options.width && options.width >= 21 ? options.width : void 0;
+      const scale = options.scale || 4;
+      return {
+        width,
+        scale: width ? 4 : scale,
+        margin,
+        color: {
+          dark: hex2rgba(options.color.dark || "#000000ff"),
+          light: hex2rgba(options.color.light || "#ffffffff")
+        },
+        type: options.type,
+        rendererOpts: options.rendererOpts || {}
+      };
+    };
+    exports.getScale = function getScale(qrSize, opts) {
+      return opts.width && opts.width >= qrSize + opts.margin * 2 ? opts.width / (qrSize + opts.margin * 2) : opts.scale;
+    };
+    exports.getImageWidth = function getImageWidth(qrSize, opts) {
+      const scale = exports.getScale(qrSize, opts);
+      return Math.floor((qrSize + opts.margin * 2) * scale);
+    };
+    exports.qrToImageData = function qrToImageData(imgData, qr, opts) {
+      const size = qr.modules.size;
+      const data2 = qr.modules.data;
+      const scale = exports.getScale(size, opts);
+      const symbolSize = Math.floor((size + opts.margin * 2) * scale);
+      const scaledMargin = opts.margin * scale;
+      const palette = [opts.color.light, opts.color.dark];
+      for (let i = 0; i < symbolSize; i++) {
+        for (let j = 0; j < symbolSize; j++) {
+          let posDst = (i * symbolSize + j) * 4;
+          let pxColor = opts.color.light;
+          if (i >= scaledMargin && j >= scaledMargin && i < symbolSize - scaledMargin && j < symbolSize - scaledMargin) {
+            const iSrc = Math.floor((i - scaledMargin) / scale);
+            const jSrc = Math.floor((j - scaledMargin) / scale);
+            pxColor = palette[data2[iSrc * size + jSrc] ? 1 : 0];
+          }
+          imgData[posDst++] = pxColor.r;
+          imgData[posDst++] = pxColor.g;
+          imgData[posDst++] = pxColor.b;
+          imgData[posDst] = pxColor.a;
+        }
+      }
+    };
+  }
+});
+
+// node_modules/qrcode/lib/renderer/canvas.js
+var require_canvas = __commonJS({
+  "node_modules/qrcode/lib/renderer/canvas.js"(exports) {
+    var Utils = require_utils2();
+    function clearCanvas(ctx, canvas, size) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!canvas.style)
+        canvas.style = {};
+      canvas.height = size;
+      canvas.width = size;
+      canvas.style.height = size + "px";
+      canvas.style.width = size + "px";
+    }
+    function getCanvasElement() {
+      try {
+        return document.createElement("canvas");
+      } catch (e) {
+        throw new Error("You need to specify a canvas element");
+      }
+    }
+    exports.render = function render3(qrData, canvas, options) {
+      let opts = options;
+      let canvasEl = canvas;
+      if (typeof opts === "undefined" && (!canvas || !canvas.getContext)) {
+        opts = canvas;
+        canvas = void 0;
+      }
+      if (!canvas) {
+        canvasEl = getCanvasElement();
+      }
+      opts = Utils.getOptions(opts);
+      const size = Utils.getImageWidth(qrData.modules.size, opts);
+      const ctx = canvasEl.getContext("2d");
+      const image = ctx.createImageData(size, size);
+      Utils.qrToImageData(image.data, qrData, opts);
+      clearCanvas(ctx, canvasEl, size);
+      ctx.putImageData(image, 0, 0);
+      return canvasEl;
+    };
+    exports.renderToDataURL = function renderToDataURL(qrData, canvas, options) {
+      let opts = options;
+      if (typeof opts === "undefined" && (!canvas || !canvas.getContext)) {
+        opts = canvas;
+        canvas = void 0;
+      }
+      if (!opts)
+        opts = {};
+      const canvasEl = exports.render(qrData, canvas, opts);
+      const type = opts.type || "image/png";
+      const rendererOpts = opts.rendererOpts || {};
+      return canvasEl.toDataURL(type, rendererOpts.quality);
+    };
+  }
+});
+
+// node_modules/qrcode/lib/renderer/svg-tag.js
+var require_svg_tag = __commonJS({
+  "node_modules/qrcode/lib/renderer/svg-tag.js"(exports) {
+    var Utils = require_utils2();
+    function getColorAttrib(color, attrib) {
+      const alpha = color.a / 255;
+      const str = attrib + '="' + color.hex + '"';
+      return alpha < 1 ? str + " " + attrib + '-opacity="' + alpha.toFixed(2).slice(1) + '"' : str;
+    }
+    function svgCmd(cmd, x, y) {
+      let str = cmd + x;
+      if (typeof y !== "undefined")
+        str += " " + y;
+      return str;
+    }
+    function qrToPath(data2, size, margin) {
+      let path = "";
+      let moveBy = 0;
+      let newRow = false;
+      let lineLength = 0;
+      for (let i = 0; i < data2.length; i++) {
+        const col = Math.floor(i % size);
+        const row = Math.floor(i / size);
+        if (!col && !newRow)
+          newRow = true;
+        if (data2[i]) {
+          lineLength++;
+          if (!(i > 0 && col > 0 && data2[i - 1])) {
+            path += newRow ? svgCmd("M", col + margin, 0.5 + row + margin) : svgCmd("m", moveBy, 0);
+            moveBy = 0;
+            newRow = false;
+          }
+          if (!(col + 1 < size && data2[i + 1])) {
+            path += svgCmd("h", lineLength);
+            lineLength = 0;
+          }
+        } else {
+          moveBy++;
+        }
+      }
+      return path;
+    }
+    exports.render = function render3(qrData, options, cb) {
+      const opts = Utils.getOptions(options);
+      const size = qrData.modules.size;
+      const data2 = qrData.modules.data;
+      const qrcodesize = size + opts.margin * 2;
+      const bg = !opts.color.light.a ? "" : "<path " + getColorAttrib(opts.color.light, "fill") + ' d="M0 0h' + qrcodesize + "v" + qrcodesize + 'H0z"/>';
+      const path = "<path " + getColorAttrib(opts.color.dark, "stroke") + ' d="' + qrToPath(data2, size, opts.margin) + '"/>';
+      const viewBox = 'viewBox="0 0 ' + qrcodesize + " " + qrcodesize + '"';
+      const width = !opts.width ? "" : 'width="' + opts.width + '" height="' + opts.width + '" ';
+      const svgTag = '<svg xmlns="http://www.w3.org/2000/svg" ' + width + viewBox + ' shape-rendering="crispEdges">' + bg + path + "</svg>\n";
+      if (typeof cb === "function") {
+        cb(null, svgTag);
+      }
+      return svgTag;
+    };
+  }
+});
+
+// node_modules/qrcode/lib/browser.js
+var require_browser2 = __commonJS({
+  "node_modules/qrcode/lib/browser.js"(exports) {
+    var canPromise = require_can_promise();
+    var QRCode2 = require_qrcode();
+    var CanvasRenderer = require_canvas();
+    var SvgRenderer = require_svg_tag();
+    function renderCanvas(renderFunc, canvas, text3, opts, cb) {
+      const args = [].slice.call(arguments, 1);
+      const argsNum = args.length;
+      const isLastArgCb = typeof args[argsNum - 1] === "function";
+      if (!isLastArgCb && !canPromise()) {
+        throw new Error("Callback required as last argument");
+      }
+      if (isLastArgCb) {
+        if (argsNum < 2) {
+          throw new Error("Too few arguments provided");
+        }
+        if (argsNum === 2) {
+          cb = text3;
+          text3 = canvas;
+          canvas = opts = void 0;
+        } else if (argsNum === 3) {
+          if (canvas.getContext && typeof cb === "undefined") {
+            cb = opts;
+            opts = void 0;
+          } else {
+            cb = opts;
+            opts = text3;
+            text3 = canvas;
+            canvas = void 0;
+          }
+        }
+      } else {
+        if (argsNum < 1) {
+          throw new Error("Too few arguments provided");
+        }
+        if (argsNum === 1) {
+          text3 = canvas;
+          canvas = opts = void 0;
+        } else if (argsNum === 2 && !canvas.getContext) {
+          opts = text3;
+          text3 = canvas;
+          canvas = void 0;
+        }
+        return new Promise(function(resolve, reject) {
+          try {
+            const data2 = QRCode2.create(text3, opts);
+            resolve(renderFunc(data2, canvas, opts));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+      try {
+        const data2 = QRCode2.create(text3, opts);
+        cb(null, renderFunc(data2, canvas, opts));
+      } catch (e) {
+        cb(e);
+      }
+    }
+    exports.create = QRCode2.create;
+    exports.toCanvas = renderCanvas.bind(null, CanvasRenderer.render);
+    exports.toDataURL = renderCanvas.bind(null, CanvasRenderer.renderToDataURL);
+    exports.toString = renderCanvas.bind(null, function(data2, _, opts) {
+      return SvgRenderer.render(data2, opts);
+    });
   }
 });
 
@@ -2246,7 +4317,7 @@ PS: This file could be delete if you want to.
   "100103": `Douban: Please search and import again `,
   "100126": `User Info`,
   "100128": `Logout`,
-  "100129": `You have not login Douban, please login in computer first! After login, you can use your rating and reading status, see the last for specific variables.`,
+  "100129": `QR code login is recommended on mobile. If you only have one device, follow the`,
   "100130": `Login`,
   "100131": `Login Douban`,
   "100133": `For Login Error `,
@@ -2254,14 +4325,39 @@ PS: This file could be delete if you want to.
   "100136": `Cookie Input`,
   "100137": `Cookie Login Failed, Can not get User Info By Cookie, Please Check Your Cookie Text`,
   "100134": `If you login failed, please click this button and follow`,
-  "100139": `Tutorial`,
-  "100138": `get Cookie and input to text area bellow`,
+  "100139": ` tutorial`,
+  "100138": ` to get your Cookie, paste it into the text area below, and click \u2714\uFE0F.`,
   "100132": `Load Douban Login Page Failed`,
+  "100140": `QR code login`,
+  "100141": `Douban QR code login`,
+  "100142": `Open the Douban app on another device, scan the QR code below, and confirm the login.`,
+  "100143": `Loading QR code...`,
+  "100144": `Waiting to be scanned...`,
+  "100145": `QR code scanned. Confirm the login in the Douban app.`,
+  "100146": `Douban login successful`,
+  "100147": `The QR code has expired. Refresh it to try again.`,
+  "100148": `Login was cancelled. Refresh the QR code to try again.`,
+  "100149": `QR code login temporarily failed and will retry. You can also refresh the QR code.`,
+  "100150": `Refresh QR code`,
+  "100151": `Web login`,
+  "100152": `QR login confirmed. Saving your login...`,
+  "100153": `The scan was confirmed, but no Douban login credential was received. Refresh the QR code and try again.`,
   "1210": `Basic`,
   "1203": `Template`,
   "1220": `Output`,
   "1230": `Description`,
   "1260": `Login`,
+  "1270": `Array Length Control`,
+  "1271": `Limit the maximum number of items for array fields (such as actor, director, author, translator, aliases, ...) in subjects (movie / teleplay / book / music / game / ...). Items beyond the limit will not be written to the note.`,
+  "1272": `Tip: When the "Apply Type" is "all", the limit applies to matching fields across all subject types. Type-specific limits take precedence when both exist for the same field.`,
+  "1273": `Add a limit, e.g. keep only the first 5 actors of a movie.`,
+  "127401": `Add a new array length limit`,
+  "127402": `Apply Type:`,
+  "127403": `Field:`,
+  "127404": `e.g. actor / director / author`,
+  "127405": `Max Count:`,
+  "127406": `e.g. 5`,
+  "127407": `Delete this limit`,
   "1204": `Set template file path. The template file will be used when creating new notes . If keep empty, it will use the default template file to create file. All the usable variables at tab "Description" and "Custom Variables"`,
   "1205": `\u{1F9E1}Tip: You can click the 'Copy' button to copy default template content, then create and paste to your own template file. After that, back to select the file. `,
   "1250": `Advanced`,
@@ -2456,8 +4552,12 @@ PS: This file could be delete if you want to.
   "122001": `Basic Variables`,
   "122002": `Extra Variables`,
   "122003": `Basic Variables must has value, Extra Variables can be empty`,
-  "122004": `To use the template variables, you need to wrap them in double curly brackets. For example, {{title}} will be replaced with the title of the note.`,
+  "122004": `Wrap template variables in double curly brackets, for example {{title}}. Click a variable-name cell to copy the complete template variable.`,
+  "122005": `Extra variables vary by content type. Highlighted text is the variable name; click its cell to copy the complete template variable.`,
   "122010": `My State Variables`,
+  "122011": `Click to copy`,
+  "122012": `Copied`,
+  "122013": `Copy failed. Please try again.`,
   "410101": `Unknown`,
   "410200": `\u8BC4\u5206\u2B50`,
   "300101": `\u53C2\u6570`,
@@ -2705,7 +4805,19 @@ PS: This file could be delete if you want to.
   "DAY": `D`,
   "HOUR": `H`,
   "MINUTE": `m`,
-  "SECOND": `S`
+  "SECOND": `S`,
+  "theaterTemplateName": `Theater template`,
+  "theaterTemplateDesc": `Template used for theater notes`,
+  "showAfterCreateName": `Open note after creation`,
+  "showAfterCreateDesc": `Open a newly created note automatically. Disable this for background-style imports.`,
+  "imageNameDesc": `Local image file name including its extension`,
+  "popularCommentsDesc": `Up to five popular book comments (array)`,
+  "batchImportCommand": `Import notes from Douban URLs`,
+  "batchImportTitle": `Batch import Douban URLs`,
+  "batchImportDesc": `Enter one Douban subject URL per line. Invalid or failed lines are skipped.`,
+  "batchImportProgress": `Importing {0}/{1}`,
+  "batchImportSummary": `Batch import finished: {0} succeeded, {1} failed.
+{2}`
 };
 
 // src/org/wanxp/lang/locale/zh-cn.ts
@@ -2812,7 +4924,7 @@ var zh_cn_default = {
   "100125": `\u767B\u5F55\u540E, \u53EF\u4F7F\u7528\u4F60\u7684\u8BC4\u5206/\u9605\u8BFB\u72B6\u6001\u7B49\u4F5C\u4E3A\u5BFC\u5165\u53C2\u6570,\u5177\u4F53\u53EF\u7528\u53C2\u6570\u89C1\u6700\u540E.`,
   "100126": `\u8C46\u74E3\u7528\u6237\u4FE1\u606F`,
   "100128": `\u767B\u51FA`,
-  "100129": `\u8C46\u74E3\u672A\u767B\u5F55\uFF0C\u8BF7\u5148\u5728\u7535\u8111\u7AEF\u767B\u5F55\uFF01\u767B\u5F55\u540E\u5BFC\u5165\u53C2\u6570\u53EF\u4F7F\u7528\u4F60\u7684\u8BC4\u5206\u4EE5\u53CA\u9605\u8BFB\u72B6\u6001\u7B49,\u5177\u4F53\u53EF\u7528\u53C2\u6570\u89C1\u6700\u540E.`,
+  "100129": `\u79FB\u52A8\u7AEF\u63A8\u8350\u4F7F\u7528\u4E8C\u7EF4\u7801\u767B\u5F55\uFF1B\u5982\u53EA\u6709\u4E00\u53F0\u8BBE\u5907\uFF0C\u8BF7\u6309\u7167`,
   "100130": `\u767B\u5F55`,
   "100131": `\u767B\u5F55\u8C46\u74E3`,
   "100133": `\u767B\u5F55\u51FA\u9519\u5904\u7406`,
@@ -2823,6 +4935,20 @@ var zh_cn_default = {
   "100139": `[\u6559\u7A0B]`,
   "100138": `\u83B7\u53D6Cookie,\u5E76\u5C06Cookie\u590D\u5236\u5230\u4E0B\u9762\u8F93\u5165\u6846\u4E2D,\u6700\u540E\u70B9\u51FB\u2714\uFE0F`,
   "100132": `\u52A0\u8F7D\u8C46\u74E3\u767B\u5F55\u9875\u9762\u5931\u8D25`,
+  "100140": `\u4E8C\u7EF4\u7801\u767B\u5F55`,
+  "100141": `\u8C46\u74E3\u4E8C\u7EF4\u7801\u767B\u5F55`,
+  "100142": `\u8BF7\u4F7F\u7528\u53E6\u4E00\u53F0\u8BBE\u5907\u6253\u5F00\u8C46\u74E3App\uFF0C\u626B\u63CF\u4E0B\u65B9\u4E8C\u7EF4\u7801\u5E76\u786E\u8BA4\u767B\u5F55\u3002`,
+  "100143": `\u6B63\u5728\u83B7\u53D6\u4E8C\u7EF4\u7801...`,
+  "100144": `\u7B49\u5F85\u626B\u7801...`,
+  "100145": `\u5DF2\u626B\u7801\uFF0C\u8BF7\u5728\u8C46\u74E3App\u4E2D\u786E\u8BA4\u767B\u5F55\u3002`,
+  "100146": `\u8C46\u74E3\u767B\u5F55\u6210\u529F`,
+  "100147": `\u4E8C\u7EF4\u7801\u5DF2\u5931\u6548\uFF0C\u8BF7\u70B9\u51FB\u5237\u65B0\u4E8C\u7EF4\u7801\u3002`,
+  "100148": `\u5DF2\u53D6\u6D88\u767B\u5F55\uFF0C\u8BF7\u70B9\u51FB\u5237\u65B0\u4E8C\u7EF4\u7801\u91CD\u8BD5\u3002`,
+  "100149": `\u4E8C\u7EF4\u7801\u767B\u5F55\u6682\u65F6\u5931\u8D25\uFF0C\u6B63\u5728\u91CD\u8BD5\uFF1B\u4E5F\u53EF\u4EE5\u5237\u65B0\u4E8C\u7EF4\u7801\u3002`,
+  "100150": `\u5237\u65B0\u4E8C\u7EF4\u7801`,
+  "100151": `\u7F51\u9875\u767B\u5F55`,
+  "100152": `\u626B\u7801\u786E\u8BA4\u6210\u529F\uFF0C\u6B63\u5728\u4FDD\u5B58\u767B\u5F55\u4FE1\u606F...`,
+  "100153": `\u626B\u7801\u5DF2\u786E\u8BA4\uFF0C\u4F46\u63D2\u4EF6\u6CA1\u6709\u6536\u5230\u8C46\u74E3\u767B\u5F55\u51ED\u8BC1\uFF0C\u8BF7\u5237\u65B0\u4E8C\u7EF4\u7801\u91CD\u8BD5\u3002`,
   "1201": `Obsidian-\u8C46\u74E3`,
   "120001": `\u8C46\u74E3\u641C\u7D22\u5730\u5740`,
   "120002": `\u8C46\u74E3\u641C\u7D22\u9875\u9762\u8BF7\u6C42\u5730\u5740, \u901A\u5E38\u662F\u7F51\u9875\u641C\u7D22\u7684\u5730\u5740. `,
@@ -2835,6 +4961,17 @@ var zh_cn_default = {
   "1220": `\u8F93\u51FA`,
   "1230": `\u5B57\u6BB5`,
   "1260": `\u767B\u5F55`,
+  "1270": `\u6570\u7EC4\u957F\u5EA6\u63A7\u5236`,
+  "1271": `\u9488\u5BF9\u5185\u5BB9\u7C7B\u578B(\u7535\u5F71/\u7535\u89C6\u5267/\u4E66\u7C4D/\u97F3\u4E50/\u6E38\u620F\u7B49)\u4E2D\u7684\u6570\u7EC4\u5B57\u6BB5(\u5982 actor\u3001director\u3001author\u3001translator\u3001aliases \u7B49)\u8BBE\u7F6E\u6700\u5927\u4FDD\u7559\u6570\u91CF, \u8D85\u51FA\u90E8\u5206\u5C06\u4E0D\u4F1A\u5199\u5165\u7B14\u8BB0\u3002`,
+  "1272": `\u63D0\u793A: "\u9002\u7528\u7C7B\u578B"\u9009\u62E9"\u5168\u90E8\u7C7B\u578B"\u65F6, \u9650\u5236\u5C06\u4F5C\u7528\u4E8E\u6240\u6709\u7C7B\u578B\u4E2D\u5339\u914D\u5B57\u6BB5\u540D\u7684\u5B57\u6BB5; \u9009\u62E9\u5177\u4F53\u7C7B\u578B\u65F6\u4EC5\u4F5C\u7528\u4E8E\u8BE5\u7C7B\u578B, \u540C\u5B57\u6BB5\u540C\u65F6\u5B58\u5728\u4E24\u79CD\u9650\u5236\u65F6\u53D6\u8F83\u5C0F\u503C\u3002`,
+  "1273": `\u6DFB\u52A0\u4E00\u6761\u9650\u5236\u914D\u7F6E, \u4F8B\u5982\u6307\u5B9A movie \u7684 actor \u53EA\u4FDD\u7559\u524D 5 \u4F4D\u3002`,
+  "127401": `\u6DFB\u52A0\u6570\u7EC4\u957F\u5EA6\u9650\u5236`,
+  "127402": `\u9002\u7528\u7C7B\u578B:`,
+  "127403": `\u5B57\u6BB5\u540D:`,
+  "127404": `\u5982 actor / director / author \u7B49`,
+  "127405": `\u6700\u5927\u6570\u91CF:`,
+  "127406": `\u5982 5`,
+  "127407": `\u5220\u9664\u8BE5\u9650\u5236`,
   "1204": `\u914D\u7F6E\u5BF9\u5E94\u7C7B\u578B\u7684\u6A21\u677F\u6587\u4EF6, \u5982\u679C\u4E3A\u7A7A\u5219\u4F7F\u7528\u9ED8\u8BA4\u6A21\u677F. \u6A21\u677F\u53EF\u4F7F\u7528\u7684\u53C2\u6570\u5728\u9875\u7B7E'\u5B57\u6BB5'\u548C'\u81EA\u5B9A\u4E49\u5B57\u6BB5'\u4E2D\u67E5\u770B`,
   "1205": `\u{1F9E1}\u63D0\u793A: \u5EFA\u8BAE\u70B9\u51FB\u53F3\u4FA7'\u590D\u5236'\u9ED8\u8BA4\u6A21\u677F\u6309\u94AE, \u7136\u540E\u5728\u65B0\u5EFA\u7684\u6587\u4EF6\u4E2D\u7C98\u8D34\u4FEE\u6539\u6A21\u677F, \u6700\u540E\u56DE\u5230\u6B64\u5904\u9009\u62E9\u5BF9\u5E94\u6A21\u677F. `,
   "1240": `\u81EA\u5B9A\u4E49\u5B57\u6BB5`,
@@ -3024,8 +5161,12 @@ var zh_cn_default = {
   "122001": `\u901A\u7528\u53C2\u6570`,
   "122002": `\u6269\u5C55\u53C2\u6570`,
   "122003": `\u901A\u7528\u53C2\u6570\u4E00\u5B9A\u6709\u503C\u4E0D\u4E3A\u7A7A, \u6269\u5C55\u53C2\u6570\u53EF\u80FD\u4E3A\u7A7A`,
-  "122004": `\u4EE5\u4E0B\u53C2\u6570\u4F7F\u7528\u65F6\u8BF7\u7528'{{}}'\u5305\u88F9, \u4E3E\u4F8B: \u53C2\u6570title, \u5219\u4F7F\u7528\u65F6\u4E3A{{title}}. `,
+  "122004": `\u4EE5\u4E0B\u53C2\u6570\u4F7F\u7528\u65F6\u8BF7\u7528'{{}}'\u5305\u88F9\uFF0C\u4F8B\u5982\u53C2\u6570 title \u4F7F\u7528\u65F6\u4E3A {{title}}\u3002\u70B9\u51FB\u53C2\u6570\u540D\u5355\u5143\u683C\u53EF\u590D\u5236\u5B8C\u6574\u6A21\u677F\u53D8\u91CF\u3002`,
+  "122005": `\u6269\u5C55\u53C2\u6570\u6309\u5185\u5BB9\u7C7B\u578B\u63D0\u4F9B\u3002\u9AD8\u4EAE\u6587\u5B57\u4E3A\u5B9E\u9645\u53C2\u6570\u540D\uFF0C\u70B9\u51FB\u5BF9\u5E94\u5355\u5143\u683C\u53EF\u590D\u5236\u5B8C\u6574\u6A21\u677F\u53D8\u91CF\u3002`,
   "122010": `\u6211\u7684\u72B6\u6001\u53C2\u6570`,
+  "122011": `\u70B9\u51FB\u590D\u5236`,
+  "122012": `\u5DF2\u590D\u5236`,
+  "122013": `\u590D\u5236\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5`,
   "410101": ``,
   "410102": `\u672A\u77E5`,
   "410200": `\u8BC4\u5206\u2B50`,
@@ -3210,10 +5351,10 @@ var zh_cn_default = {
   "500202": `\u60F3\u770B`,
   "500203": `\u5728\u770B`,
   "500204": `\u770B\u8FC7`,
-  "500301": `\u672A\u770B`,
-  "500302": `\u60F3\u770B`,
-  "500303": `\u5728\u770B`,
-  "500304": `\u770B\u8FC7`,
+  "500301": `\u672A\u8BFB`,
+  "500302": `\u60F3\u8BFB`,
+  "500303": `\u5728\u8BFB`,
+  "500304": `\u8BFB\u8FC7`,
   "500401": `\u672A\u542C`,
   "500402": `\u60F3\u542C`,
   "500403": `\u5728\u542C`,
@@ -3268,18 +5409,31 @@ var zh_cn_default = {
   "DAY": `\u5929`,
   "HOUR": `\u65F6`,
   "MINUTE": `\u5206`,
-  "SECOND": `\u79D2`
+  "SECOND": `\u79D2`,
+  "theaterTemplateName": `\u821E\u53F0\u5267\u6A21\u677F`,
+  "theaterTemplateDesc": `\u521B\u5EFA\u821E\u53F0\u5267\u7B14\u8BB0\u65F6\u4F7F\u7528\u7684\u6A21\u677F`,
+  "showAfterCreateName": `\u521B\u5EFA\u540E\u6253\u5F00\u7B14\u8BB0`,
+  "showAfterCreateDesc": `\u81EA\u52A8\u6253\u5F00\u65B0\u521B\u5EFA\u7684\u7B14\u8BB0\uFF1B\u5173\u95ED\u540E\u53EF\u5728\u540E\u53F0\u8FDE\u7EED\u5BFC\u5165\u3002`,
+  "imageNameDesc": `\u5E26\u6269\u5C55\u540D\u3001\u4E0D\u542B\u76EE\u5F55\u7684\u672C\u5730\u56FE\u7247\u6587\u4EF6\u540D`,
+  "popularCommentsDesc": `\u56FE\u4E66\u70ED\u95E8\u77ED\u8BC4\uFF0C\u6700\u591A\u4E94\u6761\uFF08\u6570\u7EC4\uFF09`,
+  "batchImportCommand": `\u6309\u8C46\u74E3 URL \u6279\u91CF\u5BFC\u5165`,
+  "batchImportTitle": `\u6279\u91CF\u5BFC\u5165\u8C46\u74E3\u6761\u76EE`,
+  "batchImportDesc": `\u6BCF\u884C\u8F93\u5165\u4E00\u4E2A\u8C46\u74E3\u6761\u76EE URL\uFF1B\u65E0\u6548\u6216\u5931\u8D25\u7684\u6761\u76EE\u4F1A\u8DF3\u8FC7\u5E76\u7EE7\u7EED\u3002`,
+  "batchImportProgress": `\u6B63\u5728\u5BFC\u5165 {0}/{1}`,
+  "batchImportSummary": `\u6279\u91CF\u5BFC\u5165\u5B8C\u6210\uFF1A\u6210\u529F {0} \u6761\uFF0C\u5931\u8D25 {1} \u6761\u3002
+{2}`
 };
 
 // src/org/wanxp/lang/helper.ts
+var import_obsidian = __toModule(require("obsidian"));
 var localeMap = {
   en: en_default,
   zh: zh_cn_default
 };
-var lang = window.localStorage.getItem("language");
-var locale = localeMap[lang || "en"];
 var I18nHelper = class {
   getMessage(str, ...params) {
+    const lang = this.getCurrentLanguage();
+    const locale = localeMap[lang];
     if (!locale) {
       console.error("Error: obsidian douban locale not found", lang);
     }
@@ -3290,6 +5444,19 @@ var I18nHelper = class {
       }
     }
     return val2;
+  }
+  getCurrentLanguage() {
+    var _a5;
+    let language = "";
+    try {
+      language = typeof import_obsidian.getLanguage === "function" ? (0, import_obsidian.getLanguage)() : "";
+    } catch (_error) {
+    }
+    if (!language && typeof window !== "undefined") {
+      language = ((_a5 = window.localStorage) == null ? void 0 : _a5.getItem("language")) || "";
+    }
+    language = language.toLowerCase();
+    return language === "zh-cn" || language === "zh-hans" || language.startsWith("zh") ? "zh" : "en";
   }
   replaceAll(index2, message, replace) {
     const placeholderRegex = new RegExp(`\\{${index2}:([^}]+)\\}`);
@@ -3367,8 +5534,8 @@ var StringUtil = class {
     const elementStart = StringUtil.escape(arraySetting.arrayElementStart);
     const elementEnd = StringUtil.escape(arraySetting.arrayElementEnd);
     const spilt = StringUtil.escape(arraySetting.arraySpiltV2);
-    const start2 = StringUtil.escape(arraySetting.arrayStart);
-    const end3 = StringUtil.escape(arraySetting.arrayEnd);
+    const start = StringUtil.escape(arraySetting.arrayStart);
+    const end2 = StringUtil.escape(arraySetting.arrayEnd);
     for (let i = 0; i < arr.length; i++) {
       let el = arr[i];
       if (!el) {
@@ -3380,7 +5547,7 @@ var StringUtil = class {
         content += elementStart + el + elementEnd + spilt;
       }
     }
-    content = start2 + content + end3;
+    content = start + content + end2;
     return content;
   }
   static notJsonString(str) {
@@ -3462,17 +5629,18 @@ var TemplateKey;
   TemplateKey5["noteTemplateFile"] = "noteTemplateFile";
   TemplateKey5["gameTemplateFile"] = "gameTemplateFile";
   TemplateKey5["teleplayTemplateFile"] = "teleplayTemplateFile";
+  TemplateKey5["theaterTemplateFile"] = "theaterTemplateFile";
 })(TemplateKey || (TemplateKey = {}));
 var SupportType;
-(function(SupportType6) {
-  SupportType6["all"] = "all";
-  SupportType6["movie"] = "movie";
-  SupportType6["book"] = "book";
-  SupportType6["music"] = "music";
-  SupportType6["note"] = "note";
-  SupportType6["game"] = "game";
-  SupportType6["teleplay"] = "teleplay";
-  SupportType6["theater"] = "theater";
+(function(SupportType5) {
+  SupportType5["all"] = "all";
+  SupportType5["movie"] = "movie";
+  SupportType5["book"] = "book";
+  SupportType5["music"] = "music";
+  SupportType5["note"] = "note";
+  SupportType5["game"] = "game";
+  SupportType5["teleplay"] = "teleplay";
+  SupportType5["theater"] = "theater";
 })(SupportType || (SupportType = {}));
 var SupportTypeMap = {
   "all": SupportType.all,
@@ -3493,66 +5661,83 @@ var SupportTypeMap = {
   "THEATER": SupportType.theater
 };
 var PropertyName;
-(function(PropertyName3) {
-  PropertyName3["id"] = "id";
-  PropertyName3["title"] = "title";
-  PropertyName3["type"] = "type";
-  PropertyName3["score"] = "score";
-  PropertyName3["image"] = "image";
-  PropertyName3["imageUrl"] = "imageUrl";
-  PropertyName3["url"] = "url";
-  PropertyName3["desc"] = "desc";
-  PropertyName3["publisher"] = "publisher";
-  PropertyName3["datePublished"] = "datePublished";
-  PropertyName3["genre"] = "genre";
-  PropertyName3["tags"] = "tags";
-  PropertyName3["rate"] = "rate";
-  PropertyName3["state"] = "state";
-  PropertyName3["collectionDate"] = "collectionDate";
-  PropertyName3["comment"] = "comment";
-  PropertyName3["author"] = "author";
-  PropertyName3["translator"] = "translator";
-  PropertyName3["isbn"] = "isbn";
-  PropertyName3["originalTitle"] = "originalTitle";
-  PropertyName3["subTitle"] = "subTitle";
-  PropertyName3["totalPage"] = "totalPage";
-  PropertyName3["series"] = "series";
-  PropertyName3["menu"] = "menu";
-  PropertyName3["price"] = "price";
-  PropertyName3["binding"] = "binding";
-  PropertyName3["producer"] = "producer";
-  PropertyName3["director"] = "director";
-  PropertyName3["actor"] = "actor";
-  PropertyName3["aggregateRating"] = "aggregateRating";
-  PropertyName3["aliases"] = "aliases";
-  PropertyName3["country"] = "country";
-  PropertyName3["language"] = "language";
-  PropertyName3["time"] = "time";
-  PropertyName3["IMDb"] = "IMDb";
-  PropertyName3["albumType"] = "albumType";
-  PropertyName3["medium"] = "medium";
-  PropertyName3["records"] = "records";
-  PropertyName3["barcode"] = "barcode";
-  PropertyName3["platform"] = "platform";
-  PropertyName3["developer"] = "developer";
-  PropertyName3["episode"] = "episode";
-  PropertyName3["authorUrl"] = "authorUrl";
-  PropertyName3["content"] = "content";
+(function(PropertyName4) {
+  PropertyName4["id"] = "id";
+  PropertyName4["title"] = "title";
+  PropertyName4["type"] = "type";
+  PropertyName4["score"] = "score";
+  PropertyName4["image"] = "image";
+  PropertyName4["imageUrl"] = "imageUrl";
+  PropertyName4["url"] = "url";
+  PropertyName4["desc"] = "desc";
+  PropertyName4["publisher"] = "publisher";
+  PropertyName4["datePublished"] = "datePublished";
+  PropertyName4["genre"] = "genre";
+  PropertyName4["tags"] = "tags";
+  PropertyName4["rate"] = "rate";
+  PropertyName4["state"] = "state";
+  PropertyName4["collectionDate"] = "collectionDate";
+  PropertyName4["comment"] = "comment";
+  PropertyName4["author"] = "author";
+  PropertyName4["translator"] = "translator";
+  PropertyName4["isbn"] = "isbn";
+  PropertyName4["originalTitle"] = "originalTitle";
+  PropertyName4["subTitle"] = "subTitle";
+  PropertyName4["totalPage"] = "totalPage";
+  PropertyName4["series"] = "series";
+  PropertyName4["menu"] = "menu";
+  PropertyName4["price"] = "price";
+  PropertyName4["binding"] = "binding";
+  PropertyName4["producer"] = "producer";
+  PropertyName4["director"] = "director";
+  PropertyName4["actor"] = "actor";
+  PropertyName4["aggregateRating"] = "aggregateRating";
+  PropertyName4["aliases"] = "aliases";
+  PropertyName4["country"] = "country";
+  PropertyName4["language"] = "language";
+  PropertyName4["time"] = "time";
+  PropertyName4["IMDb"] = "IMDb";
+  PropertyName4["albumType"] = "albumType";
+  PropertyName4["medium"] = "medium";
+  PropertyName4["records"] = "records";
+  PropertyName4["barcode"] = "barcode";
+  PropertyName4["platform"] = "platform";
+  PropertyName4["developer"] = "developer";
+  PropertyName4["episode"] = "episode";
+  PropertyName4["authorUrl"] = "authorUrl";
+  PropertyName4["content"] = "content";
 })(PropertyName || (PropertyName = {}));
-var SearchTypeRecords = {
-  [SupportType.all]: i18nHelper.getMessage("ALL"),
-  [SupportType.movie]: i18nHelper.getMessage("MOVIE_AND_TELEPLAY"),
-  [SupportType.book]: i18nHelper.getMessage("BOOK"),
-  [SupportType.music]: i18nHelper.getMessage("MUSIC"),
-  [SupportType.note]: i18nHelper.getMessage("NOTE"),
-  [SupportType.game]: i18nHelper.getMessage("GAME"),
-  [SupportType.theater]: i18nHelper.getMessage("THEATER")
-};
-var PersonNameModeRecords = {
-  [PersonNameMode.CH_NAME]: i18nHelper.getMessage("121206"),
-  [PersonNameMode.EN_NAME]: i18nHelper.getMessage("121207"),
-  [PersonNameMode.CH_EN_NAME]: i18nHelper.getMessage("121208")
-};
+function dynamicI18nRecord(entries) {
+  const result = {};
+  Object.entries(entries).forEach(([key, messageKey]) => {
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      get: () => i18nHelper.getMessage(messageKey)
+    });
+  });
+  return result;
+}
+function dynamicSubjectTitle(subject, messageKey) {
+  Object.defineProperty(subject, "title", {
+    enumerable: true,
+    get: () => i18nHelper.getMessage(messageKey)
+  });
+  return subject;
+}
+var SearchTypeRecords = dynamicI18nRecord({
+  [SupportType.all]: "ALL",
+  [SupportType.movie]: "MOVIE_AND_TELEPLAY",
+  [SupportType.book]: "BOOK",
+  [SupportType.music]: "MUSIC",
+  [SupportType.note]: "NOTE",
+  [SupportType.game]: "GAME",
+  [SupportType.theater]: "THEATER"
+});
+var PersonNameModeRecords = dynamicI18nRecord({
+  [PersonNameMode.CH_NAME]: "121206",
+  [PersonNameMode.EN_NAME]: "121207",
+  [PersonNameMode.CH_EN_NAME]: "121208"
+});
 var SyncType;
 (function(SyncType4) {
   SyncType4["movie"] = "movie";
@@ -3572,13 +5757,13 @@ var SyncTypeUrlDomain = new Map([
   [SyncType.teleplay, "movie"],
   [SyncType.game, "games"]
 ]);
-var SyncTypeRecords = {
-  [SyncType.movie]: i18nHelper.getMessage("504103"),
-  [SyncType.teleplay]: i18nHelper.getMessage("504107"),
-  [SyncType.book]: i18nHelper.getMessage("504102"),
-  [SyncType.music]: i18nHelper.getMessage("504106"),
-  [SyncType.game]: i18nHelper.getMessage("504108")
-};
+var SyncTypeRecords = dynamicI18nRecord({
+  [SyncType.movie]: "504103",
+  [SyncType.teleplay]: "504107",
+  [SyncType.book]: "504102",
+  [SyncType.music]: "504106",
+  [SyncType.game]: "504108"
+});
 var PAGE_SIZE = 30;
 var Action;
 (function(Action2) {
@@ -3602,7 +5787,7 @@ var NavigateType;
   NavigateType2["next"] = "next";
   NavigateType2["nextNeedLogin"] = "nextNeedLogin";
 })(NavigateType || (NavigateType = {}));
-var DoubanSearchResultSubjectPreviousPage = {
+var DoubanSearchResultSubjectPreviousPage = dynamicSubjectTitle({
   cast: "",
   datePublished: void 0,
   desc: "",
@@ -3612,11 +5797,11 @@ var DoubanSearchResultSubjectPreviousPage = {
   imageUrl: "",
   publisher: "",
   score: 0,
-  title: i18nHelper.getMessage("150102"),
+  title: "",
   type: "navigate",
   url: NavigateType.previous
-};
-var DoubanSearchGroupPublishResultSubjectPreviousPage = {
+}, "150102");
+var DoubanSearchGroupPublishResultSubjectPreviousPage = dynamicSubjectTitle({
   cast: "",
   datePublished: void 0,
   desc: "",
@@ -3626,11 +5811,11 @@ var DoubanSearchGroupPublishResultSubjectPreviousPage = {
   imageUrl: "",
   publisher: "",
   score: 0,
-  title: i18nHelper.getMessage("150106"),
+  title: "",
   type: "navigate",
   url: NavigateType.previous
-};
-var DoubanSearchGroupPublishResultSubjectNextPage = {
+}, "150106");
+var DoubanSearchGroupPublishResultSubjectNextPage = dynamicSubjectTitle({
   cast: "",
   datePublished: void 0,
   desc: "",
@@ -3640,11 +5825,11 @@ var DoubanSearchGroupPublishResultSubjectNextPage = {
   imageUrl: "",
   publisher: "",
   score: 0,
-  title: i18nHelper.getMessage("150105"),
+  title: "",
   type: "navigate",
   url: NavigateType.next
-};
-var DoubanSearchResultSubjectNextPage = {
+}, "150105");
+var DoubanSearchResultSubjectNextPage = dynamicSubjectTitle({
   cast: "",
   datePublished: void 0,
   desc: "",
@@ -3654,11 +5839,11 @@ var DoubanSearchResultSubjectNextPage = {
   imageUrl: "",
   publisher: "",
   score: 0,
-  title: i18nHelper.getMessage("150103"),
+  title: "",
   type: "navigate",
   url: NavigateType.next
-};
-var DoubanSearchResultSubjectNextPageNeedLogin = {
+}, "150103");
+var DoubanSearchResultSubjectNextPageNeedLogin = dynamicSubjectTitle({
   cast: "",
   datePublished: void 0,
   desc: "",
@@ -3668,10 +5853,10 @@ var DoubanSearchResultSubjectNextPageNeedLogin = {
   imageUrl: "",
   publisher: "",
   score: 0,
-  title: i18nHelper.getMessage("150104"),
+  title: "",
   type: "navigate",
   url: NavigateType.nextNeedLogin
-};
+}, "150104");
 var SEARCH_ITEM_PAGE_SIZE = 20;
 var DEFAULT_DOUBAN_HEADERS = StringUtil.parseHeaders(`
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
@@ -3772,15 +5957,15 @@ var SyncConditionType;
   SyncConditionType2["CUSTOM_TIME"] = "customTime";
   SyncConditionType2["CUSTOM_ITEM"] = "customItem";
 })(SyncConditionType || (SyncConditionType = {}));
-var SyncConditionTypeRecords = {
-  [SyncConditionType.ALL]: i18nHelper.getMessage("110071"),
-  [SyncConditionType.LAST_THIRTY]: i18nHelper.getMessage("110075"),
-  [SyncConditionType.CUSTOM_ITEM]: i18nHelper.getMessage("110076"),
-  [SyncConditionType.CUSTOM_TIME]: i18nHelper.getMessage("110074")
-};
-var DoubanSearchResultSubject_EMPTY = {
+var SyncConditionTypeRecords = dynamicI18nRecord({
+  [SyncConditionType.ALL]: "110071",
+  [SyncConditionType.LAST_THIRTY]: "110075",
+  [SyncConditionType.CUSTOM_ITEM]: "110076",
+  [SyncConditionType.CUSTOM_TIME]: "110074"
+});
+var DoubanSearchResultSubject_EMPTY = dynamicSubjectTitle({
   id: "",
-  title: i18nHelper.getMessage("150107"),
+  title: "",
   score: null,
   cast: "",
   type: "navigate",
@@ -3791,10 +5976,10 @@ var DoubanSearchResultSubject_EMPTY = {
   publisher: "",
   datePublished: void 0,
   genre: []
-};
-var DoubanSearchResultSubject_TIP_EMPTY = {
+}, "150107");
+var DoubanSearchResultSubject_TIP_EMPTY = dynamicSubjectTitle({
   id: "",
-  title: i18nHelper.getMessage("150108"),
+  title: "",
   score: null,
   cast: "",
   type: "navigate",
@@ -3805,10 +5990,10 @@ var DoubanSearchResultSubject_TIP_EMPTY = {
   publisher: "",
   datePublished: void 0,
   genre: []
-};
+}, "150108");
 
 // src/org/wanxp/main.ts
-var import_obsidian35 = __toModule(require("obsidian"));
+var import_obsidian39 = __toModule(require("obsidian"));
 
 // src/org/wanxp/constant/DefaultSettings.ts
 var DEFAULT_SETTINGS = {
@@ -3834,6 +6019,7 @@ var DEFAULT_SETTINGS = {
   noteTemplateFile: ``,
   gameTemplateFile: ``,
   teleplayTemplateFile: ``,
+  theaterTemplateFile: ``,
   searchUrl: "https://www.douban.com/search?q=",
   dateFormat: "yyyy-MM-DD",
   timeFormat: "HH:mm:ss",
@@ -3860,6 +6046,7 @@ var DEFAULT_SETTINGS = {
   loginHeadersContent: "",
   cacheImage: true,
   cacheHighQuantityImage: true,
+  showAfterCreate: true,
   attachmentPath: "assets",
   attachmentFileName: "{{title}}",
   syncHandledDataArray: [],
@@ -3869,28 +6056,29 @@ var DEFAULT_SETTINGS = {
     displayStarEmpty: false,
     maxStar: 5
   },
-  searchDefaultType: SupportType.all
+  searchDefaultType: SupportType.all,
+  arrayLengthLimits: []
 };
 
 // src/org/wanxp/douban/data/search/DoubanSearchFuzzySuggestModal.ts
-var import_obsidian6 = __toModule(require("obsidian"));
+var import_obsidian7 = __toModule(require("obsidian"));
 
 // src/org/wanxp/utils/Logutil.ts
-var import_obsidian = __toModule(require("obsidian"));
+var import_obsidian2 = __toModule(require("obsidian"));
 var Logger = class {
   error(msg, e) {
-    new import_obsidian.Notice(msg);
+    new import_obsidian2.Notice(msg);
     console.log(`OB-Douban: ${msg}`);
     console.error(e);
     return e;
   }
   notice(e) {
-    new import_obsidian.Notice(e);
+    new import_obsidian2.Notice(e);
     console.error(`OB-Douban: ${e}`);
     return e;
   }
   warn(e) {
-    new import_obsidian.Notice(e);
+    new import_obsidian2.Notice(e);
     console.warn(`OB-Douban: ${e}`);
     return e;
   }
@@ -3907,9 +6095,9 @@ var Logger = class {
     } else {
       try {
         let showMessage = typeof e == "string" ? e : e.toString();
-        console.log(`OB-Douban:${(0, import_obsidian.moment)(new Date()).format("YYYY-MM-DD HH:mm:SS")}: ${showMessage}`);
+        console.log(`OB-Douban:${(0, import_obsidian2.moment)(new Date()).format("YYYY-MM-DD HH:mm:SS")}: ${showMessage}`);
       } catch (e2) {
-        console.log(`OB-Douban:${(0, import_obsidian.moment)(new Date()).format("YYYY-MM-DD HH:mm:SS")}:` + e2.toString());
+        console.log(`OB-Douban:${(0, import_obsidian2.moment)(new Date()).format("YYYY-MM-DD HH:mm:SS")}:` + e2.toString());
       }
     }
     return e;
@@ -3929,7 +6117,7 @@ var log = new Logger();
 var import_obsidian5 = __toModule(require("obsidian"));
 
 // src/org/wanxp/utils/model/HttpResponse.ts
-var import_obsidian2 = __toModule(require("obsidian"));
+var import_obsidian3 = __toModule(require("obsidian"));
 var HttpResponse = class {
   constructor(status, headers, text3) {
     this._status = status;
@@ -3955,7 +6143,7 @@ var HttpResponse = class {
     return "";
   }
   get textArrayBuffer() {
-    if (import_obsidian2.Platform.isDesktopApp) {
+    if (import_obsidian3.Platform.isDesktopApp) {
       if (this.text instanceof Buffer) {
         return this.text;
       }
@@ -3980,94 +6168,122 @@ var HttpResponse = class {
 var https = null;
 var http = null;
 var DesktopHttpUtil = class {
-  static request(url, headers, settingsManager, options) {
-    const _a5 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a5, headersInner = __objRest(_a5, ["Accept-Encoding"]);
-    const optionsInner = __spreadValues({
-      headers: headersInner
-    }, options);
-    return new Promise((resolve, rejects) => {
-      this.httpRequest(url, optionsInner, 0, resolve, rejects, settingsManager);
+  static request(_0, _1, _2) {
+    return __async(this, arguments, function* (url, headers, settingsManager, options = {}) {
+      return this.requestWithRetry(url, headers, settingsManager, options, false);
     });
   }
-  static httpRequest(url, options, times, resolve, rejects, settingsManager) {
-    settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6json\u5F00\u59CB:
+  static requestBuffer(_0, _1, _2) {
+    return __async(this, arguments, function* (url, headers, settingsManager, options = {}) {
+      return this.requestWithRetry(url, headers, settingsManager, options, true);
+    });
+  }
+  static requestWithRetry(url, headers, settingsManager, options, asBuffer) {
+    return __async(this, null, function* () {
+      const headersInner = {};
+      Object.entries(headers || {}).forEach(([key, value]) => {
+        const lowerKey = key.toLowerCase();
+        if (value != null && value !== "" && lowerKey !== "accept-encoding" && lowerKey !== "host" && lowerKey !== "content-length") {
+          headersInner[key] = String(value);
+        }
+      });
+      const _a5 = options || {}, {
+        timeoutMs = this.DEFAULT_TIMEOUT_MS,
+        retryCount
+      } = _a5, nativeOptions = __objRest(_a5, [
+        "timeoutMs",
+        "retryCount"
+      ]);
+      const method = String(nativeOptions.method || "GET").toUpperCase();
+      const retries = retryCount == null ? method === "GET" || method === "HEAD" ? this.DEFAULT_RETRY_COUNT : 0 : Math.max(0, retryCount);
+      const requestOptions = __spreadValues({ headers: headersInner }, nativeOptions);
+      let lastError;
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          return yield this.requestOnce(url, requestOptions, timeoutMs, settingsManager, attempt, asBuffer);
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          settingsManager == null ? void 0 : settingsManager.debug(`Obsidian-Douban:\u8BF7\u6C42\u5931\u8D25 ${attempt + 1}/${retries + 1}: ${lastError.message}`);
+        }
+      }
+      throw lastError;
+    });
+  }
+  static requestOnce(url, options, timeoutMs, settingsManager, attempt, asBuffer) {
+    settingsManager == null ? void 0 : settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6\u5F00\u59CB:
 url:${url}
 headers:${JSON.stringify(options)}`);
-    var method = options.method;
-    if (method == null) {
-      method = "GET";
-    }
-    if (method.toUpperCase() == "POST") {
-      const { protocol, host, port, path } = HttpUtil.parse(url);
-      const optionsInner = {
-        hostname: host,
-        port,
-        path,
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+    return new Promise((resolve, reject) => {
+      const _a5 = options, { body } = _a5, requestOptions = __objRest(_a5, ["body"]);
+      requestOptions.method = requestOptions.method || "GET";
+      requestOptions.headers = __spreadValues({}, requestOptions.headers || {});
+      let redirectCookie = requestOptions.headers.Cookie || requestOptions.headers.cookie || "";
+      requestOptions.beforeRedirect = (redirectOptions, response) => {
+        const setCookie = response.headers && response.headers["set-cookie"];
+        if (setCookie) {
+          redirectCookie = this.mergeCookies(redirectCookie, Array.isArray(setCookie) ? setCookie : [setCookie]);
+        }
+        if (redirectCookie) {
+          redirectOptions.headers.Cookie = redirectCookie;
+          delete redirectOptions.headers.cookie;
         }
       };
-      let req = null;
-      try {
-        req = DesktopHttpUtil.getHttpClient(url).request(optionsInner, function(response) {
-          let chunks = [], size = 0;
-          if (settingsManager) {
-            settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6JSON\u5B8C\u6210${times}:url:
-${url}`);
-            settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6JSON\u5B8C\u6210${times}:header:
-${JSON.stringify(response.headers)}`);
-            settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6JSON\u5B8C\u6210${times}:body:
-${response.text}`);
-          }
-          response.on("data", function(chunk) {
-            chunks.push(chunk);
-            size += chunk.length;
-          });
-          response.on("end", function() {
-            const data2 = Buffer.concat(chunks, size);
-            const html3 = data2.toString();
-            resolve(new HttpResponse(response.statusCode, response.headers, html3));
-          });
-        });
-      } catch (e) {
-        rejects(e);
+      if (body && !requestOptions.headers["Content-Length"] && !requestOptions.headers["content-length"]) {
+        requestOptions.headers["Content-Length"] = Buffer.byteLength(body);
       }
-      if (req) {
-        const body = options.body;
-        if (body) {
-          req.write(body);
-        } else {
-          req.write("");
+      let settled = false;
+      const finishReject = (error) => {
+        if (!settled) {
+          settled = true;
+          reject(error);
         }
-        req.end();
-      }
-    } else {
+      };
       try {
-        this.getHttpClient(url).get(url, __spreadValues({}, options), function(response) {
-          let chunks = [], size = 0;
-          if (settingsManager) {
-            settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6JSON\u5B8C\u6210${times}:url:
+        const request2 = this.getHttpClient(url).request(url, requestOptions, (response) => {
+          const chunks = [];
+          let size = 0;
+          settingsManager == null ? void 0 : settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6\u54CD\u5E94${attempt}:url:
 ${url}`);
-            settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6JSON\u5B8C\u6210${times}:header:
-${JSON.stringify(response.headers)}`);
-            settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6JSON\u5B8C\u6210${times}:body:
-${response.text}`);
-          }
-          response.on("data", function(chunk) {
-            chunks.push(chunk);
+          response.on("data", (chunk) => {
+            chunks.push(Buffer.from(chunk));
             size += chunk.length;
           });
-          response.on("end", function() {
+          response.on("aborted", () => finishReject(new Error(`Response aborted for ${url}`)));
+          response.on("error", finishReject);
+          response.on("end", () => {
+            if (settled) {
+              return;
+            }
+            settled = true;
             const data2 = Buffer.concat(chunks, size);
-            const html3 = data2.toString();
-            resolve(new HttpResponse(response.statusCode, response.headers, html3));
+            resolve(new HttpResponse(response.statusCode, response.headers, asBuffer ? data2 : data2.toString()));
           });
         });
-      } catch (e) {
-        rejects(e);
+        request2.on("error", finishReject);
+        request2.setTimeout(Math.max(1, timeoutMs), () => {
+          request2.destroy(new Error(`Request timed out after ${timeoutMs}ms: ${url}`));
+        });
+        if (body) {
+          request2.write(body);
+        }
+        request2.end();
+      } catch (error) {
+        finishReject(error instanceof Error ? error : new Error(String(error)));
       }
-    }
+    });
+  }
+  static mergeCookies(existingCookie, setCookies) {
+    const cookies = new Map();
+    const addCookie = (cookie) => {
+      const pair = cookie.split(";", 1)[0].trim();
+      const separator = pair.indexOf("=");
+      if (separator > 0) {
+        cookies.set(pair.substring(0, separator).trim(), pair.substring(separator + 1).trim());
+      }
+    };
+    existingCookie.split(";").forEach(addCookie);
+    setCookies.forEach(addCookie);
+    return Array.from(cookies.entries()).map(([name, value]) => `${name}=${value}`).join("; ");
   }
   static getHttpClient(url) {
     if (url && url.startsWith("https")) {
@@ -4075,205 +6291,101 @@ ${response.text}`);
         https = require_follow_redirects().https;
       }
       return https;
-    } else {
-      if (!http) {
-        http = require_follow_redirects().http;
-      }
-      return http;
     }
-  }
-  static requestBuffer(url, headers, settingsManager) {
-    let options = {
-      headers
-    };
-    return new Promise((resolve, rejects) => {
-      this.httpRequestGetBufferInner(url, options, 0, resolve, rejects, settingsManager);
-    });
-  }
-  static httpRequestGetBufferInner(url, options, times, resolve, rejects, settingsManager) {
-    if (settingsManager) {
-      settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6\u6587\u4EF6\u5F00\u59CB:
-${url}
-headers:${JSON.stringify(options)}`);
-      this.getHttpClient(url).get(url, __spreadValues({}, options), function(response) {
-        let chunks = [], size = 0;
-        if (settingsManager) {
-          settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6\u6587\u4EF6\u5B8C\u6210${times}:url:
-${url}`);
-          settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6\u6587\u4EF6\u5B8C\u6210${times}:header:
-${JSON.stringify(response.headers)}`);
-        }
-        response.on("data", function(chunk) {
-          chunks.push(chunk);
-          size += chunk.length;
-        });
-        response.on("end", function() {
-          const data2 = Buffer.concat(chunks, size);
-          resolve(new HttpResponse(response.statusCode, response.headers, data2));
-        });
-      });
+    if (!http) {
+      http = require_follow_redirects().http;
     }
+    return http;
   }
 };
+DesktopHttpUtil.DEFAULT_TIMEOUT_MS = 3e4;
+DesktopHttpUtil.DEFAULT_RETRY_COUNT = 2;
 
 // src/org/wanxp/utils/mobile/MobileHttpUtil.ts
 var import_obsidian4 = __toModule(require("obsidian"));
-
-// src/org/wanxp/douban/component/DoubanHumanCheckModel.ts
-var import_obsidian3 = __toModule(require("obsidian"));
-var DoubanHumanCheckModel = class {
-  constructor(url) {
-    this.url = url;
-    const { remote } = require("electron");
-    const { BrowserWindow: RemoteBrowserWindow } = remote;
-    this.modal = new RemoteBrowserWindow({
-      parent: remote.getCurrentWindow(),
-      width: 960,
-      height: 540,
-      show: false
-    });
-    this.modal.once("ready-to-show", () => {
-      this.modal.setTitle(i18nHelper.getMessage("100102"));
-      this.modal.show();
-    });
-    const session = this.modal.webContents.session;
-    const filter4 = {
-      urls: [this.url]
-    };
-    session.webRequest.onSendHeaders(filter4, (details) => __async(this, null, function* () {
-      const cookies = details.requestHeaders["Cookie"];
-      const cookieArr = this.parseCookies(cookies);
-      if (cookieArr) {
-        this.onClose();
-      } else {
-        this.onReload();
-      }
-    }));
-  }
-  parseCookies(cookies) {
-    return cookies;
-  }
-  load() {
-    return __async(this, null, function* () {
-      try {
-        yield this.modal.loadURL(this.url);
-      } catch (error) {
-        log.error(i18nHelper.getMessage("100101"), error);
-      }
-    });
-  }
-  loadUrl(url) {
-    return __async(this, null, function* () {
-      try {
-        yield this.modal.loadURL(url);
-      } catch (error) {
-        log.error(i18nHelper.getMessage("100101"), error);
-      }
-    });
-  }
-  loadHtml(html3) {
-    return __async(this, null, function* () {
-      try {
-        yield this.modal.loadURL(`data:text/html;charset=utf-8,${html3}`);
-      } catch (error) {
-        log.error(i18nHelper.getMessage("100101"), error);
-      }
-    });
-  }
-  onClose() {
-    this.modal.close();
-    new import_obsidian3.Notice(i18nHelper.getMessage("100103"));
-  }
-  onReload() {
-    this.modal.reload();
-  }
-};
-
-// src/org/wanxp/utils/DoubanHttpUtil.ts
-var DoubanHttpUtil = class {
-  static httpRequestGet(url, headers, settingsManager) {
-    return __async(this, null, function* () {
-      settingsManager.debug(`\u8BF7\u6C42\u5730\u5740:${url}`);
-      const _a5 = headers, { ["Accept-Encoding"]: acceptEncoding } = _a5, headersInner = __objRest(_a5, ["Accept-Encoding"]);
-      settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6\u7F51\u9875\u5F00\u59CB:
-url:${url}
-headers:${JSON.stringify(headers)}`);
-      const response = yield HttpUtil.getText(url, headers, settingsManager);
-      if (response.status == 403) {
-        throw new Error(i18nHelper.getMessage("130106"));
-      }
-      const html3 = response.textString;
-      return yield this.humanCheck(html3, url);
-    });
-  }
-  constructor(fileHandler) {
-    this.fileHandler = fileHandler;
-  }
-  static humanCheck(html3, url, settingsManager) {
-    return __async(this, null, function* () {
-      if (!html3) {
-        return html3;
-      }
-      if (settingsManager) {
-        settingsManager.debug(html3);
-      }
-      if (html3 && html3.toString().indexOf("<title>\u7981\u6B62\u8BBF\u95EE</title>") != -1) {
-        const loginModel = new DoubanHumanCheckModel(url);
-        yield loginModel.load();
-        return "";
-      } else {
-        return html3;
-      }
-    });
-  }
-};
-
-// src/org/wanxp/utils/mobile/MobileHttpUtil.ts
 var MobileHttpUtil = class {
   static httpRequestGet(url, headers, settingsManager) {
-    return this.httpRequestGetInner(url, headers, 0, settingsManager);
+    return this.request(url, headers, settingsManager, { method: "GET" });
   }
-  static httpRequestGetInner(url, headers, times, settingsManager) {
+  static request(url, headers, settingsManager, options = {}) {
+    return this.requestInner(url, headers, options, 0, settingsManager);
+  }
+  static requestInner(url, headers, options, times, settingsManager) {
     return __async(this, null, function* () {
-      const _a5 = headers, { Cookie } = _a5, headersInner = __objRest(_a5, ["Cookie"]);
-      let requestUrlParam = {
+      const requestHeaders = {};
+      Object.entries(headers || {}).forEach(([key, value]) => {
+        const lowerKey = key.toLowerCase();
+        if (value != null && value !== "" && lowerKey !== "host" && lowerKey !== "content-length") {
+          requestHeaders[key] = String(value);
+        }
+      });
+      const requestUrlParam = {
         url,
-        method: "GET",
-        headers: { "Cookie": Cookie },
-        throw: true
+        method: options.method || "GET",
+        headers: requestHeaders,
+        body: options.body,
+        throw: false
       };
       return yield (0, import_obsidian4.requestUrl)(requestUrlParam).then((response) => {
         if (response && response.text.indexOf("https://sec.douban.com/a") > 0) {
           log.notice(i18nHelper.getMessage("130105"));
-          if (settingsManager) {
-            settingsManager.debug(`Obsidian-Douban:\u83B7\u53D6\u5F02\u5E38\u7F51\u9875\u5982\u4E0B:
+          settingsManager == null ? void 0 : settingsManager.debug(`Obsidian-Douban:\u83B7\u53D6\u5F02\u5E38\u7F51\u9875\u5982\u4E0B:
 ${response}`);
-          }
         }
-        if (response.status == 301 || response.status == 302 || response.status == 303 || response.status == 307) {
-          if (times > 2) {
+        if ([301, 302, 303, 307, 308].includes(response.status)) {
+          if (times >= 5) {
             throw new Error("\u91CD\u5B9A\u5411\u6B21\u6570\u8FC7\u591A");
           }
-          let location = response.headers["location"];
-          settingsManager.debug(`Obsidian-Douban:\u83B7\u53D6\u91CD\u5B9A\u5411\u5730\u5740\u5982\u4E0B:
+          const location = response.headers["location"];
+          settingsManager == null ? void 0 : settingsManager.debug(`Obsidian-Douban:\u83B7\u53D6\u91CD\u5B9A\u5411\u5730\u5740\u5982\u4E0B:
 ${location}`);
-          if (location.indexOf("http") != 0) {
-            return this.httpRequestGetInner(location, headers, times + 1, settingsManager);
-          } else {
+          if (!location) {
             throw new Error("\u91CD\u5B9A\u5730\u5740\u9519\u8BEF");
           }
+          const redirectUrl = new URL(location, url).toString();
+          const redirectHeaders = this.mergeResponseCookies(headers, response.headers);
+          const redirectOptions = __spreadValues({}, options);
+          if ([301, 302, 303].includes(response.status)) {
+            redirectOptions.method = "GET";
+            delete redirectOptions.body;
+          }
+          return this.requestInner(redirectUrl, redirectHeaders, redirectOptions, times + 1, settingsManager);
         }
-        settingsManager.debug(`Obsidian-Douban:\u83B7\u53D6\u7F51\u9875\u5982\u4E0B:
+        settingsManager == null ? void 0 : settingsManager.debug(`Obsidian-Douban:\u83B7\u53D6\u7F51\u9875\u5982\u4E0B:
 ${response}`);
         return response;
-      }).then((s) => DoubanHttpUtil.humanCheck(s, url, settingsManager)).catch((e) => {
+      }).catch((e) => {
         if (e.toString().indexOf("403") > 0) {
           throw log.error(i18nHelper.getMessage("130105"), e);
-        } else {
-          throw log.error(i18nHelper.getMessage("130101").replace("{0}", e.toString()), e);
         }
+        throw log.error(i18nHelper.getMessage("130101").replace("{0}", e.toString()), e);
       });
     });
+  }
+  static mergeResponseCookies(headers, responseHeaders) {
+    const result = __spreadValues({}, headers || {});
+    const currentCookieKey = Object.keys(result).find((key) => key.toLowerCase() === "cookie");
+    const currentCookie = currentCookieKey ? result[currentCookieKey] : "";
+    const setCookieKey = Object.keys(responseHeaders || {}).find((key) => key.toLowerCase() === "set-cookie");
+    const setCookie = setCookieKey ? responseHeaders[setCookieKey] : "";
+    if (!setCookie) {
+      return result;
+    }
+    const cookies = new Map();
+    const addCookie = (cookie) => {
+      const pair = cookie.split(";", 1)[0].trim();
+      const separator = pair.indexOf("=");
+      if (separator > 0) {
+        cookies.set(pair.substring(0, separator).trim(), pair.substring(separator + 1).trim());
+      }
+    };
+    String(currentCookie).split(";").forEach(addCookie);
+    addCookie(setCookie);
+    if (currentCookieKey && currentCookieKey !== "Cookie") {
+      delete result[currentCookieKey];
+    }
+    result.Cookie = Array.from(cookies.entries()).map(([name, value]) => `${name}=${value}`).join("; ");
+    return result;
   }
 };
 
@@ -4288,7 +6400,7 @@ headers:${JSON.stringify(headers)}`);
       if (import_obsidian5.Platform.isDesktopApp) {
         return DesktopHttpUtil.request(url, headers, settingsManager, options);
       } else {
-        const response = yield MobileHttpUtil.httpRequestGet(url, headers, settingsManager);
+        const response = yield MobileHttpUtil.request(url, headers, settingsManager, options);
         return new HttpResponse(response.status, response.headers, response.text);
       }
     });
@@ -4384,217 +6496,73 @@ HttpUtil.IMAGE_REQUEST_HEADERS_TO_DROP = new Set([
   "sec-fetch-user"
 ]);
 
-// src/org/wanxp/douban/data/search/searcher/AbstractSearchPageFetcher.ts
-var AbstractSearchPageFetcher = class {
-  constructor(settingsManager) {
-    this.settingsManager = settingsManager;
+// src/org/wanxp/douban/component/DoubanHumanCheckModel.ts
+var import_obsidian6 = __toModule(require("obsidian"));
+var DoubanHumanCheckModel = class {
+  constructor(url) {
+    this.url = url;
+    const { remote } = require("electron");
+    const { BrowserWindow: RemoteBrowserWindow } = remote;
+    this.modal = new RemoteBrowserWindow({
+      parent: remote.getCurrentWindow(),
+      width: 960,
+      height: 540,
+      show: false
+    });
+    this.modal.once("ready-to-show", () => {
+      this.modal.setTitle(i18nHelper.getMessage("100102"));
+      this.modal.show();
+    });
+    const session = this.modal.webContents.session;
+    const filter4 = {
+      urls: [this.url]
+    };
+    session.webRequest.onSendHeaders(filter4, (details) => __async(this, null, function* () {
+      const cookies = details.requestHeaders["Cookie"];
+      const cookieArr = this.parseCookies(cookies);
+      if (cookieArr) {
+        this.onClose();
+      } else {
+        this.onReload();
+      }
+    }));
   }
-  support(type, pageNum) {
-    throw new Error("Method not implemented.");
+  parseCookies(cookies) {
+    return cookies;
   }
-  fetch(keyword, pageNum, pageSize) {
-    const start2 = Math.floor((pageNum - 1) * pageSize);
-    const url = this.getSearchUrl(keyword, start2, pageSize);
-    if (!url) {
-      return Promise.resolve("");
-    }
-    return DoubanHttpUtil.httpRequestGet(url, this.settingsManager.getHeaders(), this.settingsManager).catch((e) => {
-      throw log.error(i18nHelper.getMessage("130101").replace("{0}", e.toString()), e);
+  load() {
+    return __async(this, null, function* () {
+      try {
+        yield this.modal.loadURL(this.url);
+      } catch (error) {
+        log.error(i18nHelper.getMessage("100101"), error);
+      }
     });
   }
-  getSearchUrl(keyword, start2, pageSize) {
-    keyword = keyword.trim();
-    if (keyword.length == 0) {
-      return "";
-    }
-    keyword = HttpUtil.encodeUrl(keyword);
-    return this.getUrl(keyword, start2, pageSize);
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/AllPageSearchPageFetcher.ts
-var AllPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
-  getUrl(keyword, start2, pageSize) {
-    return `https://www.douban.com/j/search?q=${keyword}&start=${start2}`;
-  }
-  support(type) {
-    return type == SupportType.all;
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/MoviePageSearchPageFetcher.ts
-var MoviePageSearchPageFetcher = class extends AbstractSearchPageFetcher {
-  getUrl(keyword, start2, pageSize) {
-    return `https://www.douban.com/j/search?q=${keyword}&start=${start2}&cat=1002`;
-  }
-  support(type) {
-    return type == SupportType.movie;
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/BookPageSearchPageFetcher.ts
-var BookPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
-  getUrl(keyword, start2, pageSize) {
-    return `https://www.douban.com/j/search?q=${keyword}&start=${start2}&cat=1001`;
-  }
-  support(type) {
-    return type == SupportType.book;
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/GamePageSearchPageFetcher.ts
-var GamePageSearchPageFetcher = class extends AbstractSearchPageFetcher {
-  getUrl(keyword, start2, pageSize) {
-    return `https://www.douban.com/j/search?q=${keyword}&start=${start2}&cat=3114`;
-  }
-  support(type) {
-    return type == SupportType.game;
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/MusicPageSearchPageFetcher.ts
-var MusicPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
-  getUrl(keyword, start2, pageSize) {
-    return `https://www.douban.com/j/search?q=${keyword}&start=${start2}&cat=1003`;
-  }
-  support(type) {
-    return type == SupportType.music;
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/TheaterPageSearchPageFetcher.ts
-var TheaterPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
-  getUrl(keyword, start2, pageSize) {
-    return `https://www.douban.com/j/search?q=${keyword}&start=${start2}&cat=3069`;
-  }
-  support(type) {
-    return type == SupportType.theater;
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/NotePageSearchPageFetcher.ts
-var NotePageSearchPageFetcher = class extends AbstractSearchPageFetcher {
-  getUrl(keyword, start2, pageSize) {
-    return `https://www.douban.com/j/search?q=${keyword}&start=${start2}&cat=1015`;
-  }
-  support(type, pageNum) {
-    return type == SupportType.note && pageNum > 1;
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/NoteFirstPageSearchPageFetcher.ts
-var NoteFirstPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
-  getUrl(keyword, start2, pageSize) {
-    return `https://www.douban.com/search?cat=1015&q=${keyword}`;
-  }
-  support(type, pageNum) {
-    return type == SupportType.note && pageNum == 1;
-  }
-};
-
-// src/org/wanxp/douban/data/search/searcher/SearchPageFetcher.ts
-var SearchPageFetcher = class {
-  constructor(settingsManager) {
-    this.fetchers = [];
-    this.fetchers.push(new AllPageSearchPageFetcher(settingsManager));
-    this.fetchers.push(new MoviePageSearchPageFetcher(settingsManager));
-    this.fetchers.push(new BookPageSearchPageFetcher(settingsManager));
-    this.fetchers.push(new GamePageSearchPageFetcher(settingsManager));
-    this.fetchers.push(new MusicPageSearchPageFetcher(settingsManager));
-    this.fetchers.push(new TheaterPageSearchPageFetcher(settingsManager));
-    this.fetchers.push(new NotePageSearchPageFetcher(settingsManager));
-    this.fetchers.push(new NoteFirstPageSearchPageFetcher(settingsManager));
-  }
-  fetch(keyword, type, pageNum, pageSize) {
-    for (const fetcher of this.fetchers) {
-      if (fetcher.support(type, pageNum)) {
-        return fetcher.fetch(keyword, pageNum, pageSize);
+  loadUrl(url) {
+    return __async(this, null, function* () {
+      try {
+        yield this.modal.loadURL(url);
+      } catch (error) {
+        log.error(i18nHelper.getMessage("100101"), error);
       }
-    }
-    throw new Error(`not support type:${type} pageNum:${pageNum}`);
+    });
   }
-};
-
-// src/org/wanxp/douban/data/model/SearchPageInfo.ts
-var SearchPageInfo = class {
-  constructor(total, pageNum, pageSize, type) {
-    this._total = total;
-    this._pageNum = pageNum;
-    this._pageSize = pageSize;
-    this._hasNext = pageNum * pageSize < total;
-    this._type = type;
+  loadHtml(html3) {
+    return __async(this, null, function* () {
+      try {
+        yield this.modal.loadURL(`data:text/html;charset=utf-8,${html3}`);
+      } catch (error) {
+        log.error(i18nHelper.getMessage("100101"), error);
+      }
+    });
   }
-  nextPage() {
-    if (!this._hasNext) {
-      return this;
-    }
-    return new SearchPageInfo(this.total, this._pageNum + 1, this._pageSize, this._type);
+  onClose() {
+    this.modal.close();
+    new import_obsidian6.Notice(i18nHelper.getMessage("100103"));
   }
-  previousPage() {
-    if (this._pageNum == 0) {
-      return this;
-    }
-    return new SearchPageInfo(this.total, this._pageNum - 1, this._pageSize, this._type);
-  }
-  typePage(type) {
-    return new SearchPageInfo(this.total, 0, this._pageSize, this._type);
-  }
-  get hasNext() {
-    return this._hasNext;
-  }
-  get hasPrevious() {
-    return this._pageNum > 1;
-  }
-  get start() {
-    return (this._pageNum - 1) * this._pageSize + 1;
-  }
-  get total() {
-    return this._total;
-  }
-  set total(total) {
-    this._total = total;
-  }
-  get pageSize() {
-    return this._pageSize;
-  }
-  get pageNum() {
-    return this._pageNum;
-  }
-  get type() {
-    return this._type;
-  }
-  allPage() {
-    if (this._pageNum == 0) {
-      return this;
-    }
-    return new SearchPageInfo(this.total, this._pageNum - 1, this._pageSize, SupportType.all);
-  }
-};
-
-// src/org/wanxp/douban/data/model/SearchPageTypeOf.ts
-var SearchPageTypeOf = class extends SearchPageInfo {
-  constructor(total, pageNum, pageSize, type, list) {
-    super(total, pageNum, pageSize, type);
-    this._list = list;
-  }
-  get list() {
-    return this._list;
-  }
-  static empty(type) {
-    return new SearchPageTypeOf(0, 1, 0, type, []);
-  }
-  static emptyWithNoType() {
-    return new SearchPageTypeOf(0, 1, 0, null, []);
-  }
-};
-
-// src/org/wanxp/douban/data/model/SearchPage.ts
-var SearchPage = class extends SearchPageTypeOf {
-  static empty(type) {
-    return new SearchPage(0, 1, 0, type, []);
-  }
-  static emptyWithNoType() {
-    return new SearchPage(0, 1, 0, null, []);
+  onReload() {
+    this.modal.reload();
   }
 };
 
@@ -4806,7 +6774,7 @@ var Document = class extends NodeWithChildren {
     return 9;
   }
 };
-var Element2 = class extends NodeWithChildren {
+var Element = class extends NodeWithChildren {
   constructor(name, attribs, children2 = [], type = name === "script" ? ElementType.Script : name === "style" ? ElementType.Style : ElementType.Tag) {
     super(children2);
     this.name = name;
@@ -4863,7 +6831,7 @@ function cloneNode(node, recursive = false) {
     result = new Comment2(node.data);
   } else if (isTag2(node)) {
     const children2 = recursive ? cloneChildren(node.children) : [];
-    const clone2 = new Element2(node.name, __spreadValues({}, node.attribs), children2);
+    const clone2 = new Element(node.name, __spreadValues({}, node.attribs), children2);
     children2.forEach((child) => child.parent = clone2);
     if (node.namespace != null) {
       clone2.namespace = node.namespace;
@@ -4973,7 +6941,7 @@ var DomHandler = class {
   }
   onopentag(name, attribs) {
     const type = this.options.xmlMode ? ElementType.Tag : void 0;
-    const element = new Element2(name, attribs, void 0, type);
+    const element = new Element(name, attribs, void 0, type);
     this.addNode(element);
     this.tagStack.push(element);
   }
@@ -5167,76 +7135,76 @@ var EntityDecoder = class {
     this.excess = 1;
     this.consumed = 1;
   }
-  write(str, offset2) {
+  write(str, offset) {
     switch (this.state) {
       case EntityDecoderState.EntityStart: {
-        if (str.charCodeAt(offset2) === CharCodes.NUM) {
+        if (str.charCodeAt(offset) === CharCodes.NUM) {
           this.state = EntityDecoderState.NumericStart;
           this.consumed += 1;
-          return this.stateNumericStart(str, offset2 + 1);
+          return this.stateNumericStart(str, offset + 1);
         }
         this.state = EntityDecoderState.NamedEntity;
-        return this.stateNamedEntity(str, offset2);
+        return this.stateNamedEntity(str, offset);
       }
       case EntityDecoderState.NumericStart: {
-        return this.stateNumericStart(str, offset2);
+        return this.stateNumericStart(str, offset);
       }
       case EntityDecoderState.NumericDecimal: {
-        return this.stateNumericDecimal(str, offset2);
+        return this.stateNumericDecimal(str, offset);
       }
       case EntityDecoderState.NumericHex: {
-        return this.stateNumericHex(str, offset2);
+        return this.stateNumericHex(str, offset);
       }
       case EntityDecoderState.NamedEntity: {
-        return this.stateNamedEntity(str, offset2);
+        return this.stateNamedEntity(str, offset);
       }
     }
   }
-  stateNumericStart(str, offset2) {
-    if (offset2 >= str.length) {
+  stateNumericStart(str, offset) {
+    if (offset >= str.length) {
       return -1;
     }
-    if ((str.charCodeAt(offset2) | TO_LOWER_BIT) === CharCodes.LOWER_X) {
+    if ((str.charCodeAt(offset) | TO_LOWER_BIT) === CharCodes.LOWER_X) {
       this.state = EntityDecoderState.NumericHex;
       this.consumed += 1;
-      return this.stateNumericHex(str, offset2 + 1);
+      return this.stateNumericHex(str, offset + 1);
     }
     this.state = EntityDecoderState.NumericDecimal;
-    return this.stateNumericDecimal(str, offset2);
+    return this.stateNumericDecimal(str, offset);
   }
-  addToNumericResult(str, start2, end3, base) {
-    if (start2 !== end3) {
-      const digitCount = end3 - start2;
-      this.result = this.result * Math.pow(base, digitCount) + parseInt(str.substr(start2, digitCount), base);
+  addToNumericResult(str, start, end2, base) {
+    if (start !== end2) {
+      const digitCount = end2 - start;
+      this.result = this.result * Math.pow(base, digitCount) + parseInt(str.substr(start, digitCount), base);
       this.consumed += digitCount;
     }
   }
-  stateNumericHex(str, offset2) {
-    const startIdx = offset2;
-    while (offset2 < str.length) {
-      const char = str.charCodeAt(offset2);
+  stateNumericHex(str, offset) {
+    const startIdx = offset;
+    while (offset < str.length) {
+      const char = str.charCodeAt(offset);
       if (isNumber(char) || isHexadecimalCharacter(char)) {
-        offset2 += 1;
+        offset += 1;
       } else {
-        this.addToNumericResult(str, startIdx, offset2, 16);
+        this.addToNumericResult(str, startIdx, offset, 16);
         return this.emitNumericEntity(char, 3);
       }
     }
-    this.addToNumericResult(str, startIdx, offset2, 16);
+    this.addToNumericResult(str, startIdx, offset, 16);
     return -1;
   }
-  stateNumericDecimal(str, offset2) {
-    const startIdx = offset2;
-    while (offset2 < str.length) {
-      const char = str.charCodeAt(offset2);
+  stateNumericDecimal(str, offset) {
+    const startIdx = offset;
+    while (offset < str.length) {
+      const char = str.charCodeAt(offset);
       if (isNumber(char)) {
-        offset2 += 1;
+        offset += 1;
       } else {
-        this.addToNumericResult(str, startIdx, offset2, 10);
+        this.addToNumericResult(str, startIdx, offset, 10);
         return this.emitNumericEntity(char, 2);
       }
     }
-    this.addToNumericResult(str, startIdx, offset2, 10);
+    this.addToNumericResult(str, startIdx, offset, 10);
     return -1;
   }
   emitNumericEntity(lastCp, expectedLength) {
@@ -5259,12 +7227,12 @@ var EntityDecoder = class {
     }
     return this.consumed;
   }
-  stateNamedEntity(str, offset2) {
+  stateNamedEntity(str, offset) {
     const { decodeTree } = this;
     let current = decodeTree[this.treeIndex];
     let valueLength = (current & BinTrieFlags.VALUE_LENGTH) >> 14;
-    for (; offset2 < str.length; offset2++, this.excess++) {
-      const char = str.charCodeAt(offset2);
+    for (; offset < str.length; offset++, this.excess++) {
+      const char = str.charCodeAt(offset);
       this.treeIndex = determineBranch(decodeTree, current, this.treeIndex + Math.max(1, valueLength), char);
       if (this.treeIndex < 0) {
         return this.result === 0 || this.decodeMode === DecodingMode.Attribute && (valueLength === 0 || isEntityInAttributeInvalidEnd(char)) ? 0 : this.emitNotTerminatedNamedEntity();
@@ -5327,17 +7295,17 @@ function getDecoder(decodeTree) {
   const decoder = new EntityDecoder(decodeTree, (str) => ret += fromCodePoint(str));
   return function decodeWithTrie(str, decodeMode) {
     let lastIndex = 0;
-    let offset2 = 0;
-    while ((offset2 = str.indexOf("&", offset2)) >= 0) {
-      ret += str.slice(lastIndex, offset2);
+    let offset = 0;
+    while ((offset = str.indexOf("&", offset)) >= 0) {
+      ret += str.slice(lastIndex, offset);
       decoder.startEntity(decodeMode);
-      const len = decoder.write(str, offset2 + 1);
+      const len = decoder.write(str, offset + 1);
       if (len < 0) {
-        lastIndex = offset2 + decoder.end();
+        lastIndex = offset + decoder.end();
         break;
       }
-      lastIndex = offset2 + len;
-      offset2 = len === 0 ? lastIndex + 1 : lastIndex;
+      lastIndex = offset + len;
+      offset = len === 0 ? lastIndex + 1 : lastIndex;
     }
     const result = ret + str.slice(lastIndex);
     ret = "";
@@ -6340,10 +8308,10 @@ function camelCase(str) {
 function cssCase(str) {
   return str.replace(/[A-Z]/g, "-$&").toLowerCase();
 }
-function domEach(array, fn2) {
+function domEach(array, fn) {
   const len = array.length;
   for (let i = 0; i < len; i++)
-    fn2(array[i], i);
+    fn(array[i], i);
   return array;
 }
 var CharacterCode;
@@ -6361,6 +8329,12 @@ function isHtml(str) {
   const tagChar = str.charCodeAt(tagStart + 1);
   return (tagChar >= CharacterCode.LowerA && tagChar <= CharacterCode.LowerZ || tagChar >= CharacterCode.UpperA && tagChar <= CharacterCode.UpperZ || tagChar === CharacterCode.Exclamation) && str.includes(">", tagStart + 2);
 }
+
+// node_modules/htmlparser2/node_modules/entities/dist/esm/generated/decode-data-html.js
+var htmlDecodeTree = /* @__PURE__ */ new Uint16Array(/* @__PURE__ */ '\u1D41<\xD5\u0131\u028A\u049D\u057B\u05D0\u0675\u06DE\u07A2\u07D6\u080F\u0A4A\u0A91\u0DA1\u0E6D\u0F09\u0F26\u10CA\u1228\u12E1\u1415\u149D\u14C3\u14DF\u1525\0\0\0\0\0\0\u156B\u16CD\u198D\u1C12\u1DDD\u1F7E\u2060\u21B0\u228D\u23C0\u23FB\u2442\u2824\u2912\u2D08\u2E48\u2FCE\u3016\u32BA\u3639\u37AC\u38FE\u3A28\u3A71\u3AE0\u3B2E\u0800EMabcfglmnoprstu\\bfms\x7F\x84\x8B\x90\x95\x98\xA6\xB3\xB9\xC8\xCFlig\u803B\xC6\u40C6P\u803B&\u4026cute\u803B\xC1\u40C1reve;\u4102\u0100iyx}rc\u803B\xC2\u40C2;\u4410r;\uC000\u{1D504}rave\u803B\xC0\u40C0pha;\u4391acr;\u4100d;\u6A53\u0100gp\x9D\xA1on;\u4104f;\uC000\u{1D538}plyFunction;\u6061ing\u803B\xC5\u40C5\u0100cs\xBE\xC3r;\uC000\u{1D49C}ign;\u6254ilde\u803B\xC3\u40C3ml\u803B\xC4\u40C4\u0400aceforsu\xE5\xFB\xFE\u0117\u011C\u0122\u0127\u012A\u0100cr\xEA\xF2kslash;\u6216\u0176\xF6\xF8;\u6AE7ed;\u6306y;\u4411\u0180crt\u0105\u010B\u0114ause;\u6235noullis;\u612Ca;\u4392r;\uC000\u{1D505}pf;\uC000\u{1D539}eve;\u42D8c\xF2\u0113mpeq;\u624E\u0700HOacdefhilorsu\u014D\u0151\u0156\u0180\u019E\u01A2\u01B5\u01B7\u01BA\u01DC\u0215\u0273\u0278\u027Ecy;\u4427PY\u803B\xA9\u40A9\u0180cpy\u015D\u0162\u017Aute;\u4106\u0100;i\u0167\u0168\u62D2talDifferentialD;\u6145leys;\u612D\u0200aeio\u0189\u018E\u0194\u0198ron;\u410Cdil\u803B\xC7\u40C7rc;\u4108nint;\u6230ot;\u410A\u0100dn\u01A7\u01ADilla;\u40B8terDot;\u40B7\xF2\u017Fi;\u43A7rcle\u0200DMPT\u01C7\u01CB\u01D1\u01D6ot;\u6299inus;\u6296lus;\u6295imes;\u6297o\u0100cs\u01E2\u01F8kwiseContourIntegral;\u6232eCurly\u0100DQ\u0203\u020FoubleQuote;\u601Duote;\u6019\u0200lnpu\u021E\u0228\u0247\u0255on\u0100;e\u0225\u0226\u6237;\u6A74\u0180git\u022F\u0236\u023Aruent;\u6261nt;\u622FourIntegral;\u622E\u0100fr\u024C\u024E;\u6102oduct;\u6210nterClockwiseContourIntegral;\u6233oss;\u6A2Fcr;\uC000\u{1D49E}p\u0100;C\u0284\u0285\u62D3ap;\u624D\u0580DJSZacefios\u02A0\u02AC\u02B0\u02B4\u02B8\u02CB\u02D7\u02E1\u02E6\u0333\u048D\u0100;o\u0179\u02A5trahd;\u6911cy;\u4402cy;\u4405cy;\u440F\u0180grs\u02BF\u02C4\u02C7ger;\u6021r;\u61A1hv;\u6AE4\u0100ay\u02D0\u02D5ron;\u410E;\u4414l\u0100;t\u02DD\u02DE\u6207a;\u4394r;\uC000\u{1D507}\u0100af\u02EB\u0327\u0100cm\u02F0\u0322ritical\u0200ADGT\u0300\u0306\u0316\u031Ccute;\u40B4o\u0174\u030B\u030D;\u42D9bleAcute;\u42DDrave;\u4060ilde;\u42DCond;\u62C4ferentialD;\u6146\u0470\u033D\0\0\0\u0342\u0354\0\u0405f;\uC000\u{1D53B}\u0180;DE\u0348\u0349\u034D\u40A8ot;\u60DCqual;\u6250ble\u0300CDLRUV\u0363\u0372\u0382\u03CF\u03E2\u03F8ontourIntegra\xEC\u0239o\u0274\u0379\0\0\u037B\xBB\u0349nArrow;\u61D3\u0100eo\u0387\u03A4ft\u0180ART\u0390\u0396\u03A1rrow;\u61D0ightArrow;\u61D4e\xE5\u02CAng\u0100LR\u03AB\u03C4eft\u0100AR\u03B3\u03B9rrow;\u67F8ightArrow;\u67FAightArrow;\u67F9ight\u0100AT\u03D8\u03DErrow;\u61D2ee;\u62A8p\u0241\u03E9\0\0\u03EFrrow;\u61D1ownArrow;\u61D5erticalBar;\u6225n\u0300ABLRTa\u0412\u042A\u0430\u045E\u047F\u037Crrow\u0180;BU\u041D\u041E\u0422\u6193ar;\u6913pArrow;\u61F5reve;\u4311eft\u02D2\u043A\0\u0446\0\u0450ightVector;\u6950eeVector;\u695Eector\u0100;B\u0459\u045A\u61BDar;\u6956ight\u01D4\u0467\0\u0471eeVector;\u695Fector\u0100;B\u047A\u047B\u61C1ar;\u6957ee\u0100;A\u0486\u0487\u62A4rrow;\u61A7\u0100ct\u0492\u0497r;\uC000\u{1D49F}rok;\u4110\u0800NTacdfglmopqstux\u04BD\u04C0\u04C4\u04CB\u04DE\u04E2\u04E7\u04EE\u04F5\u0521\u052F\u0536\u0552\u055D\u0560\u0565G;\u414AH\u803B\xD0\u40D0cute\u803B\xC9\u40C9\u0180aiy\u04D2\u04D7\u04DCron;\u411Arc\u803B\xCA\u40CA;\u442Dot;\u4116r;\uC000\u{1D508}rave\u803B\xC8\u40C8ement;\u6208\u0100ap\u04FA\u04FEcr;\u4112ty\u0253\u0506\0\0\u0512mallSquare;\u65FBerySmallSquare;\u65AB\u0100gp\u0526\u052Aon;\u4118f;\uC000\u{1D53C}silon;\u4395u\u0100ai\u053C\u0549l\u0100;T\u0542\u0543\u6A75ilde;\u6242librium;\u61CC\u0100ci\u0557\u055Ar;\u6130m;\u6A73a;\u4397ml\u803B\xCB\u40CB\u0100ip\u056A\u056Fsts;\u6203onentialE;\u6147\u0280cfios\u0585\u0588\u058D\u05B2\u05CCy;\u4424r;\uC000\u{1D509}lled\u0253\u0597\0\0\u05A3mallSquare;\u65FCerySmallSquare;\u65AA\u0370\u05BA\0\u05BF\0\0\u05C4f;\uC000\u{1D53D}All;\u6200riertrf;\u6131c\xF2\u05CB\u0600JTabcdfgorst\u05E8\u05EC\u05EF\u05FA\u0600\u0612\u0616\u061B\u061D\u0623\u066C\u0672cy;\u4403\u803B>\u403Emma\u0100;d\u05F7\u05F8\u4393;\u43DCreve;\u411E\u0180eiy\u0607\u060C\u0610dil;\u4122rc;\u411C;\u4413ot;\u4120r;\uC000\u{1D50A};\u62D9pf;\uC000\u{1D53E}eater\u0300EFGLST\u0635\u0644\u064E\u0656\u065B\u0666qual\u0100;L\u063E\u063F\u6265ess;\u62DBullEqual;\u6267reater;\u6AA2ess;\u6277lantEqual;\u6A7Eilde;\u6273cr;\uC000\u{1D4A2};\u626B\u0400Aacfiosu\u0685\u068B\u0696\u069B\u069E\u06AA\u06BE\u06CARDcy;\u442A\u0100ct\u0690\u0694ek;\u42C7;\u405Eirc;\u4124r;\u610ClbertSpace;\u610B\u01F0\u06AF\0\u06B2f;\u610DizontalLine;\u6500\u0100ct\u06C3\u06C5\xF2\u06A9rok;\u4126mp\u0144\u06D0\u06D8ownHum\xF0\u012Fqual;\u624F\u0700EJOacdfgmnostu\u06FA\u06FE\u0703\u0707\u070E\u071A\u071E\u0721\u0728\u0744\u0778\u078B\u078F\u0795cy;\u4415lig;\u4132cy;\u4401cute\u803B\xCD\u40CD\u0100iy\u0713\u0718rc\u803B\xCE\u40CE;\u4418ot;\u4130r;\u6111rave\u803B\xCC\u40CC\u0180;ap\u0720\u072F\u073F\u0100cg\u0734\u0737r;\u412AinaryI;\u6148lie\xF3\u03DD\u01F4\u0749\0\u0762\u0100;e\u074D\u074E\u622C\u0100gr\u0753\u0758ral;\u622Bsection;\u62C2isible\u0100CT\u076C\u0772omma;\u6063imes;\u6062\u0180gpt\u077F\u0783\u0788on;\u412Ef;\uC000\u{1D540}a;\u4399cr;\u6110ilde;\u4128\u01EB\u079A\0\u079Ecy;\u4406l\u803B\xCF\u40CF\u0280cfosu\u07AC\u07B7\u07BC\u07C2\u07D0\u0100iy\u07B1\u07B5rc;\u4134;\u4419r;\uC000\u{1D50D}pf;\uC000\u{1D541}\u01E3\u07C7\0\u07CCr;\uC000\u{1D4A5}rcy;\u4408kcy;\u4404\u0380HJacfos\u07E4\u07E8\u07EC\u07F1\u07FD\u0802\u0808cy;\u4425cy;\u440Cppa;\u439A\u0100ey\u07F6\u07FBdil;\u4136;\u441Ar;\uC000\u{1D50E}pf;\uC000\u{1D542}cr;\uC000\u{1D4A6}\u0580JTaceflmost\u0825\u0829\u082C\u0850\u0863\u09B3\u09B8\u09C7\u09CD\u0A37\u0A47cy;\u4409\u803B<\u403C\u0280cmnpr\u0837\u083C\u0841\u0844\u084Dute;\u4139bda;\u439Bg;\u67EAlacetrf;\u6112r;\u619E\u0180aey\u0857\u085C\u0861ron;\u413Ddil;\u413B;\u441B\u0100fs\u0868\u0970t\u0500ACDFRTUVar\u087E\u08A9\u08B1\u08E0\u08E6\u08FC\u092F\u095B\u0390\u096A\u0100nr\u0883\u088FgleBracket;\u67E8row\u0180;BR\u0899\u089A\u089E\u6190ar;\u61E4ightArrow;\u61C6eiling;\u6308o\u01F5\u08B7\0\u08C3bleBracket;\u67E6n\u01D4\u08C8\0\u08D2eeVector;\u6961ector\u0100;B\u08DB\u08DC\u61C3ar;\u6959loor;\u630Aight\u0100AV\u08EF\u08F5rrow;\u6194ector;\u694E\u0100er\u0901\u0917e\u0180;AV\u0909\u090A\u0910\u62A3rrow;\u61A4ector;\u695Aiangle\u0180;BE\u0924\u0925\u0929\u62B2ar;\u69CFqual;\u62B4p\u0180DTV\u0937\u0942\u094CownVector;\u6951eeVector;\u6960ector\u0100;B\u0956\u0957\u61BFar;\u6958ector\u0100;B\u0965\u0966\u61BCar;\u6952ight\xE1\u039Cs\u0300EFGLST\u097E\u098B\u0995\u099D\u09A2\u09ADqualGreater;\u62DAullEqual;\u6266reater;\u6276ess;\u6AA1lantEqual;\u6A7Dilde;\u6272r;\uC000\u{1D50F}\u0100;e\u09BD\u09BE\u62D8ftarrow;\u61DAidot;\u413F\u0180npw\u09D4\u0A16\u0A1Bg\u0200LRlr\u09DE\u09F7\u0A02\u0A10eft\u0100AR\u09E6\u09ECrrow;\u67F5ightArrow;\u67F7ightArrow;\u67F6eft\u0100ar\u03B3\u0A0Aight\xE1\u03BFight\xE1\u03CAf;\uC000\u{1D543}er\u0100LR\u0A22\u0A2CeftArrow;\u6199ightArrow;\u6198\u0180cht\u0A3E\u0A40\u0A42\xF2\u084C;\u61B0rok;\u4141;\u626A\u0400acefiosu\u0A5A\u0A5D\u0A60\u0A77\u0A7C\u0A85\u0A8B\u0A8Ep;\u6905y;\u441C\u0100dl\u0A65\u0A6FiumSpace;\u605Flintrf;\u6133r;\uC000\u{1D510}nusPlus;\u6213pf;\uC000\u{1D544}c\xF2\u0A76;\u439C\u0480Jacefostu\u0AA3\u0AA7\u0AAD\u0AC0\u0B14\u0B19\u0D91\u0D97\u0D9Ecy;\u440Acute;\u4143\u0180aey\u0AB4\u0AB9\u0ABEron;\u4147dil;\u4145;\u441D\u0180gsw\u0AC7\u0AF0\u0B0Eative\u0180MTV\u0AD3\u0ADF\u0AE8ediumSpace;\u600Bhi\u0100cn\u0AE6\u0AD8\xEB\u0AD9eryThi\xEE\u0AD9ted\u0100GL\u0AF8\u0B06reaterGreate\xF2\u0673essLes\xF3\u0A48Line;\u400Ar;\uC000\u{1D511}\u0200Bnpt\u0B22\u0B28\u0B37\u0B3Areak;\u6060BreakingSpace;\u40A0f;\u6115\u0680;CDEGHLNPRSTV\u0B55\u0B56\u0B6A\u0B7C\u0BA1\u0BEB\u0C04\u0C5E\u0C84\u0CA6\u0CD8\u0D61\u0D85\u6AEC\u0100ou\u0B5B\u0B64ngruent;\u6262pCap;\u626DoubleVerticalBar;\u6226\u0180lqx\u0B83\u0B8A\u0B9Bement;\u6209ual\u0100;T\u0B92\u0B93\u6260ilde;\uC000\u2242\u0338ists;\u6204reater\u0380;EFGLST\u0BB6\u0BB7\u0BBD\u0BC9\u0BD3\u0BD8\u0BE5\u626Fqual;\u6271ullEqual;\uC000\u2267\u0338reater;\uC000\u226B\u0338ess;\u6279lantEqual;\uC000\u2A7E\u0338ilde;\u6275ump\u0144\u0BF2\u0BFDownHump;\uC000\u224E\u0338qual;\uC000\u224F\u0338e\u0100fs\u0C0A\u0C27tTriangle\u0180;BE\u0C1A\u0C1B\u0C21\u62EAar;\uC000\u29CF\u0338qual;\u62ECs\u0300;EGLST\u0C35\u0C36\u0C3C\u0C44\u0C4B\u0C58\u626Equal;\u6270reater;\u6278ess;\uC000\u226A\u0338lantEqual;\uC000\u2A7D\u0338ilde;\u6274ested\u0100GL\u0C68\u0C79reaterGreater;\uC000\u2AA2\u0338essLess;\uC000\u2AA1\u0338recedes\u0180;ES\u0C92\u0C93\u0C9B\u6280qual;\uC000\u2AAF\u0338lantEqual;\u62E0\u0100ei\u0CAB\u0CB9verseElement;\u620CghtTriangle\u0180;BE\u0CCB\u0CCC\u0CD2\u62EBar;\uC000\u29D0\u0338qual;\u62ED\u0100qu\u0CDD\u0D0CuareSu\u0100bp\u0CE8\u0CF9set\u0100;E\u0CF0\u0CF3\uC000\u228F\u0338qual;\u62E2erset\u0100;E\u0D03\u0D06\uC000\u2290\u0338qual;\u62E3\u0180bcp\u0D13\u0D24\u0D4Eset\u0100;E\u0D1B\u0D1E\uC000\u2282\u20D2qual;\u6288ceeds\u0200;EST\u0D32\u0D33\u0D3B\u0D46\u6281qual;\uC000\u2AB0\u0338lantEqual;\u62E1ilde;\uC000\u227F\u0338erset\u0100;E\u0D58\u0D5B\uC000\u2283\u20D2qual;\u6289ilde\u0200;EFT\u0D6E\u0D6F\u0D75\u0D7F\u6241qual;\u6244ullEqual;\u6247ilde;\u6249erticalBar;\u6224cr;\uC000\u{1D4A9}ilde\u803B\xD1\u40D1;\u439D\u0700Eacdfgmoprstuv\u0DBD\u0DC2\u0DC9\u0DD5\u0DDB\u0DE0\u0DE7\u0DFC\u0E02\u0E20\u0E22\u0E32\u0E3F\u0E44lig;\u4152cute\u803B\xD3\u40D3\u0100iy\u0DCE\u0DD3rc\u803B\xD4\u40D4;\u441Eblac;\u4150r;\uC000\u{1D512}rave\u803B\xD2\u40D2\u0180aei\u0DEE\u0DF2\u0DF6cr;\u414Cga;\u43A9cron;\u439Fpf;\uC000\u{1D546}enCurly\u0100DQ\u0E0E\u0E1AoubleQuote;\u601Cuote;\u6018;\u6A54\u0100cl\u0E27\u0E2Cr;\uC000\u{1D4AA}ash\u803B\xD8\u40D8i\u016C\u0E37\u0E3Cde\u803B\xD5\u40D5es;\u6A37ml\u803B\xD6\u40D6er\u0100BP\u0E4B\u0E60\u0100ar\u0E50\u0E53r;\u603Eac\u0100ek\u0E5A\u0E5C;\u63DEet;\u63B4arenthesis;\u63DC\u0480acfhilors\u0E7F\u0E87\u0E8A\u0E8F\u0E92\u0E94\u0E9D\u0EB0\u0EFCrtialD;\u6202y;\u441Fr;\uC000\u{1D513}i;\u43A6;\u43A0usMinus;\u40B1\u0100ip\u0EA2\u0EADncareplan\xE5\u069Df;\u6119\u0200;eio\u0EB9\u0EBA\u0EE0\u0EE4\u6ABBcedes\u0200;EST\u0EC8\u0EC9\u0ECF\u0EDA\u627Aqual;\u6AAFlantEqual;\u627Cilde;\u627Eme;\u6033\u0100dp\u0EE9\u0EEEuct;\u620Fortion\u0100;a\u0225\u0EF9l;\u621D\u0100ci\u0F01\u0F06r;\uC000\u{1D4AB};\u43A8\u0200Ufos\u0F11\u0F16\u0F1B\u0F1FOT\u803B"\u4022r;\uC000\u{1D514}pf;\u611Acr;\uC000\u{1D4AC}\u0600BEacefhiorsu\u0F3E\u0F43\u0F47\u0F60\u0F73\u0FA7\u0FAA\u0FAD\u1096\u10A9\u10B4\u10BEarr;\u6910G\u803B\xAE\u40AE\u0180cnr\u0F4E\u0F53\u0F56ute;\u4154g;\u67EBr\u0100;t\u0F5C\u0F5D\u61A0l;\u6916\u0180aey\u0F67\u0F6C\u0F71ron;\u4158dil;\u4156;\u4420\u0100;v\u0F78\u0F79\u611Cerse\u0100EU\u0F82\u0F99\u0100lq\u0F87\u0F8Eement;\u620Builibrium;\u61CBpEquilibrium;\u696Fr\xBB\u0F79o;\u43A1ght\u0400ACDFTUVa\u0FC1\u0FEB\u0FF3\u1022\u1028\u105B\u1087\u03D8\u0100nr\u0FC6\u0FD2gleBracket;\u67E9row\u0180;BL\u0FDC\u0FDD\u0FE1\u6192ar;\u61E5eftArrow;\u61C4eiling;\u6309o\u01F5\u0FF9\0\u1005bleBracket;\u67E7n\u01D4\u100A\0\u1014eeVector;\u695Dector\u0100;B\u101D\u101E\u61C2ar;\u6955loor;\u630B\u0100er\u102D\u1043e\u0180;AV\u1035\u1036\u103C\u62A2rrow;\u61A6ector;\u695Biangle\u0180;BE\u1050\u1051\u1055\u62B3ar;\u69D0qual;\u62B5p\u0180DTV\u1063\u106E\u1078ownVector;\u694FeeVector;\u695Cector\u0100;B\u1082\u1083\u61BEar;\u6954ector\u0100;B\u1091\u1092\u61C0ar;\u6953\u0100pu\u109B\u109Ef;\u611DndImplies;\u6970ightarrow;\u61DB\u0100ch\u10B9\u10BCr;\u611B;\u61B1leDelayed;\u69F4\u0680HOacfhimoqstu\u10E4\u10F1\u10F7\u10FD\u1119\u111E\u1151\u1156\u1161\u1167\u11B5\u11BB\u11BF\u0100Cc\u10E9\u10EEHcy;\u4429y;\u4428FTcy;\u442Ccute;\u415A\u0280;aeiy\u1108\u1109\u110E\u1113\u1117\u6ABCron;\u4160dil;\u415Erc;\u415C;\u4421r;\uC000\u{1D516}ort\u0200DLRU\u112A\u1134\u113E\u1149ownArrow\xBB\u041EeftArrow\xBB\u089AightArrow\xBB\u0FDDpArrow;\u6191gma;\u43A3allCircle;\u6218pf;\uC000\u{1D54A}\u0272\u116D\0\0\u1170t;\u621Aare\u0200;ISU\u117B\u117C\u1189\u11AF\u65A1ntersection;\u6293u\u0100bp\u118F\u119Eset\u0100;E\u1197\u1198\u628Fqual;\u6291erset\u0100;E\u11A8\u11A9\u6290qual;\u6292nion;\u6294cr;\uC000\u{1D4AE}ar;\u62C6\u0200bcmp\u11C8\u11DB\u1209\u120B\u0100;s\u11CD\u11CE\u62D0et\u0100;E\u11CD\u11D5qual;\u6286\u0100ch\u11E0\u1205eeds\u0200;EST\u11ED\u11EE\u11F4\u11FF\u627Bqual;\u6AB0lantEqual;\u627Dilde;\u627FTh\xE1\u0F8C;\u6211\u0180;es\u1212\u1213\u1223\u62D1rset\u0100;E\u121C\u121D\u6283qual;\u6287et\xBB\u1213\u0580HRSacfhiors\u123E\u1244\u1249\u1255\u125E\u1271\u1276\u129F\u12C2\u12C8\u12D1ORN\u803B\xDE\u40DEADE;\u6122\u0100Hc\u124E\u1252cy;\u440By;\u4426\u0100bu\u125A\u125C;\u4009;\u43A4\u0180aey\u1265\u126A\u126Fron;\u4164dil;\u4162;\u4422r;\uC000\u{1D517}\u0100ei\u127B\u1289\u01F2\u1280\0\u1287efore;\u6234a;\u4398\u0100cn\u128E\u1298kSpace;\uC000\u205F\u200ASpace;\u6009lde\u0200;EFT\u12AB\u12AC\u12B2\u12BC\u623Cqual;\u6243ullEqual;\u6245ilde;\u6248pf;\uC000\u{1D54B}ipleDot;\u60DB\u0100ct\u12D6\u12DBr;\uC000\u{1D4AF}rok;\u4166\u0AE1\u12F7\u130E\u131A\u1326\0\u132C\u1331\0\0\0\0\0\u1338\u133D\u1377\u1385\0\u13FF\u1404\u140A\u1410\u0100cr\u12FB\u1301ute\u803B\xDA\u40DAr\u0100;o\u1307\u1308\u619Fcir;\u6949r\u01E3\u1313\0\u1316y;\u440Eve;\u416C\u0100iy\u131E\u1323rc\u803B\xDB\u40DB;\u4423blac;\u4170r;\uC000\u{1D518}rave\u803B\xD9\u40D9acr;\u416A\u0100di\u1341\u1369er\u0100BP\u1348\u135D\u0100ar\u134D\u1350r;\u405Fac\u0100ek\u1357\u1359;\u63DFet;\u63B5arenthesis;\u63DDon\u0100;P\u1370\u1371\u62C3lus;\u628E\u0100gp\u137B\u137Fon;\u4172f;\uC000\u{1D54C}\u0400ADETadps\u1395\u13AE\u13B8\u13C4\u03E8\u13D2\u13D7\u13F3rrow\u0180;BD\u1150\u13A0\u13A4ar;\u6912ownArrow;\u61C5ownArrow;\u6195quilibrium;\u696Eee\u0100;A\u13CB\u13CC\u62A5rrow;\u61A5own\xE1\u03F3er\u0100LR\u13DE\u13E8eftArrow;\u6196ightArrow;\u6197i\u0100;l\u13F9\u13FA\u43D2on;\u43A5ing;\u416Ecr;\uC000\u{1D4B0}ilde;\u4168ml\u803B\xDC\u40DC\u0480Dbcdefosv\u1427\u142C\u1430\u1433\u143E\u1485\u148A\u1490\u1496ash;\u62ABar;\u6AEBy;\u4412ash\u0100;l\u143B\u143C\u62A9;\u6AE6\u0100er\u1443\u1445;\u62C1\u0180bty\u144C\u1450\u147Aar;\u6016\u0100;i\u144F\u1455cal\u0200BLST\u1461\u1465\u146A\u1474ar;\u6223ine;\u407Ceparator;\u6758ilde;\u6240ThinSpace;\u600Ar;\uC000\u{1D519}pf;\uC000\u{1D54D}cr;\uC000\u{1D4B1}dash;\u62AA\u0280cefos\u14A7\u14AC\u14B1\u14B6\u14BCirc;\u4174dge;\u62C0r;\uC000\u{1D51A}pf;\uC000\u{1D54E}cr;\uC000\u{1D4B2}\u0200fios\u14CB\u14D0\u14D2\u14D8r;\uC000\u{1D51B};\u439Epf;\uC000\u{1D54F}cr;\uC000\u{1D4B3}\u0480AIUacfosu\u14F1\u14F5\u14F9\u14FD\u1504\u150F\u1514\u151A\u1520cy;\u442Fcy;\u4407cy;\u442Ecute\u803B\xDD\u40DD\u0100iy\u1509\u150Drc;\u4176;\u442Br;\uC000\u{1D51C}pf;\uC000\u{1D550}cr;\uC000\u{1D4B4}ml;\u4178\u0400Hacdefos\u1535\u1539\u153F\u154B\u154F\u155D\u1560\u1564cy;\u4416cute;\u4179\u0100ay\u1544\u1549ron;\u417D;\u4417ot;\u417B\u01F2\u1554\0\u155BoWidt\xE8\u0AD9a;\u4396r;\u6128pf;\u6124cr;\uC000\u{1D4B5}\u0BE1\u1583\u158A\u1590\0\u15B0\u15B6\u15BF\0\0\0\0\u15C6\u15DB\u15EB\u165F\u166D\0\u1695\u169B\u16B2\u16B9\0\u16BEcute\u803B\xE1\u40E1reve;\u4103\u0300;Ediuy\u159C\u159D\u15A1\u15A3\u15A8\u15AD\u623E;\uC000\u223E\u0333;\u623Frc\u803B\xE2\u40E2te\u80BB\xB4\u0306;\u4430lig\u803B\xE6\u40E6\u0100;r\xB2\u15BA;\uC000\u{1D51E}rave\u803B\xE0\u40E0\u0100ep\u15CA\u15D6\u0100fp\u15CF\u15D4sym;\u6135\xE8\u15D3ha;\u43B1\u0100ap\u15DFc\u0100cl\u15E4\u15E7r;\u4101g;\u6A3F\u0264\u15F0\0\0\u160A\u0280;adsv\u15FA\u15FB\u15FF\u1601\u1607\u6227nd;\u6A55;\u6A5Clope;\u6A58;\u6A5A\u0380;elmrsz\u1618\u1619\u161B\u161E\u163F\u164F\u1659\u6220;\u69A4e\xBB\u1619sd\u0100;a\u1625\u1626\u6221\u0461\u1630\u1632\u1634\u1636\u1638\u163A\u163C\u163E;\u69A8;\u69A9;\u69AA;\u69AB;\u69AC;\u69AD;\u69AE;\u69AFt\u0100;v\u1645\u1646\u621Fb\u0100;d\u164C\u164D\u62BE;\u699D\u0100pt\u1654\u1657h;\u6222\xBB\xB9arr;\u637C\u0100gp\u1663\u1667on;\u4105f;\uC000\u{1D552}\u0380;Eaeiop\u12C1\u167B\u167D\u1682\u1684\u1687\u168A;\u6A70cir;\u6A6F;\u624Ad;\u624Bs;\u4027rox\u0100;e\u12C1\u1692\xF1\u1683ing\u803B\xE5\u40E5\u0180cty\u16A1\u16A6\u16A8r;\uC000\u{1D4B6};\u402Amp\u0100;e\u12C1\u16AF\xF1\u0288ilde\u803B\xE3\u40E3ml\u803B\xE4\u40E4\u0100ci\u16C2\u16C8onin\xF4\u0272nt;\u6A11\u0800Nabcdefiklnoprsu\u16ED\u16F1\u1730\u173C\u1743\u1748\u1778\u177D\u17E0\u17E6\u1839\u1850\u170D\u193D\u1948\u1970ot;\u6AED\u0100cr\u16F6\u171Ek\u0200ceps\u1700\u1705\u170D\u1713ong;\u624Cpsilon;\u43F6rime;\u6035im\u0100;e\u171A\u171B\u623Dq;\u62CD\u0176\u1722\u1726ee;\u62BDed\u0100;g\u172C\u172D\u6305e\xBB\u172Drk\u0100;t\u135C\u1737brk;\u63B6\u0100oy\u1701\u1741;\u4431quo;\u601E\u0280cmprt\u1753\u175B\u1761\u1764\u1768aus\u0100;e\u010A\u0109ptyv;\u69B0s\xE9\u170Cno\xF5\u0113\u0180ahw\u176F\u1771\u1773;\u43B2;\u6136een;\u626Cr;\uC000\u{1D51F}g\u0380costuvw\u178D\u179D\u17B3\u17C1\u17D5\u17DB\u17DE\u0180aiu\u1794\u1796\u179A\xF0\u0760rc;\u65EFp\xBB\u1371\u0180dpt\u17A4\u17A8\u17ADot;\u6A00lus;\u6A01imes;\u6A02\u0271\u17B9\0\0\u17BEcup;\u6A06ar;\u6605riangle\u0100du\u17CD\u17D2own;\u65BDp;\u65B3plus;\u6A04e\xE5\u1444\xE5\u14ADarow;\u690D\u0180ako\u17ED\u1826\u1835\u0100cn\u17F2\u1823k\u0180lst\u17FA\u05AB\u1802ozenge;\u69EBriangle\u0200;dlr\u1812\u1813\u1818\u181D\u65B4own;\u65BEeft;\u65C2ight;\u65B8k;\u6423\u01B1\u182B\0\u1833\u01B2\u182F\0\u1831;\u6592;\u65914;\u6593ck;\u6588\u0100eo\u183E\u184D\u0100;q\u1843\u1846\uC000=\u20E5uiv;\uC000\u2261\u20E5t;\u6310\u0200ptwx\u1859\u185E\u1867\u186Cf;\uC000\u{1D553}\u0100;t\u13CB\u1863om\xBB\u13CCtie;\u62C8\u0600DHUVbdhmptuv\u1885\u1896\u18AA\u18BB\u18D7\u18DB\u18EC\u18FF\u1905\u190A\u1910\u1921\u0200LRlr\u188E\u1890\u1892\u1894;\u6557;\u6554;\u6556;\u6553\u0280;DUdu\u18A1\u18A2\u18A4\u18A6\u18A8\u6550;\u6566;\u6569;\u6564;\u6567\u0200LRlr\u18B3\u18B5\u18B7\u18B9;\u655D;\u655A;\u655C;\u6559\u0380;HLRhlr\u18CA\u18CB\u18CD\u18CF\u18D1\u18D3\u18D5\u6551;\u656C;\u6563;\u6560;\u656B;\u6562;\u655Fox;\u69C9\u0200LRlr\u18E4\u18E6\u18E8\u18EA;\u6555;\u6552;\u6510;\u650C\u0280;DUdu\u06BD\u18F7\u18F9\u18FB\u18FD;\u6565;\u6568;\u652C;\u6534inus;\u629Flus;\u629Eimes;\u62A0\u0200LRlr\u1919\u191B\u191D\u191F;\u655B;\u6558;\u6518;\u6514\u0380;HLRhlr\u1930\u1931\u1933\u1935\u1937\u1939\u193B\u6502;\u656A;\u6561;\u655E;\u653C;\u6524;\u651C\u0100ev\u0123\u1942bar\u803B\xA6\u40A6\u0200ceio\u1951\u1956\u195A\u1960r;\uC000\u{1D4B7}mi;\u604Fm\u0100;e\u171A\u171Cl\u0180;bh\u1968\u1969\u196B\u405C;\u69C5sub;\u67C8\u016C\u1974\u197El\u0100;e\u1979\u197A\u6022t\xBB\u197Ap\u0180;Ee\u012F\u1985\u1987;\u6AAE\u0100;q\u06DC\u06DB\u0CE1\u19A7\0\u19E8\u1A11\u1A15\u1A32\0\u1A37\u1A50\0\0\u1AB4\0\0\u1AC1\0\0\u1B21\u1B2E\u1B4D\u1B52\0\u1BFD\0\u1C0C\u0180cpr\u19AD\u19B2\u19DDute;\u4107\u0300;abcds\u19BF\u19C0\u19C4\u19CA\u19D5\u19D9\u6229nd;\u6A44rcup;\u6A49\u0100au\u19CF\u19D2p;\u6A4Bp;\u6A47ot;\u6A40;\uC000\u2229\uFE00\u0100eo\u19E2\u19E5t;\u6041\xEE\u0693\u0200aeiu\u19F0\u19FB\u1A01\u1A05\u01F0\u19F5\0\u19F8s;\u6A4Don;\u410Ddil\u803B\xE7\u40E7rc;\u4109ps\u0100;s\u1A0C\u1A0D\u6A4Cm;\u6A50ot;\u410B\u0180dmn\u1A1B\u1A20\u1A26il\u80BB\xB8\u01ADptyv;\u69B2t\u8100\xA2;e\u1A2D\u1A2E\u40A2r\xE4\u01B2r;\uC000\u{1D520}\u0180cei\u1A3D\u1A40\u1A4Dy;\u4447ck\u0100;m\u1A47\u1A48\u6713ark\xBB\u1A48;\u43C7r\u0380;Ecefms\u1A5F\u1A60\u1A62\u1A6B\u1AA4\u1AAA\u1AAE\u65CB;\u69C3\u0180;el\u1A69\u1A6A\u1A6D\u42C6q;\u6257e\u0261\u1A74\0\0\u1A88rrow\u0100lr\u1A7C\u1A81eft;\u61BAight;\u61BB\u0280RSacd\u1A92\u1A94\u1A96\u1A9A\u1A9F\xBB\u0F47;\u64C8st;\u629Birc;\u629Aash;\u629Dnint;\u6A10id;\u6AEFcir;\u69C2ubs\u0100;u\u1ABB\u1ABC\u6663it\xBB\u1ABC\u02EC\u1AC7\u1AD4\u1AFA\0\u1B0Aon\u0100;e\u1ACD\u1ACE\u403A\u0100;q\xC7\xC6\u026D\u1AD9\0\0\u1AE2a\u0100;t\u1ADE\u1ADF\u402C;\u4040\u0180;fl\u1AE8\u1AE9\u1AEB\u6201\xEE\u1160e\u0100mx\u1AF1\u1AF6ent\xBB\u1AE9e\xF3\u024D\u01E7\u1AFE\0\u1B07\u0100;d\u12BB\u1B02ot;\u6A6Dn\xF4\u0246\u0180fry\u1B10\u1B14\u1B17;\uC000\u{1D554}o\xE4\u0254\u8100\xA9;s\u0155\u1B1Dr;\u6117\u0100ao\u1B25\u1B29rr;\u61B5ss;\u6717\u0100cu\u1B32\u1B37r;\uC000\u{1D4B8}\u0100bp\u1B3C\u1B44\u0100;e\u1B41\u1B42\u6ACF;\u6AD1\u0100;e\u1B49\u1B4A\u6AD0;\u6AD2dot;\u62EF\u0380delprvw\u1B60\u1B6C\u1B77\u1B82\u1BAC\u1BD4\u1BF9arr\u0100lr\u1B68\u1B6A;\u6938;\u6935\u0270\u1B72\0\0\u1B75r;\u62DEc;\u62DFarr\u0100;p\u1B7F\u1B80\u61B6;\u693D\u0300;bcdos\u1B8F\u1B90\u1B96\u1BA1\u1BA5\u1BA8\u622Arcap;\u6A48\u0100au\u1B9B\u1B9Ep;\u6A46p;\u6A4Aot;\u628Dr;\u6A45;\uC000\u222A\uFE00\u0200alrv\u1BB5\u1BBF\u1BDE\u1BE3rr\u0100;m\u1BBC\u1BBD\u61B7;\u693Cy\u0180evw\u1BC7\u1BD4\u1BD8q\u0270\u1BCE\0\0\u1BD2re\xE3\u1B73u\xE3\u1B75ee;\u62CEedge;\u62CFen\u803B\xA4\u40A4earrow\u0100lr\u1BEE\u1BF3eft\xBB\u1B80ight\xBB\u1BBDe\xE4\u1BDD\u0100ci\u1C01\u1C07onin\xF4\u01F7nt;\u6231lcty;\u632D\u0980AHabcdefhijlorstuwz\u1C38\u1C3B\u1C3F\u1C5D\u1C69\u1C75\u1C8A\u1C9E\u1CAC\u1CB7\u1CFB\u1CFF\u1D0D\u1D7B\u1D91\u1DAB\u1DBB\u1DC6\u1DCDr\xF2\u0381ar;\u6965\u0200glrs\u1C48\u1C4D\u1C52\u1C54ger;\u6020eth;\u6138\xF2\u1133h\u0100;v\u1C5A\u1C5B\u6010\xBB\u090A\u016B\u1C61\u1C67arow;\u690Fa\xE3\u0315\u0100ay\u1C6E\u1C73ron;\u410F;\u4434\u0180;ao\u0332\u1C7C\u1C84\u0100gr\u02BF\u1C81r;\u61CAtseq;\u6A77\u0180glm\u1C91\u1C94\u1C98\u803B\xB0\u40B0ta;\u43B4ptyv;\u69B1\u0100ir\u1CA3\u1CA8sht;\u697F;\uC000\u{1D521}ar\u0100lr\u1CB3\u1CB5\xBB\u08DC\xBB\u101E\u0280aegsv\u1CC2\u0378\u1CD6\u1CDC\u1CE0m\u0180;os\u0326\u1CCA\u1CD4nd\u0100;s\u0326\u1CD1uit;\u6666amma;\u43DDin;\u62F2\u0180;io\u1CE7\u1CE8\u1CF8\u40F7de\u8100\xF7;o\u1CE7\u1CF0ntimes;\u62C7n\xF8\u1CF7cy;\u4452c\u026F\u1D06\0\0\u1D0Arn;\u631Eop;\u630D\u0280lptuw\u1D18\u1D1D\u1D22\u1D49\u1D55lar;\u4024f;\uC000\u{1D555}\u0280;emps\u030B\u1D2D\u1D37\u1D3D\u1D42q\u0100;d\u0352\u1D33ot;\u6251inus;\u6238lus;\u6214quare;\u62A1blebarwedg\xE5\xFAn\u0180adh\u112E\u1D5D\u1D67ownarrow\xF3\u1C83arpoon\u0100lr\u1D72\u1D76ef\xF4\u1CB4igh\xF4\u1CB6\u0162\u1D7F\u1D85karo\xF7\u0F42\u026F\u1D8A\0\0\u1D8Ern;\u631Fop;\u630C\u0180cot\u1D98\u1DA3\u1DA6\u0100ry\u1D9D\u1DA1;\uC000\u{1D4B9};\u4455l;\u69F6rok;\u4111\u0100dr\u1DB0\u1DB4ot;\u62F1i\u0100;f\u1DBA\u1816\u65BF\u0100ah\u1DC0\u1DC3r\xF2\u0429a\xF2\u0FA6angle;\u69A6\u0100ci\u1DD2\u1DD5y;\u445Fgrarr;\u67FF\u0900Dacdefglmnopqrstux\u1E01\u1E09\u1E19\u1E38\u0578\u1E3C\u1E49\u1E61\u1E7E\u1EA5\u1EAF\u1EBD\u1EE1\u1F2A\u1F37\u1F44\u1F4E\u1F5A\u0100Do\u1E06\u1D34o\xF4\u1C89\u0100cs\u1E0E\u1E14ute\u803B\xE9\u40E9ter;\u6A6E\u0200aioy\u1E22\u1E27\u1E31\u1E36ron;\u411Br\u0100;c\u1E2D\u1E2E\u6256\u803B\xEA\u40EAlon;\u6255;\u444Dot;\u4117\u0100Dr\u1E41\u1E45ot;\u6252;\uC000\u{1D522}\u0180;rs\u1E50\u1E51\u1E57\u6A9Aave\u803B\xE8\u40E8\u0100;d\u1E5C\u1E5D\u6A96ot;\u6A98\u0200;ils\u1E6A\u1E6B\u1E72\u1E74\u6A99nters;\u63E7;\u6113\u0100;d\u1E79\u1E7A\u6A95ot;\u6A97\u0180aps\u1E85\u1E89\u1E97cr;\u4113ty\u0180;sv\u1E92\u1E93\u1E95\u6205et\xBB\u1E93p\u01001;\u1E9D\u1EA4\u0133\u1EA1\u1EA3;\u6004;\u6005\u6003\u0100gs\u1EAA\u1EAC;\u414Bp;\u6002\u0100gp\u1EB4\u1EB8on;\u4119f;\uC000\u{1D556}\u0180als\u1EC4\u1ECE\u1ED2r\u0100;s\u1ECA\u1ECB\u62D5l;\u69E3us;\u6A71i\u0180;lv\u1EDA\u1EDB\u1EDF\u43B5on\xBB\u1EDB;\u43F5\u0200csuv\u1EEA\u1EF3\u1F0B\u1F23\u0100io\u1EEF\u1E31rc\xBB\u1E2E\u0269\u1EF9\0\0\u1EFB\xED\u0548ant\u0100gl\u1F02\u1F06tr\xBB\u1E5Dess\xBB\u1E7A\u0180aei\u1F12\u1F16\u1F1Als;\u403Dst;\u625Fv\u0100;D\u0235\u1F20D;\u6A78parsl;\u69E5\u0100Da\u1F2F\u1F33ot;\u6253rr;\u6971\u0180cdi\u1F3E\u1F41\u1EF8r;\u612Fo\xF4\u0352\u0100ah\u1F49\u1F4B;\u43B7\u803B\xF0\u40F0\u0100mr\u1F53\u1F57l\u803B\xEB\u40EBo;\u60AC\u0180cip\u1F61\u1F64\u1F67l;\u4021s\xF4\u056E\u0100eo\u1F6C\u1F74ctatio\xEE\u0559nential\xE5\u0579\u09E1\u1F92\0\u1F9E\0\u1FA1\u1FA7\0\0\u1FC6\u1FCC\0\u1FD3\0\u1FE6\u1FEA\u2000\0\u2008\u205Allingdotse\xF1\u1E44y;\u4444male;\u6640\u0180ilr\u1FAD\u1FB3\u1FC1lig;\u8000\uFB03\u0269\u1FB9\0\0\u1FBDg;\u8000\uFB00ig;\u8000\uFB04;\uC000\u{1D523}lig;\u8000\uFB01lig;\uC000fj\u0180alt\u1FD9\u1FDC\u1FE1t;\u666Dig;\u8000\uFB02ns;\u65B1of;\u4192\u01F0\u1FEE\0\u1FF3f;\uC000\u{1D557}\u0100ak\u05BF\u1FF7\u0100;v\u1FFC\u1FFD\u62D4;\u6AD9artint;\u6A0D\u0100ao\u200C\u2055\u0100cs\u2011\u2052\u03B1\u201A\u2030\u2038\u2045\u2048\0\u2050\u03B2\u2022\u2025\u2027\u202A\u202C\0\u202E\u803B\xBD\u40BD;\u6153\u803B\xBC\u40BC;\u6155;\u6159;\u615B\u01B3\u2034\0\u2036;\u6154;\u6156\u02B4\u203E\u2041\0\0\u2043\u803B\xBE\u40BE;\u6157;\u615C5;\u6158\u01B6\u204C\0\u204E;\u615A;\u615D8;\u615El;\u6044wn;\u6322cr;\uC000\u{1D4BB}\u0880Eabcdefgijlnorstv\u2082\u2089\u209F\u20A5\u20B0\u20B4\u20F0\u20F5\u20FA\u20FF\u2103\u2112\u2138\u0317\u213E\u2152\u219E\u0100;l\u064D\u2087;\u6A8C\u0180cmp\u2090\u2095\u209Dute;\u41F5ma\u0100;d\u209C\u1CDA\u43B3;\u6A86reve;\u411F\u0100iy\u20AA\u20AErc;\u411D;\u4433ot;\u4121\u0200;lqs\u063E\u0642\u20BD\u20C9\u0180;qs\u063E\u064C\u20C4lan\xF4\u0665\u0200;cdl\u0665\u20D2\u20D5\u20E5c;\u6AA9ot\u0100;o\u20DC\u20DD\u6A80\u0100;l\u20E2\u20E3\u6A82;\u6A84\u0100;e\u20EA\u20ED\uC000\u22DB\uFE00s;\u6A94r;\uC000\u{1D524}\u0100;g\u0673\u061Bmel;\u6137cy;\u4453\u0200;Eaj\u065A\u210C\u210E\u2110;\u6A92;\u6AA5;\u6AA4\u0200Eaes\u211B\u211D\u2129\u2134;\u6269p\u0100;p\u2123\u2124\u6A8Arox\xBB\u2124\u0100;q\u212E\u212F\u6A88\u0100;q\u212E\u211Bim;\u62E7pf;\uC000\u{1D558}\u0100ci\u2143\u2146r;\u610Am\u0180;el\u066B\u214E\u2150;\u6A8E;\u6A90\u8300>;cdlqr\u05EE\u2160\u216A\u216E\u2173\u2179\u0100ci\u2165\u2167;\u6AA7r;\u6A7Aot;\u62D7Par;\u6995uest;\u6A7C\u0280adels\u2184\u216A\u2190\u0656\u219B\u01F0\u2189\0\u218Epro\xF8\u209Er;\u6978q\u0100lq\u063F\u2196les\xF3\u2088i\xED\u066B\u0100en\u21A3\u21ADrtneqq;\uC000\u2269\uFE00\xC5\u21AA\u0500Aabcefkosy\u21C4\u21C7\u21F1\u21F5\u21FA\u2218\u221D\u222F\u2268\u227Dr\xF2\u03A0\u0200ilmr\u21D0\u21D4\u21D7\u21DBrs\xF0\u1484f\xBB\u2024il\xF4\u06A9\u0100dr\u21E0\u21E4cy;\u444A\u0180;cw\u08F4\u21EB\u21EFir;\u6948;\u61ADar;\u610Firc;\u4125\u0180alr\u2201\u220E\u2213rts\u0100;u\u2209\u220A\u6665it\xBB\u220Alip;\u6026con;\u62B9r;\uC000\u{1D525}s\u0100ew\u2223\u2229arow;\u6925arow;\u6926\u0280amopr\u223A\u223E\u2243\u225E\u2263rr;\u61FFtht;\u623Bk\u0100lr\u2249\u2253eftarrow;\u61A9ightarrow;\u61AAf;\uC000\u{1D559}bar;\u6015\u0180clt\u226F\u2274\u2278r;\uC000\u{1D4BD}as\xE8\u21F4rok;\u4127\u0100bp\u2282\u2287ull;\u6043hen\xBB\u1C5B\u0AE1\u22A3\0\u22AA\0\u22B8\u22C5\u22CE\0\u22D5\u22F3\0\0\u22F8\u2322\u2367\u2362\u237F\0\u2386\u23AA\u23B4cute\u803B\xED\u40ED\u0180;iy\u0771\u22B0\u22B5rc\u803B\xEE\u40EE;\u4438\u0100cx\u22BC\u22BFy;\u4435cl\u803B\xA1\u40A1\u0100fr\u039F\u22C9;\uC000\u{1D526}rave\u803B\xEC\u40EC\u0200;ino\u073E\u22DD\u22E9\u22EE\u0100in\u22E2\u22E6nt;\u6A0Ct;\u622Dfin;\u69DCta;\u6129lig;\u4133\u0180aop\u22FE\u231A\u231D\u0180cgt\u2305\u2308\u2317r;\u412B\u0180elp\u071F\u230F\u2313in\xE5\u078Ear\xF4\u0720h;\u4131f;\u62B7ed;\u41B5\u0280;cfot\u04F4\u232C\u2331\u233D\u2341are;\u6105in\u0100;t\u2338\u2339\u621Eie;\u69DDdo\xF4\u2319\u0280;celp\u0757\u234C\u2350\u235B\u2361al;\u62BA\u0100gr\u2355\u2359er\xF3\u1563\xE3\u234Darhk;\u6A17rod;\u6A3C\u0200cgpt\u236F\u2372\u2376\u237By;\u4451on;\u412Ff;\uC000\u{1D55A}a;\u43B9uest\u803B\xBF\u40BF\u0100ci\u238A\u238Fr;\uC000\u{1D4BE}n\u0280;Edsv\u04F4\u239B\u239D\u23A1\u04F3;\u62F9ot;\u62F5\u0100;v\u23A6\u23A7\u62F4;\u62F3\u0100;i\u0777\u23AElde;\u4129\u01EB\u23B8\0\u23BCcy;\u4456l\u803B\xEF\u40EF\u0300cfmosu\u23CC\u23D7\u23DC\u23E1\u23E7\u23F5\u0100iy\u23D1\u23D5rc;\u4135;\u4439r;\uC000\u{1D527}ath;\u4237pf;\uC000\u{1D55B}\u01E3\u23EC\0\u23F1r;\uC000\u{1D4BF}rcy;\u4458kcy;\u4454\u0400acfghjos\u240B\u2416\u2422\u2427\u242D\u2431\u2435\u243Bppa\u0100;v\u2413\u2414\u43BA;\u43F0\u0100ey\u241B\u2420dil;\u4137;\u443Ar;\uC000\u{1D528}reen;\u4138cy;\u4445cy;\u445Cpf;\uC000\u{1D55C}cr;\uC000\u{1D4C0}\u0B80ABEHabcdefghjlmnoprstuv\u2470\u2481\u2486\u248D\u2491\u250E\u253D\u255A\u2580\u264E\u265E\u2665\u2679\u267D\u269A\u26B2\u26D8\u275D\u2768\u278B\u27C0\u2801\u2812\u0180art\u2477\u247A\u247Cr\xF2\u09C6\xF2\u0395ail;\u691Barr;\u690E\u0100;g\u0994\u248B;\u6A8Bar;\u6962\u0963\u24A5\0\u24AA\0\u24B1\0\0\0\0\0\u24B5\u24BA\0\u24C6\u24C8\u24CD\0\u24F9ute;\u413Amptyv;\u69B4ra\xEE\u084Cbda;\u43BBg\u0180;dl\u088E\u24C1\u24C3;\u6991\xE5\u088E;\u6A85uo\u803B\xAB\u40ABr\u0400;bfhlpst\u0899\u24DE\u24E6\u24E9\u24EB\u24EE\u24F1\u24F5\u0100;f\u089D\u24E3s;\u691Fs;\u691D\xEB\u2252p;\u61ABl;\u6939im;\u6973l;\u61A2\u0180;ae\u24FF\u2500\u2504\u6AABil;\u6919\u0100;s\u2509\u250A\u6AAD;\uC000\u2AAD\uFE00\u0180abr\u2515\u2519\u251Drr;\u690Crk;\u6772\u0100ak\u2522\u252Cc\u0100ek\u2528\u252A;\u407B;\u405B\u0100es\u2531\u2533;\u698Bl\u0100du\u2539\u253B;\u698F;\u698D\u0200aeuy\u2546\u254B\u2556\u2558ron;\u413E\u0100di\u2550\u2554il;\u413C\xEC\u08B0\xE2\u2529;\u443B\u0200cqrs\u2563\u2566\u256D\u257Da;\u6936uo\u0100;r\u0E19\u1746\u0100du\u2572\u2577har;\u6967shar;\u694Bh;\u61B2\u0280;fgqs\u258B\u258C\u0989\u25F3\u25FF\u6264t\u0280ahlrt\u2598\u25A4\u25B7\u25C2\u25E8rrow\u0100;t\u0899\u25A1a\xE9\u24F6arpoon\u0100du\u25AF\u25B4own\xBB\u045Ap\xBB\u0966eftarrows;\u61C7ight\u0180ahs\u25CD\u25D6\u25DErrow\u0100;s\u08F4\u08A7arpoon\xF3\u0F98quigarro\xF7\u21F0hreetimes;\u62CB\u0180;qs\u258B\u0993\u25FAlan\xF4\u09AC\u0280;cdgs\u09AC\u260A\u260D\u261D\u2628c;\u6AA8ot\u0100;o\u2614\u2615\u6A7F\u0100;r\u261A\u261B\u6A81;\u6A83\u0100;e\u2622\u2625\uC000\u22DA\uFE00s;\u6A93\u0280adegs\u2633\u2639\u263D\u2649\u264Bppro\xF8\u24C6ot;\u62D6q\u0100gq\u2643\u2645\xF4\u0989gt\xF2\u248C\xF4\u099Bi\xED\u09B2\u0180ilr\u2655\u08E1\u265Asht;\u697C;\uC000\u{1D529}\u0100;E\u099C\u2663;\u6A91\u0161\u2669\u2676r\u0100du\u25B2\u266E\u0100;l\u0965\u2673;\u696Alk;\u6584cy;\u4459\u0280;acht\u0A48\u2688\u268B\u2691\u2696r\xF2\u25C1orne\xF2\u1D08ard;\u696Bri;\u65FA\u0100io\u269F\u26A4dot;\u4140ust\u0100;a\u26AC\u26AD\u63B0che\xBB\u26AD\u0200Eaes\u26BB\u26BD\u26C9\u26D4;\u6268p\u0100;p\u26C3\u26C4\u6A89rox\xBB\u26C4\u0100;q\u26CE\u26CF\u6A87\u0100;q\u26CE\u26BBim;\u62E6\u0400abnoptwz\u26E9\u26F4\u26F7\u271A\u272F\u2741\u2747\u2750\u0100nr\u26EE\u26F1g;\u67ECr;\u61FDr\xEB\u08C1g\u0180lmr\u26FF\u270D\u2714eft\u0100ar\u09E6\u2707ight\xE1\u09F2apsto;\u67FCight\xE1\u09FDparrow\u0100lr\u2725\u2729ef\xF4\u24EDight;\u61AC\u0180afl\u2736\u2739\u273Dr;\u6985;\uC000\u{1D55D}us;\u6A2Dimes;\u6A34\u0161\u274B\u274Fst;\u6217\xE1\u134E\u0180;ef\u2757\u2758\u1800\u65CAnge\xBB\u2758ar\u0100;l\u2764\u2765\u4028t;\u6993\u0280achmt\u2773\u2776\u277C\u2785\u2787r\xF2\u08A8orne\xF2\u1D8Car\u0100;d\u0F98\u2783;\u696D;\u600Eri;\u62BF\u0300achiqt\u2798\u279D\u0A40\u27A2\u27AE\u27BBquo;\u6039r;\uC000\u{1D4C1}m\u0180;eg\u09B2\u27AA\u27AC;\u6A8D;\u6A8F\u0100bu\u252A\u27B3o\u0100;r\u0E1F\u27B9;\u601Arok;\u4142\u8400<;cdhilqr\u082B\u27D2\u2639\u27DC\u27E0\u27E5\u27EA\u27F0\u0100ci\u27D7\u27D9;\u6AA6r;\u6A79re\xE5\u25F2mes;\u62C9arr;\u6976uest;\u6A7B\u0100Pi\u27F5\u27F9ar;\u6996\u0180;ef\u2800\u092D\u181B\u65C3r\u0100du\u2807\u280Dshar;\u694Ahar;\u6966\u0100en\u2817\u2821rtneqq;\uC000\u2268\uFE00\xC5\u281E\u0700Dacdefhilnopsu\u2840\u2845\u2882\u288E\u2893\u28A0\u28A5\u28A8\u28DA\u28E2\u28E4\u0A83\u28F3\u2902Dot;\u623A\u0200clpr\u284E\u2852\u2863\u287Dr\u803B\xAF\u40AF\u0100et\u2857\u2859;\u6642\u0100;e\u285E\u285F\u6720se\xBB\u285F\u0100;s\u103B\u2868to\u0200;dlu\u103B\u2873\u2877\u287Bow\xEE\u048Cef\xF4\u090F\xF0\u13D1ker;\u65AE\u0100oy\u2887\u288Cmma;\u6A29;\u443Cash;\u6014asuredangle\xBB\u1626r;\uC000\u{1D52A}o;\u6127\u0180cdn\u28AF\u28B4\u28C9ro\u803B\xB5\u40B5\u0200;acd\u1464\u28BD\u28C0\u28C4s\xF4\u16A7ir;\u6AF0ot\u80BB\xB7\u01B5us\u0180;bd\u28D2\u1903\u28D3\u6212\u0100;u\u1D3C\u28D8;\u6A2A\u0163\u28DE\u28E1p;\u6ADB\xF2\u2212\xF0\u0A81\u0100dp\u28E9\u28EEels;\u62A7f;\uC000\u{1D55E}\u0100ct\u28F8\u28FDr;\uC000\u{1D4C2}pos\xBB\u159D\u0180;lm\u2909\u290A\u290D\u43BCtimap;\u62B8\u0C00GLRVabcdefghijlmoprstuvw\u2942\u2953\u297E\u2989\u2998\u29DA\u29E9\u2A15\u2A1A\u2A58\u2A5D\u2A83\u2A95\u2AA4\u2AA8\u2B04\u2B07\u2B44\u2B7F\u2BAE\u2C34\u2C67\u2C7C\u2CE9\u0100gt\u2947\u294B;\uC000\u22D9\u0338\u0100;v\u2950\u0BCF\uC000\u226B\u20D2\u0180elt\u295A\u2972\u2976ft\u0100ar\u2961\u2967rrow;\u61CDightarrow;\u61CE;\uC000\u22D8\u0338\u0100;v\u297B\u0C47\uC000\u226A\u20D2ightarrow;\u61CF\u0100Dd\u298E\u2993ash;\u62AFash;\u62AE\u0280bcnpt\u29A3\u29A7\u29AC\u29B1\u29CCla\xBB\u02DEute;\u4144g;\uC000\u2220\u20D2\u0280;Eiop\u0D84\u29BC\u29C0\u29C5\u29C8;\uC000\u2A70\u0338d;\uC000\u224B\u0338s;\u4149ro\xF8\u0D84ur\u0100;a\u29D3\u29D4\u666El\u0100;s\u29D3\u0B38\u01F3\u29DF\0\u29E3p\u80BB\xA0\u0B37mp\u0100;e\u0BF9\u0C00\u0280aeouy\u29F4\u29FE\u2A03\u2A10\u2A13\u01F0\u29F9\0\u29FB;\u6A43on;\u4148dil;\u4146ng\u0100;d\u0D7E\u2A0Aot;\uC000\u2A6D\u0338p;\u6A42;\u443Dash;\u6013\u0380;Aadqsx\u0B92\u2A29\u2A2D\u2A3B\u2A41\u2A45\u2A50rr;\u61D7r\u0100hr\u2A33\u2A36k;\u6924\u0100;o\u13F2\u13F0ot;\uC000\u2250\u0338ui\xF6\u0B63\u0100ei\u2A4A\u2A4Ear;\u6928\xED\u0B98ist\u0100;s\u0BA0\u0B9Fr;\uC000\u{1D52B}\u0200Eest\u0BC5\u2A66\u2A79\u2A7C\u0180;qs\u0BBC\u2A6D\u0BE1\u0180;qs\u0BBC\u0BC5\u2A74lan\xF4\u0BE2i\xED\u0BEA\u0100;r\u0BB6\u2A81\xBB\u0BB7\u0180Aap\u2A8A\u2A8D\u2A91r\xF2\u2971rr;\u61AEar;\u6AF2\u0180;sv\u0F8D\u2A9C\u0F8C\u0100;d\u2AA1\u2AA2\u62FC;\u62FAcy;\u445A\u0380AEadest\u2AB7\u2ABA\u2ABE\u2AC2\u2AC5\u2AF6\u2AF9r\xF2\u2966;\uC000\u2266\u0338rr;\u619Ar;\u6025\u0200;fqs\u0C3B\u2ACE\u2AE3\u2AEFt\u0100ar\u2AD4\u2AD9rro\xF7\u2AC1ightarro\xF7\u2A90\u0180;qs\u0C3B\u2ABA\u2AEAlan\xF4\u0C55\u0100;s\u0C55\u2AF4\xBB\u0C36i\xED\u0C5D\u0100;r\u0C35\u2AFEi\u0100;e\u0C1A\u0C25i\xE4\u0D90\u0100pt\u2B0C\u2B11f;\uC000\u{1D55F}\u8180\xAC;in\u2B19\u2B1A\u2B36\u40ACn\u0200;Edv\u0B89\u2B24\u2B28\u2B2E;\uC000\u22F9\u0338ot;\uC000\u22F5\u0338\u01E1\u0B89\u2B33\u2B35;\u62F7;\u62F6i\u0100;v\u0CB8\u2B3C\u01E1\u0CB8\u2B41\u2B43;\u62FE;\u62FD\u0180aor\u2B4B\u2B63\u2B69r\u0200;ast\u0B7B\u2B55\u2B5A\u2B5Flle\xEC\u0B7Bl;\uC000\u2AFD\u20E5;\uC000\u2202\u0338lint;\u6A14\u0180;ce\u0C92\u2B70\u2B73u\xE5\u0CA5\u0100;c\u0C98\u2B78\u0100;e\u0C92\u2B7D\xF1\u0C98\u0200Aait\u2B88\u2B8B\u2B9D\u2BA7r\xF2\u2988rr\u0180;cw\u2B94\u2B95\u2B99\u619B;\uC000\u2933\u0338;\uC000\u219D\u0338ghtarrow\xBB\u2B95ri\u0100;e\u0CCB\u0CD6\u0380chimpqu\u2BBD\u2BCD\u2BD9\u2B04\u0B78\u2BE4\u2BEF\u0200;cer\u0D32\u2BC6\u0D37\u2BC9u\xE5\u0D45;\uC000\u{1D4C3}ort\u026D\u2B05\0\0\u2BD6ar\xE1\u2B56m\u0100;e\u0D6E\u2BDF\u0100;q\u0D74\u0D73su\u0100bp\u2BEB\u2BED\xE5\u0CF8\xE5\u0D0B\u0180bcp\u2BF6\u2C11\u2C19\u0200;Ees\u2BFF\u2C00\u0D22\u2C04\u6284;\uC000\u2AC5\u0338et\u0100;e\u0D1B\u2C0Bq\u0100;q\u0D23\u2C00c\u0100;e\u0D32\u2C17\xF1\u0D38\u0200;Ees\u2C22\u2C23\u0D5F\u2C27\u6285;\uC000\u2AC6\u0338et\u0100;e\u0D58\u2C2Eq\u0100;q\u0D60\u2C23\u0200gilr\u2C3D\u2C3F\u2C45\u2C47\xEC\u0BD7lde\u803B\xF1\u40F1\xE7\u0C43iangle\u0100lr\u2C52\u2C5Ceft\u0100;e\u0C1A\u2C5A\xF1\u0C26ight\u0100;e\u0CCB\u2C65\xF1\u0CD7\u0100;m\u2C6C\u2C6D\u43BD\u0180;es\u2C74\u2C75\u2C79\u4023ro;\u6116p;\u6007\u0480DHadgilrs\u2C8F\u2C94\u2C99\u2C9E\u2CA3\u2CB0\u2CB6\u2CD3\u2CE3ash;\u62ADarr;\u6904p;\uC000\u224D\u20D2ash;\u62AC\u0100et\u2CA8\u2CAC;\uC000\u2265\u20D2;\uC000>\u20D2nfin;\u69DE\u0180Aet\u2CBD\u2CC1\u2CC5rr;\u6902;\uC000\u2264\u20D2\u0100;r\u2CCA\u2CCD\uC000<\u20D2ie;\uC000\u22B4\u20D2\u0100At\u2CD8\u2CDCrr;\u6903rie;\uC000\u22B5\u20D2im;\uC000\u223C\u20D2\u0180Aan\u2CF0\u2CF4\u2D02rr;\u61D6r\u0100hr\u2CFA\u2CFDk;\u6923\u0100;o\u13E7\u13E5ear;\u6927\u1253\u1A95\0\0\0\0\0\0\0\0\0\0\0\0\0\u2D2D\0\u2D38\u2D48\u2D60\u2D65\u2D72\u2D84\u1B07\0\0\u2D8D\u2DAB\0\u2DC8\u2DCE\0\u2DDC\u2E19\u2E2B\u2E3E\u2E43\u0100cs\u2D31\u1A97ute\u803B\xF3\u40F3\u0100iy\u2D3C\u2D45r\u0100;c\u1A9E\u2D42\u803B\xF4\u40F4;\u443E\u0280abios\u1AA0\u2D52\u2D57\u01C8\u2D5Alac;\u4151v;\u6A38old;\u69BClig;\u4153\u0100cr\u2D69\u2D6Dir;\u69BF;\uC000\u{1D52C}\u036F\u2D79\0\0\u2D7C\0\u2D82n;\u42DBave\u803B\xF2\u40F2;\u69C1\u0100bm\u2D88\u0DF4ar;\u69B5\u0200acit\u2D95\u2D98\u2DA5\u2DA8r\xF2\u1A80\u0100ir\u2D9D\u2DA0r;\u69BEoss;\u69BBn\xE5\u0E52;\u69C0\u0180aei\u2DB1\u2DB5\u2DB9cr;\u414Dga;\u43C9\u0180cdn\u2DC0\u2DC5\u01CDron;\u43BF;\u69B6pf;\uC000\u{1D560}\u0180ael\u2DD4\u2DD7\u01D2r;\u69B7rp;\u69B9\u0380;adiosv\u2DEA\u2DEB\u2DEE\u2E08\u2E0D\u2E10\u2E16\u6228r\xF2\u1A86\u0200;efm\u2DF7\u2DF8\u2E02\u2E05\u6A5Dr\u0100;o\u2DFE\u2DFF\u6134f\xBB\u2DFF\u803B\xAA\u40AA\u803B\xBA\u40BAgof;\u62B6r;\u6A56lope;\u6A57;\u6A5B\u0180clo\u2E1F\u2E21\u2E27\xF2\u2E01ash\u803B\xF8\u40F8l;\u6298i\u016C\u2E2F\u2E34de\u803B\xF5\u40F5es\u0100;a\u01DB\u2E3As;\u6A36ml\u803B\xF6\u40F6bar;\u633D\u0AE1\u2E5E\0\u2E7D\0\u2E80\u2E9D\0\u2EA2\u2EB9\0\0\u2ECB\u0E9C\0\u2F13\0\0\u2F2B\u2FBC\0\u2FC8r\u0200;ast\u0403\u2E67\u2E72\u0E85\u8100\xB6;l\u2E6D\u2E6E\u40B6le\xEC\u0403\u0269\u2E78\0\0\u2E7Bm;\u6AF3;\u6AFDy;\u443Fr\u0280cimpt\u2E8B\u2E8F\u2E93\u1865\u2E97nt;\u4025od;\u402Eil;\u6030enk;\u6031r;\uC000\u{1D52D}\u0180imo\u2EA8\u2EB0\u2EB4\u0100;v\u2EAD\u2EAE\u43C6;\u43D5ma\xF4\u0A76ne;\u660E\u0180;tv\u2EBF\u2EC0\u2EC8\u43C0chfork\xBB\u1FFD;\u43D6\u0100au\u2ECF\u2EDFn\u0100ck\u2ED5\u2EDDk\u0100;h\u21F4\u2EDB;\u610E\xF6\u21F4s\u0480;abcdemst\u2EF3\u2EF4\u1908\u2EF9\u2EFD\u2F04\u2F06\u2F0A\u2F0E\u402Bcir;\u6A23ir;\u6A22\u0100ou\u1D40\u2F02;\u6A25;\u6A72n\u80BB\xB1\u0E9Dim;\u6A26wo;\u6A27\u0180ipu\u2F19\u2F20\u2F25ntint;\u6A15f;\uC000\u{1D561}nd\u803B\xA3\u40A3\u0500;Eaceinosu\u0EC8\u2F3F\u2F41\u2F44\u2F47\u2F81\u2F89\u2F92\u2F7E\u2FB6;\u6AB3p;\u6AB7u\xE5\u0ED9\u0100;c\u0ECE\u2F4C\u0300;acens\u0EC8\u2F59\u2F5F\u2F66\u2F68\u2F7Eppro\xF8\u2F43urlye\xF1\u0ED9\xF1\u0ECE\u0180aes\u2F6F\u2F76\u2F7Approx;\u6AB9qq;\u6AB5im;\u62E8i\xED\u0EDFme\u0100;s\u2F88\u0EAE\u6032\u0180Eas\u2F78\u2F90\u2F7A\xF0\u2F75\u0180dfp\u0EEC\u2F99\u2FAF\u0180als\u2FA0\u2FA5\u2FAAlar;\u632Eine;\u6312urf;\u6313\u0100;t\u0EFB\u2FB4\xEF\u0EFBrel;\u62B0\u0100ci\u2FC0\u2FC5r;\uC000\u{1D4C5};\u43C8ncsp;\u6008\u0300fiopsu\u2FDA\u22E2\u2FDF\u2FE5\u2FEB\u2FF1r;\uC000\u{1D52E}pf;\uC000\u{1D562}rime;\u6057cr;\uC000\u{1D4C6}\u0180aeo\u2FF8\u3009\u3013t\u0100ei\u2FFE\u3005rnion\xF3\u06B0nt;\u6A16st\u0100;e\u3010\u3011\u403F\xF1\u1F19\xF4\u0F14\u0A80ABHabcdefhilmnoprstux\u3040\u3051\u3055\u3059\u30E0\u310E\u312B\u3147\u3162\u3172\u318E\u3206\u3215\u3224\u3229\u3258\u326E\u3272\u3290\u32B0\u32B7\u0180art\u3047\u304A\u304Cr\xF2\u10B3\xF2\u03DDail;\u691Car\xF2\u1C65ar;\u6964\u0380cdenqrt\u3068\u3075\u3078\u307F\u308F\u3094\u30CC\u0100eu\u306D\u3071;\uC000\u223D\u0331te;\u4155i\xE3\u116Emptyv;\u69B3g\u0200;del\u0FD1\u3089\u308B\u308D;\u6992;\u69A5\xE5\u0FD1uo\u803B\xBB\u40BBr\u0580;abcfhlpstw\u0FDC\u30AC\u30AF\u30B7\u30B9\u30BC\u30BE\u30C0\u30C3\u30C7\u30CAp;\u6975\u0100;f\u0FE0\u30B4s;\u6920;\u6933s;\u691E\xEB\u225D\xF0\u272El;\u6945im;\u6974l;\u61A3;\u619D\u0100ai\u30D1\u30D5il;\u691Ao\u0100;n\u30DB\u30DC\u6236al\xF3\u0F1E\u0180abr\u30E7\u30EA\u30EEr\xF2\u17E5rk;\u6773\u0100ak\u30F3\u30FDc\u0100ek\u30F9\u30FB;\u407D;\u405D\u0100es\u3102\u3104;\u698Cl\u0100du\u310A\u310C;\u698E;\u6990\u0200aeuy\u3117\u311C\u3127\u3129ron;\u4159\u0100di\u3121\u3125il;\u4157\xEC\u0FF2\xE2\u30FA;\u4440\u0200clqs\u3134\u3137\u313D\u3144a;\u6937dhar;\u6969uo\u0100;r\u020E\u020Dh;\u61B3\u0180acg\u314E\u315F\u0F44l\u0200;ips\u0F78\u3158\u315B\u109Cn\xE5\u10BBar\xF4\u0FA9t;\u65AD\u0180ilr\u3169\u1023\u316Esht;\u697D;\uC000\u{1D52F}\u0100ao\u3177\u3186r\u0100du\u317D\u317F\xBB\u047B\u0100;l\u1091\u3184;\u696C\u0100;v\u318B\u318C\u43C1;\u43F1\u0180gns\u3195\u31F9\u31FCht\u0300ahlrst\u31A4\u31B0\u31C2\u31D8\u31E4\u31EErrow\u0100;t\u0FDC\u31ADa\xE9\u30C8arpoon\u0100du\u31BB\u31BFow\xEE\u317Ep\xBB\u1092eft\u0100ah\u31CA\u31D0rrow\xF3\u0FEAarpoon\xF3\u0551ightarrows;\u61C9quigarro\xF7\u30CBhreetimes;\u62CCg;\u42DAingdotse\xF1\u1F32\u0180ahm\u320D\u3210\u3213r\xF2\u0FEAa\xF2\u0551;\u600Foust\u0100;a\u321E\u321F\u63B1che\xBB\u321Fmid;\u6AEE\u0200abpt\u3232\u323D\u3240\u3252\u0100nr\u3237\u323Ag;\u67EDr;\u61FEr\xEB\u1003\u0180afl\u3247\u324A\u324Er;\u6986;\uC000\u{1D563}us;\u6A2Eimes;\u6A35\u0100ap\u325D\u3267r\u0100;g\u3263\u3264\u4029t;\u6994olint;\u6A12ar\xF2\u31E3\u0200achq\u327B\u3280\u10BC\u3285quo;\u603Ar;\uC000\u{1D4C7}\u0100bu\u30FB\u328Ao\u0100;r\u0214\u0213\u0180hir\u3297\u329B\u32A0re\xE5\u31F8mes;\u62CAi\u0200;efl\u32AA\u1059\u1821\u32AB\u65B9tri;\u69CEluhar;\u6968;\u611E\u0D61\u32D5\u32DB\u32DF\u332C\u3338\u3371\0\u337A\u33A4\0\0\u33EC\u33F0\0\u3428\u3448\u345A\u34AD\u34B1\u34CA\u34F1\0\u3616\0\0\u3633cute;\u415Bqu\xEF\u27BA\u0500;Eaceinpsy\u11ED\u32F3\u32F5\u32FF\u3302\u330B\u330F\u331F\u3326\u3329;\u6AB4\u01F0\u32FA\0\u32FC;\u6AB8on;\u4161u\xE5\u11FE\u0100;d\u11F3\u3307il;\u415Frc;\u415D\u0180Eas\u3316\u3318\u331B;\u6AB6p;\u6ABAim;\u62E9olint;\u6A13i\xED\u1204;\u4441ot\u0180;be\u3334\u1D47\u3335\u62C5;\u6A66\u0380Aacmstx\u3346\u334A\u3357\u335B\u335E\u3363\u336Drr;\u61D8r\u0100hr\u3350\u3352\xEB\u2228\u0100;o\u0A36\u0A34t\u803B\xA7\u40A7i;\u403Bwar;\u6929m\u0100in\u3369\xF0nu\xF3\xF1t;\u6736r\u0100;o\u3376\u2055\uC000\u{1D530}\u0200acoy\u3382\u3386\u3391\u33A0rp;\u666F\u0100hy\u338B\u338Fcy;\u4449;\u4448rt\u026D\u3399\0\0\u339Ci\xE4\u1464ara\xEC\u2E6F\u803B\xAD\u40AD\u0100gm\u33A8\u33B4ma\u0180;fv\u33B1\u33B2\u33B2\u43C3;\u43C2\u0400;deglnpr\u12AB\u33C5\u33C9\u33CE\u33D6\u33DE\u33E1\u33E6ot;\u6A6A\u0100;q\u12B1\u12B0\u0100;E\u33D3\u33D4\u6A9E;\u6AA0\u0100;E\u33DB\u33DC\u6A9D;\u6A9Fe;\u6246lus;\u6A24arr;\u6972ar\xF2\u113D\u0200aeit\u33F8\u3408\u340F\u3417\u0100ls\u33FD\u3404lsetm\xE9\u336Ahp;\u6A33parsl;\u69E4\u0100dl\u1463\u3414e;\u6323\u0100;e\u341C\u341D\u6AAA\u0100;s\u3422\u3423\u6AAC;\uC000\u2AAC\uFE00\u0180flp\u342E\u3433\u3442tcy;\u444C\u0100;b\u3438\u3439\u402F\u0100;a\u343E\u343F\u69C4r;\u633Ff;\uC000\u{1D564}a\u0100dr\u344D\u0402es\u0100;u\u3454\u3455\u6660it\xBB\u3455\u0180csu\u3460\u3479\u349F\u0100au\u3465\u346Fp\u0100;s\u1188\u346B;\uC000\u2293\uFE00p\u0100;s\u11B4\u3475;\uC000\u2294\uFE00u\u0100bp\u347F\u348F\u0180;es\u1197\u119C\u3486et\u0100;e\u1197\u348D\xF1\u119D\u0180;es\u11A8\u11AD\u3496et\u0100;e\u11A8\u349D\xF1\u11AE\u0180;af\u117B\u34A6\u05B0r\u0165\u34AB\u05B1\xBB\u117Car\xF2\u1148\u0200cemt\u34B9\u34BE\u34C2\u34C5r;\uC000\u{1D4C8}tm\xEE\xF1i\xEC\u3415ar\xE6\u11BE\u0100ar\u34CE\u34D5r\u0100;f\u34D4\u17BF\u6606\u0100an\u34DA\u34EDight\u0100ep\u34E3\u34EApsilo\xEE\u1EE0h\xE9\u2EAFs\xBB\u2852\u0280bcmnp\u34FB\u355E\u1209\u358B\u358E\u0480;Edemnprs\u350E\u350F\u3511\u3515\u351E\u3523\u352C\u3531\u3536\u6282;\u6AC5ot;\u6ABD\u0100;d\u11DA\u351Aot;\u6AC3ult;\u6AC1\u0100Ee\u3528\u352A;\u6ACB;\u628Alus;\u6ABFarr;\u6979\u0180eiu\u353D\u3552\u3555t\u0180;en\u350E\u3545\u354Bq\u0100;q\u11DA\u350Feq\u0100;q\u352B\u3528m;\u6AC7\u0100bp\u355A\u355C;\u6AD5;\u6AD3c\u0300;acens\u11ED\u356C\u3572\u3579\u357B\u3326ppro\xF8\u32FAurlye\xF1\u11FE\xF1\u11F3\u0180aes\u3582\u3588\u331Bppro\xF8\u331Aq\xF1\u3317g;\u666A\u0680123;Edehlmnps\u35A9\u35AC\u35AF\u121C\u35B2\u35B4\u35C0\u35C9\u35D5\u35DA\u35DF\u35E8\u35ED\u803B\xB9\u40B9\u803B\xB2\u40B2\u803B\xB3\u40B3;\u6AC6\u0100os\u35B9\u35BCt;\u6ABEub;\u6AD8\u0100;d\u1222\u35C5ot;\u6AC4s\u0100ou\u35CF\u35D2l;\u67C9b;\u6AD7arr;\u697Bult;\u6AC2\u0100Ee\u35E4\u35E6;\u6ACC;\u628Blus;\u6AC0\u0180eiu\u35F4\u3609\u360Ct\u0180;en\u121C\u35FC\u3602q\u0100;q\u1222\u35B2eq\u0100;q\u35E7\u35E4m;\u6AC8\u0100bp\u3611\u3613;\u6AD4;\u6AD6\u0180Aan\u361C\u3620\u362Drr;\u61D9r\u0100hr\u3626\u3628\xEB\u222E\u0100;o\u0A2B\u0A29war;\u692Alig\u803B\xDF\u40DF\u0BE1\u3651\u365D\u3660\u12CE\u3673\u3679\0\u367E\u36C2\0\0\0\0\0\u36DB\u3703\0\u3709\u376C\0\0\0\u3787\u0272\u3656\0\0\u365Bget;\u6316;\u43C4r\xEB\u0E5F\u0180aey\u3666\u366B\u3670ron;\u4165dil;\u4163;\u4442lrec;\u6315r;\uC000\u{1D531}\u0200eiko\u3686\u369D\u36B5\u36BC\u01F2\u368B\0\u3691e\u01004f\u1284\u1281a\u0180;sv\u3698\u3699\u369B\u43B8ym;\u43D1\u0100cn\u36A2\u36B2k\u0100as\u36A8\u36AEppro\xF8\u12C1im\xBB\u12ACs\xF0\u129E\u0100as\u36BA\u36AE\xF0\u12C1rn\u803B\xFE\u40FE\u01EC\u031F\u36C6\u22E7es\u8180\xD7;bd\u36CF\u36D0\u36D8\u40D7\u0100;a\u190F\u36D5r;\u6A31;\u6A30\u0180eps\u36E1\u36E3\u3700\xE1\u2A4D\u0200;bcf\u0486\u36EC\u36F0\u36F4ot;\u6336ir;\u6AF1\u0100;o\u36F9\u36FC\uC000\u{1D565}rk;\u6ADA\xE1\u3362rime;\u6034\u0180aip\u370F\u3712\u3764d\xE5\u1248\u0380adempst\u3721\u374D\u3740\u3751\u3757\u375C\u375Fngle\u0280;dlqr\u3730\u3731\u3736\u3740\u3742\u65B5own\xBB\u1DBBeft\u0100;e\u2800\u373E\xF1\u092E;\u625Cight\u0100;e\u32AA\u374B\xF1\u105Aot;\u65ECinus;\u6A3Alus;\u6A39b;\u69CDime;\u6A3Bezium;\u63E2\u0180cht\u3772\u377D\u3781\u0100ry\u3777\u377B;\uC000\u{1D4C9};\u4446cy;\u445Brok;\u4167\u0100io\u378B\u378Ex\xF4\u1777head\u0100lr\u3797\u37A0eftarro\xF7\u084Fightarrow\xBB\u0F5D\u0900AHabcdfghlmoprstuw\u37D0\u37D3\u37D7\u37E4\u37F0\u37FC\u380E\u381C\u3823\u3834\u3851\u385D\u386B\u38A9\u38CC\u38D2\u38EA\u38F6r\xF2\u03EDar;\u6963\u0100cr\u37DC\u37E2ute\u803B\xFA\u40FA\xF2\u1150r\u01E3\u37EA\0\u37EDy;\u445Eve;\u416D\u0100iy\u37F5\u37FArc\u803B\xFB\u40FB;\u4443\u0180abh\u3803\u3806\u380Br\xF2\u13ADlac;\u4171a\xF2\u13C3\u0100ir\u3813\u3818sht;\u697E;\uC000\u{1D532}rave\u803B\xF9\u40F9\u0161\u3827\u3831r\u0100lr\u382C\u382E\xBB\u0957\xBB\u1083lk;\u6580\u0100ct\u3839\u384D\u026F\u383F\0\0\u384Arn\u0100;e\u3845\u3846\u631Cr\xBB\u3846op;\u630Fri;\u65F8\u0100al\u3856\u385Acr;\u416B\u80BB\xA8\u0349\u0100gp\u3862\u3866on;\u4173f;\uC000\u{1D566}\u0300adhlsu\u114B\u3878\u387D\u1372\u3891\u38A0own\xE1\u13B3arpoon\u0100lr\u3888\u388Cef\xF4\u382Digh\xF4\u382Fi\u0180;hl\u3899\u389A\u389C\u43C5\xBB\u13FAon\xBB\u389Aparrows;\u61C8\u0180cit\u38B0\u38C4\u38C8\u026F\u38B6\0\0\u38C1rn\u0100;e\u38BC\u38BD\u631Dr\xBB\u38BDop;\u630Eng;\u416Fri;\u65F9cr;\uC000\u{1D4CA}\u0180dir\u38D9\u38DD\u38E2ot;\u62F0lde;\u4169i\u0100;f\u3730\u38E8\xBB\u1813\u0100am\u38EF\u38F2r\xF2\u38A8l\u803B\xFC\u40FCangle;\u69A7\u0780ABDacdeflnoprsz\u391C\u391F\u3929\u392D\u39B5\u39B8\u39BD\u39DF\u39E4\u39E8\u39F3\u39F9\u39FD\u3A01\u3A20r\xF2\u03F7ar\u0100;v\u3926\u3927\u6AE8;\u6AE9as\xE8\u03E1\u0100nr\u3932\u3937grt;\u699C\u0380eknprst\u34E3\u3946\u394B\u3952\u395D\u3964\u3996app\xE1\u2415othin\xE7\u1E96\u0180hir\u34EB\u2EC8\u3959op\xF4\u2FB5\u0100;h\u13B7\u3962\xEF\u318D\u0100iu\u3969\u396Dgm\xE1\u33B3\u0100bp\u3972\u3984setneq\u0100;q\u397D\u3980\uC000\u228A\uFE00;\uC000\u2ACB\uFE00setneq\u0100;q\u398F\u3992\uC000\u228B\uFE00;\uC000\u2ACC\uFE00\u0100hr\u399B\u399Fet\xE1\u369Ciangle\u0100lr\u39AA\u39AFeft\xBB\u0925ight\xBB\u1051y;\u4432ash\xBB\u1036\u0180elr\u39C4\u39D2\u39D7\u0180;be\u2DEA\u39CB\u39CFar;\u62BBq;\u625Alip;\u62EE\u0100bt\u39DC\u1468a\xF2\u1469r;\uC000\u{1D533}tr\xE9\u39AEsu\u0100bp\u39EF\u39F1\xBB\u0D1C\xBB\u0D59pf;\uC000\u{1D567}ro\xF0\u0EFBtr\xE9\u39B4\u0100cu\u3A06\u3A0Br;\uC000\u{1D4CB}\u0100bp\u3A10\u3A18n\u0100Ee\u3980\u3A16\xBB\u397En\u0100Ee\u3992\u3A1E\xBB\u3990igzag;\u699A\u0380cefoprs\u3A36\u3A3B\u3A56\u3A5B\u3A54\u3A61\u3A6Airc;\u4175\u0100di\u3A40\u3A51\u0100bg\u3A45\u3A49ar;\u6A5Fe\u0100;q\u15FA\u3A4F;\u6259erp;\u6118r;\uC000\u{1D534}pf;\uC000\u{1D568}\u0100;e\u1479\u3A66at\xE8\u1479cr;\uC000\u{1D4CC}\u0AE3\u178E\u3A87\0\u3A8B\0\u3A90\u3A9B\0\0\u3A9D\u3AA8\u3AAB\u3AAF\0\0\u3AC3\u3ACE\0\u3AD8\u17DC\u17DFtr\xE9\u17D1r;\uC000\u{1D535}\u0100Aa\u3A94\u3A97r\xF2\u03C3r\xF2\u09F6;\u43BE\u0100Aa\u3AA1\u3AA4r\xF2\u03B8r\xF2\u09EBa\xF0\u2713is;\u62FB\u0180dpt\u17A4\u3AB5\u3ABE\u0100fl\u3ABA\u17A9;\uC000\u{1D569}im\xE5\u17B2\u0100Aa\u3AC7\u3ACAr\xF2\u03CEr\xF2\u0A01\u0100cq\u3AD2\u17B8r;\uC000\u{1D4CD}\u0100pt\u17D6\u3ADCr\xE9\u17D4\u0400acefiosu\u3AF0\u3AFD\u3B08\u3B0C\u3B11\u3B15\u3B1B\u3B21c\u0100uy\u3AF6\u3AFBte\u803B\xFD\u40FD;\u444F\u0100iy\u3B02\u3B06rc;\u4177;\u444Bn\u803B\xA5\u40A5r;\uC000\u{1D536}cy;\u4457pf;\uC000\u{1D56A}cr;\uC000\u{1D4CE}\u0100cm\u3B26\u3B29y;\u444El\u803B\xFF\u40FF\u0500acdefhiosw\u3B42\u3B48\u3B54\u3B58\u3B64\u3B69\u3B6D\u3B74\u3B7A\u3B80cute;\u417A\u0100ay\u3B4D\u3B52ron;\u417E;\u4437ot;\u417C\u0100et\u3B5D\u3B61tr\xE6\u155Fa;\u43B6r;\uC000\u{1D537}cy;\u4436grarr;\u61DDpf;\uC000\u{1D56B}cr;\uC000\u{1D4CF}\u0100jn\u3B85\u3B87;\u600Dj;\u600C'.split("").map((c) => c.charCodeAt(0)));
+
+// node_modules/htmlparser2/node_modules/entities/dist/esm/generated/decode-data-xml.js
+var xmlDecodeTree = /* @__PURE__ */ new Uint16Array(/* @__PURE__ */ "\u0200aglq	\u026D\0\0p;\u4026os;\u4027t;\u403Et;\u403Cuot;\u4022".split("").map((c) => c.charCodeAt(0)));
 
 // node_modules/htmlparser2/node_modules/entities/dist/esm/decode-codepoint.js
 var _a2;
@@ -6394,7 +8368,7 @@ var decodeMap2 = new Map([
   [158, 382],
   [159, 376]
 ]);
-var fromCodePoint2 = (_a2 = String.fromCodePoint) !== null && _a2 !== void 0 ? _a2 : (codePoint) => {
+var fromCodePoint2 = (_a2 = String.fromCodePoint) !== null && _a2 !== void 0 ? _a2 : function(codePoint) {
   let output = "";
   if (codePoint > 65535) {
     codePoint -= 65536;
@@ -6411,34 +8385,6 @@ function replaceCodePoint2(codePoint) {
   }
   return (_a5 = decodeMap2.get(codePoint)) !== null && _a5 !== void 0 ? _a5 : codePoint;
 }
-
-// node_modules/htmlparser2/node_modules/entities/dist/esm/internal/decode-shared.js
-function decodeBase64(input) {
-  const binary = typeof atob === "function" ? atob(input) : typeof Buffer.from === "function" ? Buffer.from(input, "base64").toString("binary") : new Buffer(input, "base64").toString("binary");
-  const evenLength = binary.length & ~1;
-  const out = new Uint16Array(evenLength / 2);
-  for (let index2 = 0, outIndex = 0; index2 < evenLength; index2 += 2) {
-    const lo = binary.charCodeAt(index2);
-    const hi = binary.charCodeAt(index2 + 1);
-    out[outIndex++] = lo | hi << 8;
-  }
-  return out;
-}
-
-// node_modules/htmlparser2/node_modules/entities/dist/esm/generated/decode-data-html.js
-var htmlDecodeTree = /* @__PURE__ */ decodeBase64("QR08ALkAAgH6AYsDNQR2BO0EPgXZBQEGLAbdBxMISQrvCmQLfQurDKQNLw4fD4YPpA+6D/IPAAAAAAAAAAAAAAAAKhBMEY8TmxUWF2EYLBkxGuAa3RsJHDscWR8YIC8jSCSIJcMl6ie3Ku8rEC0CLjoupS7kLgAIRU1hYmNmZ2xtbm9wcnN0dVQAWgBeAGUAaQBzAHcAfgCBAIQAhwCSAJoAoACsALMAbABpAGcAO4DGAMZAUAA7gCYAJkBjAHUAdABlADuAwQDBQHIiZXZlAAJhAAFpeW0AcgByAGMAO4DCAMJAEGRyAADgNdgE3XIAYQB2AGUAO4DAAMBA8CFoYZFj4SFjcgBhZAAAoFMqAAFncIsAjgBvAG4ABGFmAADgNdg43fAlbHlGdW5jdGlvbgCgYSBpAG4AZwA7gMUAxUAAAWNzpACoAHIAAOA12Jzc6SFnbgCgVCJpAGwAZABlADuAwwDDQG0AbAA7gMQAxEAABGFjZWZvcnN1xQDYANoA7QDxAPYA+QD8AAABY3LJAM8AayNzbGFzaAAAoBYidgHTANUAAKDnKmUAZAAAoAYjeQARZIABY3J0AOAA5QDrAGEidXNlAACgNSLuI291bGxpcwCgLCFhAJJjcgAA4DXYBd1wAGYAAOA12Dnd5SF2ZdhiYwDyAOoAbSJwZXEAAKBOIgAHSE9hY2RlZmhpbG9yc3UXARoBHwE6AVIBVQFiAWQBZgGCAakB6QHtAfIBYwB5ACdkUABZADuAqQCpQIABY3B5ACUBKAE1AfUhdGUGYWmg0iJ0KGFsRGlmZmVyZW50aWFsRAAAoEUhbCJleXMAAKAtIQACYWVpb0EBRAFKAU0B8iFvbgxhZABpAGwAO4DHAMdAcgBjAAhhbiJpbnQAAKAwIm8AdAAKYQABZG5ZAV0BaSJsbGEAuGB0I2VyRG90ALdg8gA5AWkAp2NyImNsZQAAAkRNUFRwAXQBeQF9AW8AdAAAoJkiaSJudXMAAKCWIuwhdXMAoJUiaSJtZXMAAKCXIm8AAAFjc4cBlAFrKndpc2VDb250b3VySW50ZWdyYWwAAKAyImUjQ3VybHkAAAFEUZwBpAFvJXVibGVRdW90ZQAAoB0gdSJvdGUAAKAZIAACbG5wdbABtgHNAdgBbwBuAGWgNyIAoHQqgAFnaXQAvAHBAcUB8iJ1ZW50AKBhIm4AdAAAoC8i7yV1ckludGVncmFsAKAuIgABZnLRAdMBAKACIe8iZHVjdACgECJuLnRlckNsb2Nrd2lzZUNvbnRvdXJJbnRlZ3JhbAAAoDMi7yFzcwCgLypjAHIAAOA12J7ccABDoNMiYQBwAACgTSKABURKU1phY2VmaW9zAAsCEgIVAhgCGwIsAjQCOQI9AnMCfwNvoEUh9CJyYWhkAKARKWMAeQACZGMAeQAFZGMAeQAPZIABZ3JzACECJQIoAuchZXIAoCEgcgAAoKEhaAB2AACg5CoAAWF5MAIzAvIhb24OYRRkbAB0oAciYQCUY3IAAOA12AfdAAFhZkECawIAAWNtRQJnAvIjaXRpY2FsAAJBREdUUAJUAl8CYwJjInV0ZQC0YG8AdAFZAloC2WJiJGxlQWN1dGUA3WJyImF2ZQBgYGkibGRlANxi7yFuZACgxCJmJWVyZW50aWFsRAAAoEYhcAR9AgAAAAAAAIECjgIAABoDZgAA4DXYO91EoagAhQKJAm8AdAAAoNwgcSJ1YWwAAKBQIuIhbGUAA0NETFJVVpkCqAK1Au8C/wIRA28AbgB0AG8AdQByAEkAbgB0AGUAZwByAGEA7ADEAW8AdAKvAgAAAACwAqhgbiNBcnJvdwAAoNMhAAFlb7kC0AJmAHQAgAFBUlQAwQLGAs0CciJyb3cAAKDQIekkZ2h0QXJyb3cAoNQhZQDlACsCbgBnAAABTFLWAugC5SFmdAABQVLcAuECciJyb3cAAKD4J+kkZ2h0QXJyb3cAoPon6SRnaHRBcnJvdwCg+SdpImdodAAAAUFU9gL7AnIicm93AACg0iFlAGUAAKCoInAAQQIGAwAAAAALA3Iicm93AACg0SFvJHduQXJyb3cAAKDVIWUlcnRpY2FsQmFyAACgJSJuAAADQUJMUlRhJAM2AzoDWgNxA3oDciJyb3cAAKGTIUJVLAMwA2EAcgAAoBMpcCNBcnJvdwAAoPUhciJldmUAEWPlIWZ00gJDAwAASwMAAFIDaSVnaHRWZWN0b3IAAKBQKWUkZVZlY3RvcgAAoF4p5SJjdG9yQqC9IWEAcgAAoFYpaSJnaHQA1AFiAwAAaQNlJGVWZWN0b3IAAKBfKeUiY3RvckKgwSFhAHIAAKBXKWUAZQBBoKQiciJyb3cAAKCnIXIAcgBvAPcAtAIAAWN0gwOHA3IAAOA12J/c8iFvaxBhAAhOVGFjZGZnbG1vcHFzdHV4owOlA6kDsAO/A8IDxgPNA9ID8gP9AwEEFAQeBCAEJQRHAEphSAA7gNAA0EBjAHUAdABlADuAyQDJQIABYWl5ALYDuQO+A/Ihb24aYXIAYwA7gMoAykAtZG8AdAAWYXIAAOA12AjdcgBhAHYAZQA7gMgAyEDlIm1lbnQAoAgiAAFhcNYD2QNjAHIAEmF0AHkAUwLhAwAAAADpA20lYWxsU3F1YXJlAACg+yVlJ3J5U21hbGxTcXVhcmUAAKCrJQABZ3D2A/kDbwBuABhhZgAA4DXYPN3zImlsb26VY3UAAAFhaQYEDgRsAFSgdSppImxkZQAAoEIi7CNpYnJpdW0AoMwhAAFjaRgEGwRyAACgMCFtAACgcyphAJdjbQBsADuAywDLQAABaXApBC0E8yF0cwCgAyLvJG5lbnRpYWxFAKBHIYACY2Zpb3MAPQQ/BEMEXQRyBHkAJGRyAADgNdgJ3WwibGVkAFMCTAQAAAAAVARtJWFsbFNxdWFyZQAAoPwlZSdyeVNtYWxsU3F1YXJlAACgqiVwA2UEAABpBAAAAABtBGYAAOA12D3dwSFsbACgACLyI2llcnRyZgCgMSFjAPIAcQQABkpUYWJjZGZnb3JzdIgEiwSOBJMElwSkBKcEqwStBLIE5QTqBGMAeQADZDuAPgA+QO0hbWFkoJMD3GNyImV2ZQAeYYABZWl5AJ0EoASjBOQhaWwiYXIAYwAcYRNkbwB0ACBhcgAA4DXYCt0AoNkicABmAADgNdg+3eUiYXRlcgADRUZHTFNUvwTIBM8E1QTZBOAEcSJ1YWwATKBlIuUhc3MAoNsidSRsbEVxdWFsAACgZyJyI2VhdGVyAACgoirlIXNzAKB3IuwkYW50RXF1YWwAoH4qaSJsZGUAAKBzImMAcgAA4DXYotwAoGsiAARBYWNmaW9zdfkE/QQFBQgFCwUTBSIFKwVSIkRjeQAqZAABY3QBBQQFZQBrAMdiXmDpIXJjJGFyAACgDCFsJWJlcnRTcGFjZQAAoAsh8AEYBQAAGwVmAACgDSHpJXpvbnRhbExpbmUAoAAlAAFjdCYFKAXyABIF8iFvayZhbQBwAEQBMQU5BW8AdwBuAEgAdQBtAPAAAAFxInVhbAAAoE8iAAdFSk9hY2RmZ21ub3N0dVMFVgVZBVwFYwVtBXAFcwV6BZAFtgXFBckFzQVjAHkAFWTsIWlnMmFjAHkAAWRjAHUAdABlADuAzQDNQAABaXlnBWwFcgBjADuAzgDOQBhkbwB0ADBhcgAAoBEhcgBhAHYAZQA7gMwAzEAAoREhYXB/BYsFAAFjZ4MFhQVyACphaSNuYXJ5SQAAoEghbABpAGUA8wD6AvQBlQUAAKUFZaAsIgABZ3KaBZ4F8iFhbACgKyLzI2VjdGlvbgCgwiJpI3NpYmxlAAABQ1SsBbEFbyJtbWEAAKBjIGkibWVzAACgYiCAAWdwdAC8Bb8FwwVvAG4ALmFmAADgNdhA3WEAmWNjAHIAAKAQIWkibGRlAChh6wHSBQAA1QVjAHkABmRsADuAzwDPQIACY2Zvc3UA4QXpBe0F8gX9BQABaXnlBegFcgBjADRhGWRyAADgNdgN3XAAZgAA4DXYQd3jAfcFAAD7BXIAAOA12KXc8iFjeQhk6yFjeQRkgANISmFjZm9zAAwGDwYSBhUGHQYhBiYGYwB5ACVkYwB5AAxk8CFwYZpjAAFleRkGHAbkIWlsNmEaZHIAAOA12A7dcABmAADgNdhC3WMAcgAA4DXYptyABUpUYWNlZmxtb3N0AD0GQAZDBl4GawZkB2gHcAd0B80H2gdjAHkACWQ7gDwAPECAAmNtbnByAEwGTwZSBlUGWwb1IXRlOWHiIWRhm2NnAACg6ifsI2FjZXRyZgCgEiFyAACgniGAAWFleQBkBmcGagbyIW9uPWHkIWlsO2EbZAABZnNvBjQHdAAABUFDREZSVFVWYXKABp4GpAbGBssG3AYDByEHwQIqBwABbnKEBowGZyVsZUJyYWNrZXQAAKDoJ/Ihb3cAoZAhQlKTBpcGYQByAACg5CHpJGdodEFycm93AKDGIWUjaWxpbmcAAKAII28A9QGqBgAAsgZiJWxlQnJhY2tldAAAoOYnbgDUAbcGAAC+BmUkZVZlY3RvcgAAoGEp5SJjdG9yQqDDIWEAcgAAoFkpbCJvb3IAAKAKI2kiZ2h0AAABQVbSBtcGciJyb3cAAKCUIeUiY3RvcgCgTikAAWVy4AbwBmUAAKGjIkFW5gbrBnIicm93AACgpCHlImN0b3IAoFopaSNhbmdsZQBCorIi+wYAAAAA/wZhAHIAAKDPKXEidWFsAACgtCJwAIABRFRWAAoHEQcYB+8kd25WZWN0b3IAoFEpZSRlVmVjdG9yAACgYCnlImN0b3JCoL8hYQByAACgWCnlImN0b3JCoLwhYQByAACgUilpAGcAaAB0AGEAcgByAG8A9wDMAnMAAANFRkdMU1Q/B0cHTgdUB1gHXwfxJXVhbEdyZWF0ZXIAoNoidSRsbEVxdWFsAACgZiJyI2VhdGVyAACgdiLlIXNzAKChKuwkYW50RXF1YWwAoH0qaSJsZGUAAKByInIAAOA12A/dZaDYIuYjdGFycm93AKDaIWkiZG90AD9hgAFucHcAege1B7kHZwAAAkxSbHKCB5QHmwerB+UhZnQAAUFSiAeNB3Iicm93AACg9SfpJGdodEFycm93AKD3J+kkZ2h0QXJyb3cAoPYn5SFmdAABYXLcAqEHaQBnAGgAdABhAHIAcgBvAPcA5wJpAGcAaAB0AGEAcgByAG8A9wDuAmYAAOA12EPdZQByAAABTFK/B8YHZSRmdEFycm93AACgmSHpJGdodEFycm93AKCYIYABY2h0ANMH1QfXB/IAWgYAoLAh8iFva0FhAKBqIgAEYWNlZmlvc3XpB+wH7gf/BwMICQgOCBEIcAAAoAUpeQAcZAABZGzyB/kHaSR1bVNwYWNlAACgXyBsI2ludHJmAACgMyFyAADgNdgQ3e4jdXNQbHVzAKATInAAZgAA4DXYRN1jAPIA/gecY4AESmFjZWZvc3R1ACEIJAgoCDUIgQiFCDsKQApHCmMAeQAKZGMidXRlAENhgAFhZXkALggxCDQI8iFvbkdh5CFpbEVhHWSAAWdzdwA7CGEIfQjhInRpdmWAAU1UVgBECEwIWQhlJWRpdW1TcGFjZQAAoAsgaABpAAABY25SCFMIawBTAHAAYQBjAOUASwhlAHIAeQBUAGgAaQDuAFQI9CFlZAABR0xnCHUIcgBlAGEAdABlAHIARwByAGUAYQB0AGUA8gDrBGUAcwBzAEwAZQBzAPMA2wdMImluZQAKYHIAAOA12BHdAAJCbnB0jAiRCJkInAhyImVhawAAoGAgwiZyZWFraW5nU3BhY2WgYGYAAKAVIUOq7CqzCMIIzQgAAOcIGwkAAAAAAAAtCQAAbwkAAIcJAACdCcAJGQoAADQKAAFvdbYIvAjuI2dydWVudACgYiJwIkNhcAAAoG0ibyh1YmxlVmVydGljYWxCYXIAAKAmIoABbHF4ANII1wjhCOUibWVudACgCSL1IWFsVKBgImkibGRlAADgQiI4A2kic3RzAACgBCJyI2VhdGVyAACjbyJFRkdMU1T1CPoIAgkJCQ0JFQlxInVhbAAAoHEidSRsbEVxdWFsAADgZyI4A3IjZWF0ZXIAAOBrIjgD5SFzcwCgeSLsJGFudEVxdWFsAOB+KjgDaSJsZGUAAKB1IvUhbXBEASAJJwnvI3duSHVtcADgTiI4A3EidWFsAADgTyI4A2UAAAFmczEJRgn0JFRyaWFuZ2xlQqLqIj0JAAAAAEIJYQByAADgzyk4A3EidWFsAACg7CJzAICibiJFR0xTVABRCVYJXAlhCWkJcSJ1YWwAAKBwInIjZWF0ZXIAAKB4IuUhc3MA4GoiOAPsJGFudEVxdWFsAOB9KjgDaSJsZGUAAKB0IuUic3RlZAABR0x1CX8J8iZlYXRlckdyZWF0ZXIA4KIqOAPlI3NzTGVzcwDgoSo4A/IjZWNlZGVzAKGAIkVTjwmVCXEidWFsAADgryo4A+wkYW50RXF1YWwAoOAiAAFlaaAJqQl2JmVyc2VFbGVtZW50AACgDCLnJWh0VHJpYW5nbGVCousitgkAAAAAuwlhAHIAAODQKTgDcSJ1YWwAAKDtIgABcXXDCeAJdSNhcmVTdQAAAWJwywnVCfMhZXRF4I8iOANxInVhbAAAoOIi5SJyc2V0ReCQIjgDcSJ1YWwAAKDjIoABYmNwAOYJ8AkNCvMhZXRF4IIi0iBxInVhbAAAoIgi4yJlZWRzgKGBIkVTVAD6CQAKBwpxInVhbAAA4LAqOAPsJGFudEVxdWFsAKDhImkibGRlAADgfyI4A+UicnNldEXggyLSIHEidWFsAACgiSJpImxkZQCAoUEiRUZUACIKJwouCnEidWFsAACgRCJ1JGxsRXF1YWwAAKBHImkibGRlAACgSSJlJXJ0aWNhbEJhcgAAoCQiYwByAADgNdip3GkAbABkAGUAO4DRANFAnWMAB0VhY2RmZ21vcHJzdHV2XgphCmgKcgp2CnoKgQqRCpYKqwqtCrsKyArNCuwhaWdSYWMAdQB0AGUAO4DTANNAAAFpeWwKcQpyAGMAO4DUANRAHmRiImxhYwBQYXIAAOA12BLdcgBhAHYAZQA7gNIA0kCAAWFlaQCHCooKjQpjAHIATGFnAGEAqWNjInJvbgCfY3AAZgAA4DXYRt3lI25DdXJseQABRFGeCqYKbyV1YmxlUXVvdGUAAKAcIHUib3RlAACgGCAAoFQqAAFjbLEKtQpyAADgNdiq3GEAcwBoADuA2ADYQGkAbAHACsUKZABlADuA1QDVQGUAcwAAoDcqbQBsADuA1gDWQGUAcgAAAUJQ0wrmCgABYXLXCtoKcgAAoD4gYQBjAAABZWvgCuIKAKDeI2UAdAAAoLQjYSVyZW50aGVzaXMAAKDcI4AEYWNmaGlsb3JzAP0KAwsFCwkLCwsMCxELIwtaC3IjdGlhbEQAAKACInkAH2RyAADgNdgT3WkApmOgY/Ujc01pbnVzsWAAAWlwFQsgC24AYwBhAHIAZQBwAGwAYQBuAOUACgVmAACgGSGAobsqZWlvACoLRQtJC+MiZWRlc4CheiJFU1QANAs5C0ALcSJ1YWwAAKCvKuwkYW50RXF1YWwAoHwiaSJsZGUAAKB+Im0AZQAAoDMgAAFkcE0LUQv1IWN0AKAPIm8jcnRpb24AYaA3ImwAAKAdIgABY2leC2ILcgAA4DXYq9yoYwACVWZvc2oLbwtzC3cLTwBUADuAIgAiQHIAAOA12BTdcABmAACgGiFjAHIAAOA12KzcAAZCRWFjZWZoaW9yc3WPC5MLlwupC7YL2AvbC90LhQyTDJoMowzhIXJyAKAQKUcAO4CuAK5AgAFjbnIAnQugC6ML9SF0ZVRhZwAAoOsncgB0oKAhbAAAoBYpgAFhZXkArwuyC7UL8iFvblhh5CFpbFZhIGR2oBwhZSJyc2UAAAFFVb8LzwsAAWxxwwvIC+UibWVudACgCyL1JGlsaWJyaXVtAKDLIXAmRXF1aWxpYnJpdW0AAKBvKXIAAKAcIW8AoWPnIWh0AARBQ0RGVFVWYewLCgwQDDIMNwxeDHwM9gIAAW5y8Av4C2clbGVCcmFja2V0AACg6SfyIW93AKGSIUJM/wsDDGEAcgAAoOUhZSRmdEFycm93AACgxCFlI2lsaW5nAACgCSNvAPUBFgwAAB4MYiVsZUJyYWNrZXQAAKDnJ24A1AEjDAAAKgxlJGVWZWN0b3IAAKBdKeUiY3RvckKgwiFhAHIAAKBVKWwib29yAACgCyMAAWVyOwxLDGUAAKGiIkFWQQxGDHIicm93AACgpiHlImN0b3IAoFspaSNhbmdsZQBCorMiVgwAAAAAWgxhAHIAAKDQKXEidWFsAACgtSJwAIABRFRWAGUMbAxzDO8kd25WZWN0b3IAoE8pZSRlVmVjdG9yAACgXCnlImN0b3JCoL4hYQByAACgVCnlImN0b3JCoMAhYQByAACgUykAAXB1iQyMDGYAAKAdIe4kZEltcGxpZXMAoHAp6SRnaHRhcnJvdwCg2yEAAWNongyhDHIAAKAbIQCgsSHsJGVEZWxheWVkAKD0KYAGSE9hY2ZoaW1vcXN0dQC/DMgMzAzQDOIM5gwKDQ0NFA0ZDU8NVA1YDQABQ2PDDMYMyCFjeSlkeQAoZEYiVGN5ACxkYyJ1dGUAWmEAorwqYWVpedgM2wzeDOEM8iFvbmBh5CFpbF5hcgBjAFxhIWRyAADgNdgW3e8hcnQAAkRMUlXvDPYM/QwEDW8kd25BcnJvdwAAoJMhZSRmdEFycm93AACgkCHpJGdodEFycm93AKCSIXAjQXJyb3cAAKCRIechbWGjY+EkbGxDaXJjbGUAoBgicABmAADgNdhK3XICHw0AAAAAIg10AACgGiLhIXJlgKGhJUlTVQAqDTINSg3uJXRlcnNlY3Rpb24AoJMidQAAAWJwNw1ADfMhZXRFoI8icSJ1YWwAAKCRIuUicnNldEWgkCJxInVhbAAAoJIibiJpb24AAKCUImMAcgAA4DXYrtxhAHIAAKDGIgACYmNtcF8Nag2ODZANc6DQImUAdABFoNAicSJ1YWwAAKCGIgABY2huDYkNZSJlZHMAgKF7IkVTVAB4DX0NhA1xInVhbAAAoLAq7CRhbnRFcXVhbACgfSJpImxkZQAAoH8iVABoAGEA9ADHCwCgESIAodEiZXOVDZ8NciJzZXQARaCDInEidWFsAACghyJlAHQAAKDRIoAFSFJTYWNmaGlvcnMAtQ27Db8NyA3ODdsN3w3+DRgOHQ4jDk8AUgBOADuA3gDeQMEhREUAoCIhAAFIY8MNxg1jAHkAC2R5ACZkAAFidcwNzQ0JYKRjgAFhZXkA1A3XDdoN8iFvbmRh5CFpbGJhImRyAADgNdgX3QABZWnjDe4N8gHoDQAA7Q3lImZvcmUAoDQiYQCYYwABY27yDfkNayNTcGFjZQAA4F8gCiDTInBhY2UAoAkg7CFkZYChPCJFRlQABw4MDhMOcSJ1YWwAAKBDInUkbGxFcXVhbAAAoEUiaSJsZGUAAKBIInAAZgAA4DXYS93pI3BsZURvdACg2yAAAWN0Jw4rDnIAAOA12K/c8iFva2Zh4QpFDlYOYA5qDgAAbg5yDgAAAAAAAAAAAAB5DnwOqA6zDgAADg8RDxYPGg8AAWNySA5ODnUAdABlADuA2gDaQHIAb6CfIeMhaXIAoEkpcgDjAVsOAABdDnkADmR2AGUAbGEAAWl5Yw5oDnIAYwA7gNsA20AjZGIibGFjAHBhcgAA4DXYGN1yAGEAdgBlADuA2QDZQOEhY3JqYQABZGl/Dp8OZQByAAABQlCFDpcOAAFhcokOiw5yAF9gYQBjAAABZWuRDpMOAKDfI2UAdAAAoLUjYSVyZW50aGVzaXMAAKDdI28AbgBQoMMi7CF1cwCgjiIAAWdwqw6uDm8AbgByYWYAAOA12EzdAARBREVUYWRwc78O0g7ZDuEOBQPqDvMOBw9yInJvdwDCoZEhyA4AAMwOYQByAACgEilvJHduQXJyb3cAAKDFIW8kd25BcnJvdwAAoJUhcSV1aWxpYnJpdW0AAKBuKWUAZQBBoKUiciJyb3cAAKClIW8AdwBuAGEAcgByAG8A9wAQA2UAcgAAAUxS+Q4AD2UkZnRBcnJvdwAAoJYh6SRnaHRBcnJvdwCglyFpAGyg0gNvAG4ApWPpIW5nbmFjAHIAAOA12LDcaSJsZGUAaGFtAGwAO4DcANxAgAREYmNkZWZvc3YALQ8xDzUPNw89D3IPdg97D4AP4SFzaACgqyJhAHIAAKDrKnkAEmThIXNobKCpIgCg5ioAAWVyQQ9DDwCgwSKAAWJ0eQBJD00Paw9hAHIAAKAWIGmgFiDjIWFsAAJCTFNUWA9cD18PZg9hAHIAAKAjIukhbmV8YGUkcGFyYXRvcgAAoFgnaSJsZGUAAKBAItQkaGluU3BhY2UAoAogcgAA4DXYGd1wAGYAAOA12E3dYwByAADgNdix3GQiYXNoAACgqiKAAmNlZm9zAI4PkQ+VD5kPng/pIXJjdGHkIWdlAKDAInIAAOA12BrdcABmAADgNdhO3WMAcgAA4DXYstwAAmZpb3OqD64Prw+0D3IAAOA12BvdnmNwAGYAAOA12E/dYwByAADgNdiz3IAEQUlVYWNmb3N1AMgPyw/OD9EP2A/gD+QP6Q/uD2MAeQAvZGMAeQAHZGMAeQAuZGMAdQB0AGUAO4DdAN1AAAFpedwP3w9yAGMAdmErZHIAAOA12BzdcABmAADgNdhQ3WMAcgAA4DXYtNxtAGwAeGEABEhhY2RlZm9z/g8BEAUQDRAQEB0QIBAkEGMAeQAWZGMidXRlAHlhAAFheQkQDBDyIW9ufWEXZG8AdAB7YfIBFRAAABwQbwBXAGkAZAB0AOgAVAhhAJZjcgAAoCghcABmAACgJCFjAHIAAOA12LXc4QtCEEkQTRAAAGcQbRByEAAAAAAAAAAAeRCKEJcQ8hD9EAAAGxEhETIROREAAD4RYwB1AHQAZQA7gOEA4UByImV2ZQADYYCiPiJFZGl1eQBWEFkQWxBgEGUQAOA+IjMDAKA/InIAYwA7gOIA4kB0AGUAO4C0ALRAMGRsAGkAZwA7gOYA5kByoGEgAOA12B7dcgBhAHYAZQA7gOAA4EAAAWVwfBCGEAABZnCAEIQQ8yF5bQCgNSHoAIMQaABhALFjAAFhcI0QWwAAAWNskRCTEHIAAWFnAACgPypkApwQAAAAALEQAKInImFkc3ajEKcQqRCuEG4AZAAAoFUqAKBcKmwib3BlAACgWCoAoFoqAKMgImVsbXJzersQvRDAEN0Q5RDtEACgpCllAACgICJzAGQAYaAhImEEzhDQENIQ1BDWENgQ2hDcEACgqCkAoKkpAKCqKQCgqykAoKwpAKCtKQCgrikAoK8pdAB2oB8iYgBkoL4iAKCdKQABcHTpEOwQaAAAoCIixWDhIXJyAKB8IwABZ3D1EPgQbwBuAAVhZgAA4DXYUt0Ao0giRWFlaW9wBxEJEQ0RDxESERQRAKBwKuMhaXIAoG8qAKBKImQAAKBLInMAJ2DyIW94ZaBIIvEADhFpAG4AZwA7gOUA5UCAAWN0eQAmESoRKxFyAADgNdi23CpgbQBwAGWgSCLxAPgBaQBsAGQAZQA7gOMA40BtAGwAO4DkAORAAAFjaUERRxFvAG4AaQBuAPQA6AFuAHQAAKARKgAITmFiY2RlZmlrbG5vcHJzdWQRaBGXEZ8RpxGrEdIR1hErEjASexKKEn0RThNbE3oTbwB0AACg7SoAAWNybBGJEWsAAAJjZXBzdBF4EX0RghHvIW5nAKBMInAjc2lsb24A9mNyImltZQAAoDUgaQBtAGWgPSJxAACgzSJ2AY0RkRFlAGUAAKC9ImUAZABnoAUjZQAAoAUjcgBrAHSgtSPiIXJrAKC2IwABb3mjEaYRbgDnAHcRMWTxIXVvAKAeIIACY21wcnQAtBG5Eb4RwRHFEeEhdXPloDUi5ABwInR5dgAAoLApcwDpAH0RbgBvAPUA6gCAAWFodwDLEcwRzhGyYwCgNiHlIWVuAKBsInIAAOA12B/dZwCAA2Nvc3R1dncA4xHyEQUSEhIhEiYSKRKAAWFpdQDpEesR7xHwAKMFcgBjAACg7yVwAACgwyKAAWRwdAD4EfwRABJvAHQAAKAAKuwhdXMAoAEqaSJtZXMAAKACKnECCxIAAAAADxLjIXVwAKAGKmEAcgAAoAUm8iNpYW5nbGUAAWR1GhIeEu8hd24AoL0lcAAAoLMlcCJsdXMAAKAEKmUA5QBCD+UAkg9hInJvdwAAoA0pgAFha28ANhJoEncSAAFjbjoSZRJrAIABbHN0AEESRxJNEm8jemVuZ2UAAKDrKXEAdQBhAHIA5QBcBPIjaWFuZ2xlgKG0JWRscgBYElwSYBLvIXduAKC+JeUhZnQAoMIlaSJnaHQAAKC4JWsAAKAjJLEBbRIAAHUSsgFxEgAAcxIAoJIlAKCRJTQAAKCTJWMAawAAoIglAAFlb38ShxJx4D0A5SD1IWl2AOBhIuUgdAAAoBAjAAJwdHd4kRKVEpsSnxJmAADgNdhT3XSgpSJvAG0AAKClIvQhaWUAoMgiAAZESFVWYmRobXB0dXayEsES0RLgEvcS+xIKExoTHxMjEygTNxMAAkxSbHK5ErsSvRK/EgCgVyUAoFQlAKBWJQCgUyUAolAlRFVkdckSyxLNEs8SAKBmJQCgaSUAoGQlAKBnJQACTFJsctgS2hLcEt4SAKBdJQCgWiUAoFwlAKBZJQCjUSVITFJobHLrEu0S7xLxEvMS9RIAoGwlAKBjJQCgYCUAoGslAKBiJQCgXyVvAHgAAKDJKQACTFJscgITBBMGEwgTAKBVJQCgUiUAoBAlAKAMJQCiACVEVWR1EhMUExYTGBMAoGUlAKBoJQCgLCUAoDQlaSJudXMAAKCfIuwhdXMAoJ4iaSJtZXMAAKCgIgACTFJsci8TMRMzEzUTAKBbJQCgWCUAoBglAKAUJQCjAiVITFJobHJCE0QTRhNIE0oTTBMAoGolAKBhJQCgXiUAoDwlAKAkJQCgHCUAAWV2UhNVE3YA5QD5AGIAYQByADuApgCmQAACY2Vpb2ITZhNqE24TcgAA4DXYt9xtAGkAAKBPIG0A5aA9IogRbAAAoVwAYmh0E3YTAKDFKfMhdWIAoMgnbAF+E4QTbABloCIgdAAAoCIgcAAAoU4iRWWJE4sTAKCuKvGgTyI8BeEMqRMAAN8TABQDFB8UAAAjFDQUAAAAAIUUAAAAAI0UAAAAANcU4xT3FPsUAACIFQAAlhWAAWNwcgCuE7ET1RP1IXRlB2GAoikiYWJjZHMAuxO/E8QTzhPSE24AZAAAoEQqciJjdXAAAKBJKgABYXXIE8sTcAAAoEsqcAAAoEcqbwB0AACgQCoA4CkiAP4AAWVv2RPcE3QAAKBBIO4ABAUAAmFlaXXlE+8T9RP4E/AB6hMAAO0TcwAAoE0qbwBuAA1hZABpAGwAO4DnAOdAcgBjAAlhcABzAHOgTCptAACgUCpvAHQAC2GAAWRtbgAIFA0UEhRpAGwAO4C4ALhAcCJ0eXYAAKCyKXQAAIGiADtlGBQZFKJAcgBkAG8A9ABiAXIAAOA12CDdgAFjZWkAKBQqFDIUeQBHZGMAawBtoBMn4SFyawCgEyfHY3IAAKPLJUVjZWZtcz8UQRRHFHcUfBSAFACgwykAocYCZWxGFEkUcQAAoFciZQBhAlAUAAAAAGAUciJyb3cAAAFsclYUWhTlIWZ0AKC6IWkiZ2h0AACguyGAAlJTYWNkAGgUaRRrFG8UcxSuYACgyCRzAHQAAKCbIukhcmMAoJoi4SFzaACgnSJuImludAAAoBAqaQBkAACg7yrjIWlyAKDCKfUhYnN1oGMmaQB0AACgYybsApMUmhS2FAAAwxRvAG4AZaA6APGgVCKrAG0CnxQAAAAAoxRhAHSgLABAYAChASJmbKcUqRTuABMNZQAAAW14rhSyFOUhbnQAoAEiZQDzANIB5wG6FAAAwBRkoEUibwB0AACgbSpuAPQAzAGAAWZyeQDIFMsUzhQA4DXYVN1vAOQA1wEAgakAO3MeAdMUcgAAoBchAAFhb9oU3hRyAHIAAKC1IXMAcwAAoBcnAAFjdeYU6hRyAADgNdi43AABYnDuFPIUZaDPKgCg0SploNAqAKDSKuQhb3QAoO8igANkZWxwcnZ3AAYVEBUbFSEVRBVlFYQV4SFycgABbHIMFQ4VAKA4KQCgNSlwAhYVAAAAABkVcgAAoN4iYwAAoN8i4SFycnCgtiEAoD0pgKIqImJjZG9zACsVMBU6FT4VQRVyImNhcAAAoEgqAAFhdTQVNxVwAACgRipwAACgSipvAHQAAKCNInIAAKBFKgDgKiIA/gACYWxydksVURVuFXMVcgByAG2gtyEAoDwpeQCAAWV2dwBYFWUVaRVxAHACXxUAAAAAYxVyAGUA4wAXFXUA4wAZFWUAZQAAoM4iZSJkZ2UAAKDPImUAbgA7gKQApEBlI2Fycm93AAABbHJ7FX8V5SFmdACgtiFpImdodAAAoLchZQDkAG0VAAFjaYsVkRVvAG4AaQBuAPQAkwFuAHQAAKAxImwiY3R5AACgLSOACUFIYWJjZGVmaGlqbG9yc3R1d3oAuBW7Fb8V1RXgFegV+RUKFhUWHxZUFlcWZRbFFtsW7xb7FgUXChdyAPIAtAJhAHIAAKBlKQACZ2xyc8YVyhXOFdAV5yFlcgCgICDlIXRoAKA4IfIA9QxoAHagECAAoKMiawHZFd4VYSJyb3cAAKAPKWEA4wBfAgABYXnkFecV8iFvbg9hNGQAoUYhYW/tFfQVAAFnciEC8RVyAACgyiF0InNlcQAAoHcqgAFnbG0A/xUCFgUWO4CwALBAdABhALRjcCJ0eXYAAKCxKQABaXIOFhIW8yFodACgfykA4DXYId1hAHIAAAFschsWHRYAoMMhAKDCIYACYWVnc3YAKBauAjYWOhY+Fm0AAKHEIm9zLhY0Fm4AZABzoMQi9SFpdACgZiZhIm1tYQDdY2kAbgAAoPIiAKH3AGlvQxZRFmQAZQAAgfcAO29KFksW90BuI3RpbWVzAACgxyJuAPgAUBZjAHkAUmRjAG8CXhYAAAAAYhZyAG4AAKAeI28AcAAAoA0jgAJscHR1dwBuFnEWdRaSFp4W7CFhciRgZgAA4DXYVd0AotkCZW1wc30WhBaJFo0WcQBkoFAibwB0AACgUSJpIm51cwAAoDgi7CF1cwCgFCLxInVhcmUAoKEiYgBsAGUAYgBhAHIAdwBlAGQAZwDlANcAbgCAAWFkaAClFqoWtBZyAHIAbwD3APUMbwB3AG4AYQByAHIAbwB3APMA8xVhI3Jwb29uAAABbHK8FsAWZQBmAPQAHBZpAGcAaAD0AB4WYgHJFs8WawBhAHIAbwD3AJILbwLUFgAAAADYFnIAbgAAoB8jbwBwAACgDCOAAWNvdADhFukW7BYAAXJ55RboFgDgNdi53FVkbAAAoPYp8iFvaxFhAAFkcvMW9xZvAHQAAKDxImkA5qC/JVsSAAFhaP8WAhdyAPIANQNhAPIA1wvhIm5nbGUAoKYpAAFjaQ4XEBd5AF9k5yJyYXJyAKD/JwAJRGFjZGVmZ2xtbm9wcXJzdHV4MRc4F0YXWxcyBF4XaRd5F40XrBe0F78X2RcVGCEYLRg1GEAYAAFEbzUXgRZvAPQA+BUAAWNzPBdCF3UAdABlADuA6QDpQPQhZXIAoG4qAAJhaW95TRdQF1YXWhfyIW9uG2FyAGOgViI7gOoA6kDsIW9uAKBVIk1kbwB0ABdhAAFEcmIXZhdvAHQAAKBSIgDgNdgi3XKhmipuF3QXYQB2AGUAO4DoAOhAZKCWKm8AdAAAoJgqgKGZKmlscwCAF4UXhxfuInRlcnMAoOcjAKATIWSglSpvAHQAAKCXKoABYXBzAJMXlheiF2MAcgATYXQAeQBzogUinxcAAAAAoRdlAHQAAKAFInAAMaADIDMBqRerFwCgBCAAoAUgAAFnc7AXsRdLYXAAAKACIAABZ3C4F7sXbwBuABlhZgAA4DXYVt2AAWFscwDFF8sXzxdyAHOg1SJsAACg4yl1AHMAAKBxKmkAAKG1A2x21RfYF28AbgC1Y/VjAAJjc3V24BfoF/0XEBgAAWlv5BdWF3IAYwAAoFYiaQLuFwAAAADwF+0ADQThIW50AAFnbPUX+Rd0AHIAAKCWKuUhc3MAoJUqgAFhZWkAAxgGGAoYbABzAD1gcwB0AACgXyJ2AESgYSJEAACgeCrwImFyc2wAoOUpAAFEYRkYHRhvAHQAAKBTInIAcgAAoHEpgAFjZGkAJxgqGO0XcgAAoC8hbwD0AIwCAAFhaDEYMhi3YzuA8ADwQAABbXI5GD0YbAA7gOsA60BvAACgrCCAAWNpcABGGEgYSxhsACFgcwD0ACwEAAFlb08YVxhjAHQAYQB0AGkAbwDuABoEbgBlAG4AdABpAGEAbADlADME4Ql1GAAAgRgAAIMYiBgAAAAAoRilGAAAqhgAALsYvhjRGAAA1xgnGWwAbABpAG4AZwBkAG8AdABzAGUA8QBlF3kARGRtImFsZQAAoEAmgAFpbHIAjRiRGJ0Y7CFpZwCgA/tpApcYAAAAAJoYZwAAoAD7aQBnAACgBPsA4DXYI93sIWlnAKAB++whaWcA4GYAagCAAWFsdACvGLIYthh0AACgbSZpAGcAAKAC+24AcwAAoLElbwBmAJJh8AHCGAAAxhhmAADgNdhX3QABYWvJGMwYbADsAGsEdqDUIgCg2SphI3J0aW50AACgDSoAAWFv2hgiGQABY3PeGB8ZsQPnGP0YBRkSGRUZAAAdGbID7xjyGPQY9xj5GAAA+xg7gL0AvUAAoFMhO4C8ALxAAKBVIQCgWSEAoFshswEBGQAAAxkAoFQhAKBWIbQCCxkOGQAAAAAQGTuAvgC+QACgVyEAoFwhNQAAoFghtgEZGQAAGxkAoFohAKBdITgAAKBeIWwAAKBEIHcAbgAAoCIjYwByAADgNdi73IAIRWFiY2RlZmdpamxub3JzdHYARhlKGVoZXhlmGWkZkhmWGZkZnRmgGa0ZxhnLGc8Z4BkjGmygZyIAoIwqgAFjbXAAUBlTGVgZ9SF0ZfVhbQBhAOSgswM6FgCghipyImV2ZQAfYQABaXliGWUZcgBjAB1hM2RvAHQAIWGAoWUibHFzAMYEcBl6GfGhZSLOBAAAdhlsAGEAbgD0AN8EgKF+KmNkbACBGYQZjBljAACgqSpvAHQAb6CAKmyggioAoIQqZeDbIgD+cwAAoJQqcgAA4DXYJN3noGsirATtIWVsAKA3IWMAeQBTZIChdyJFYWoApxmpGasZAKCSKgCgpSoAoKQqAAJFYWVztBm2Gb0ZwhkAoGkicABwoIoq8iFveACgiipxoIgq8aCIKrUZaQBtAACg5yJwAGYAAOA12FjdYQB2AOUAYwIAAWNp0xnWGXIAAKAKIW0AAKFzImVs3BneGQCgjioAoJAqAIM+ADtjZGxxco0E6xn0GfgZ/BkBGgABY2nvGfEZAKCnKnIAAKB6Km8AdAAAoNci0CFhcgCglSl1ImVzdAAAoHwqgAJhZGVscwAKGvQZFhrVBCAa8AEPGgAAFBpwAHIAbwD4AFkZcgAAoHgpcQAAAWxxxAQbGmwAZQBzAPMASRlpAO0A5AQAAWVuJxouGnIjdG5lcXEAAOBpIgD+xQAsGgAFQWFiY2Vma29zeUAaQxpmGmoabRqDGocalhrCGtMacgDyAMwCAAJpbG1yShpOGlAaVBpyAHMA8ABxD2YAvWBpAGwA9AASBQABZHJYGlsaYwB5AEpkAKGUIWN3YBpkGmkAcgAAoEgpAKCtIWEAcgAAoA8h6SFyYyVhgAFhbHIAcxp7Gn8a8iF0c3WgZSZpAHQAAKBlJuwhaXAAoCYg4yFvbgCguSJyAADgNdgl3XMAAAFld4wakRphInJvdwAAoCUpYSJyb3cAAKAmKYACYW1vcHIAnxqjGqcauhq+GnIAcgAAoP8h9CFodACgOyJrAAABbHKsGrMaZSRmdGFycm93AACgqSHpJGdodGFycm93AKCqIWYAAOA12Fnd4iFhcgCgFSCAAWNsdADIGswa0BpyAADgNdi93GEAcwDoAGka8iFvaydhAAFicNca2xr1IWxsAKBDIOghZW4AoBAg4Qr2GgAA/RoAAAgbExsaGwAAIRs7GwAAAAA+G2IbmRuVG6sbAACyG80b0htjAHUAdABlADuA7QDtQAChYyBpeQEbBhtyAGMAO4DuAO5AOGQAAWN4CxsNG3kANWRjAGwAO4ChAKFAAAFmcssCFhsA4DXYJt1yAGEAdgBlADuA7ADsQIChSCFpbm8AJxsyGzYbAAFpbisbLxtuAHQAAKAMKnQAAKAtIuYhaW4AoNwpdABhAACgKSHsIWlnM2GAAWFvcABDG1sbXhuAAWNndABJG0sbWRtyACthgAFlbHAAcQVRG1UbaQBuAOUAyAVhAHIA9AByBWgAMWFmAACgtyJlAGQAtWEAoggiY2ZvdGkbbRt1G3kb4SFyZQCgBSFpAG4AdKAeImkAZQAAoN0pZABvAPQAWxsAoisiY2VscIEbhRuPG5QbYQBsAACguiIAAWdyiRuNG2UAcgDzACMQ4wCCG2EicmhrAACgFyryIW9kAKA8KgACY2dwdJ8boRukG6gbeQBRZG8AbgAvYWYAAOA12FrdYQC5Y3UAZQBzAHQAO4C/AL9AAAFjabUbuRtyAADgNdi+3G4AAKIIIkVkc3bCG8QbyBvQAwCg+SJvAHQAAKD1Inag9CIAoPMiaaBiIOwhZGUpYesB1hsAANkbYwB5AFZkbAA7gO8A70AAA2NmbW9zdeYb7hvyG/Ub+hsFHAABaXnqG+0bcgBjADVhOWRyAADgNdgn3eEhdGg3YnAAZgAA4DXYW93jAf8bAAADHHIAAOA12L/c8iFjeVhk6yFjeVRkAARhY2ZnaGpvcxUcGhwiHCYcKhwtHDAcNRzwIXBhdqC6A/BjAAFleR4cIRzkIWls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ZmdobG1vcHJzdHV3CiwNLBEsHSwnLDEsQCxLLFIsYix6LIQsjyzLLOgs7Sz/LAotcgDyAAkDYQByAACgYykAAWNyFSwbLHUAdABlADuA+gD6QPIACQ1yAOMBIywAACUseQBeZHYAZQBtYQABaXkrLDAscgBjADuA+wD7QENkgAFhYmgANyw6LD0scgDyANEO7CFhY3FhYQDyAOAOAAFpckQsSCzzIWh0AKB+KQDgNdgy3XIAYQB2AGUAO4D5APlAYQFWLF8scgAAAWxyWixcLACgvyEAoL4hbABrAACggCUAAWN0Zix2LG8CbCwAAAAAcyxyAG4AZaAcI3IAAKAcI28AcAAAoA8jcgBpAACg+CUAAWFsfiyBLGMAcgBrYTuAqACoQAABZ3CILIssbwBuAHNhZgAA4DXYZt0AA2FkaGxzdZksniynLLgsuyzFLHIAcgBvAPcACQ1vAHcAbgBhAHIAcgBvAPcA2A5hI3Jwb29uAAABbHKvLLMsZQBmAPQAWyxpAGcAaAD0AF0sdQDzAKYOaQAAocUDaGzBLMIs0mNvAG4AxWPwI2Fycm93cwCgyCGAAWNpdADRLOEs5CxvAtcsAAAAAN4scgBuAGWgHSNyAACgHSNvAHAAAKAOI24AZwBvYXIAaQAAoPklYwByAADgNdjK3IABZGlyAPMs9yz6LG8AdAAAoPAi7CFkZWlhaQBmoLUlAKC0JQABYW0DLQYtcgDyAMosbAA7gPwA/EDhIm5nbGUAoKcpgAdBQkRhY2RlZmxub3Byc3oAJy0qLTAtNC2bLZ0toS2/LcMtxy3TLdgt3C3gLfwtcgDyABADYQByAHag6CoAoOkqYQBzAOgA/gIAAW5yOC08LechcnQAoJwpgANla25wcnN0AJkpSC1NLVQtXi1iLYItYQBwAHAA4QAaHG8AdABoAGkAbgDnAKEXgAFoaXIAoSmzJFotbwBwAPQAdCVooJUh7wD4JgABaXVmLWotZwBtAOEAuygAAWJwbi14LXMjZXRuZXEAceCKIgD+AODLKgD+cyNldG5lcQBx4IsiAP4A4MwqAP4AAWhyhi2KLWUAdADhABIraSNhbmdsZQAAAWxyki2WLeUhZnQAoLIiaSJnaHQAAKCzInkAMmThIXNoAKCiIoABZWxyAKcttC24LWKiKCKuLQAAAACyLWEAcgAAoLsicQAAoFoi7CFpcACg7iIAAWJ0vC1eD2EA8gBfD3IAAOA12DPddAByAOkAlS1zAHUAAAFicM0t0C0A4IIi0iAA4IMi0iBwAGYAAOA12GfdcgBvAPAAWQt0AHIA6QCaLQABY3XkLegtcgAA4DXYy9wAAWJw7C30LW4AAAFFZXUt8S0A4IoiAP5uAAABRWV/LfktAOCLIgD+6SJnemFnAKCaKYADY2Vmb3BycwANLhAuJS4pLiMuLi40LukhcmN1YQABZGkULiEuAAFiZxguHC5hAHIAAKBfKmUAcaAnIgCgWSLlIXJwAKAYIXIAAOA12DTdcABmAADgNdho3WWgQCJhAHQA6ABqD2MAcgAA4DXYzNzjCuQRUC4AAFQuAABYLmIuAAAAAGMubS5wLnQuAAAAAIguki4AAJouJxIqEnQAcgDpAB0ScgAA4DXYNd0AAUFhWy5eLnIA8gDnAnIA8gCTB75jAAFBYWYuaS5yAPIA4AJyAPIAjAdhAPAAeh5pAHMAAKD7IoABZHB0APgReS6DLgABZmx9LoAuAOA12GnddQDzAP8RaQBtAOUABBIAAUFhiy6OLnIA8gDuAnIA8gCaBwABY3GVLgoScgAA4DXYzdwAAXB0nS6hLmwAdQDzACUScgDpACASAARhY2VmaW9zdbEuvC7ELsguzC7PLtQu2S5jAAABdXm2LrsudABlADuA/QD9QE9kAAFpecAuwy5yAGMAd2FLZG4AO4ClAKVAcgAA4DXYNt1jAHkAV2RwAGYAAOA12GrdYwByAADgNdjO3AABY23dLt8ueQBOZGwAO4D/AP9AAAVhY2RlZmhpb3N38y73Lv8uAi8MLxAvEy8YLx0vIi9jInV0ZQB6YQABYXn7Lv4u8iFvbn5hN2RvAHQAfGEAAWV0Bi8KL3QAcgDmAB8QYQC2Y3IAAOA12DfdYwB5ADZk5yJyYXJyAKDdIXAAZgAA4DXYa91jAHIAAOA12M/cAAFqbiYvKC8AoA0gagAAoAwg");
-
-// node_modules/htmlparser2/node_modules/entities/dist/esm/generated/decode-data-xml.js
-var xmlDecodeTree = /* @__PURE__ */ decodeBase64("AAJhZ2xxBwARABMAFQBtAg0AAAAAAA8AcAAmYG8AcwAnYHQAPmB0ADxg9SFvdCJg");
-
-// node_modules/htmlparser2/node_modules/entities/dist/esm/internal/bin-trie-flags.js
-var BinTrieFlags2;
-(function(BinTrieFlags4) {
-  BinTrieFlags4[BinTrieFlags4["VALUE_LENGTH"] = 49152] = "VALUE_LENGTH";
-  BinTrieFlags4[BinTrieFlags4["FLAG13"] = 8192] = "FLAG13";
-  BinTrieFlags4[BinTrieFlags4["BRANCH_LENGTH"] = 8064] = "BRANCH_LENGTH";
-  BinTrieFlags4[BinTrieFlags4["JUMP_TABLE"] = 127] = "JUMP_TABLE";
-})(BinTrieFlags2 || (BinTrieFlags2 = {}));
 
 // node_modules/htmlparser2/node_modules/entities/dist/esm/decode.js
 var CharCodes2;
@@ -6457,6 +8403,12 @@ var CharCodes2;
   CharCodes5[CharCodes5["UPPER_Z"] = 90] = "UPPER_Z";
 })(CharCodes2 || (CharCodes2 = {}));
 var TO_LOWER_BIT2 = 32;
+var BinTrieFlags2;
+(function(BinTrieFlags4) {
+  BinTrieFlags4[BinTrieFlags4["VALUE_LENGTH"] = 49152] = "VALUE_LENGTH";
+  BinTrieFlags4[BinTrieFlags4["BRANCH_LENGTH"] = 16256] = "BRANCH_LENGTH";
+  BinTrieFlags4[BinTrieFlags4["JUMP_TABLE"] = 127] = "JUMP_TABLE";
+})(BinTrieFlags2 || (BinTrieFlags2 = {}));
 function isNumber2(code) {
   return code >= CharCodes2.ZERO && code <= CharCodes2.NINE;
 }
@@ -6494,7 +8446,6 @@ var EntityDecoder2 = class {
     this.treeIndex = 0;
     this.excess = 1;
     this.decodeMode = DecodingMode2.Strict;
-    this.runConsumed = 0;
   }
   startEntity(decodeMode) {
     this.decodeMode = decodeMode;
@@ -6503,70 +8454,77 @@ var EntityDecoder2 = class {
     this.treeIndex = 0;
     this.excess = 1;
     this.consumed = 1;
-    this.runConsumed = 0;
   }
-  write(input, offset2) {
+  write(input, offset) {
     switch (this.state) {
       case EntityDecoderState2.EntityStart: {
-        if (input.charCodeAt(offset2) === CharCodes2.NUM) {
+        if (input.charCodeAt(offset) === CharCodes2.NUM) {
           this.state = EntityDecoderState2.NumericStart;
           this.consumed += 1;
-          return this.stateNumericStart(input, offset2 + 1);
+          return this.stateNumericStart(input, offset + 1);
         }
         this.state = EntityDecoderState2.NamedEntity;
-        return this.stateNamedEntity(input, offset2);
+        return this.stateNamedEntity(input, offset);
       }
       case EntityDecoderState2.NumericStart: {
-        return this.stateNumericStart(input, offset2);
+        return this.stateNumericStart(input, offset);
       }
       case EntityDecoderState2.NumericDecimal: {
-        return this.stateNumericDecimal(input, offset2);
+        return this.stateNumericDecimal(input, offset);
       }
       case EntityDecoderState2.NumericHex: {
-        return this.stateNumericHex(input, offset2);
+        return this.stateNumericHex(input, offset);
       }
       case EntityDecoderState2.NamedEntity: {
-        return this.stateNamedEntity(input, offset2);
+        return this.stateNamedEntity(input, offset);
       }
     }
   }
-  stateNumericStart(input, offset2) {
-    if (offset2 >= input.length) {
+  stateNumericStart(input, offset) {
+    if (offset >= input.length) {
       return -1;
     }
-    if ((input.charCodeAt(offset2) | TO_LOWER_BIT2) === CharCodes2.LOWER_X) {
+    if ((input.charCodeAt(offset) | TO_LOWER_BIT2) === CharCodes2.LOWER_X) {
       this.state = EntityDecoderState2.NumericHex;
       this.consumed += 1;
-      return this.stateNumericHex(input, offset2 + 1);
+      return this.stateNumericHex(input, offset + 1);
     }
     this.state = EntityDecoderState2.NumericDecimal;
-    return this.stateNumericDecimal(input, offset2);
+    return this.stateNumericDecimal(input, offset);
   }
-  stateNumericHex(input, offset2) {
-    while (offset2 < input.length) {
-      const char = input.charCodeAt(offset2);
+  addToNumericResult(input, start, end2, base) {
+    if (start !== end2) {
+      const digitCount = end2 - start;
+      this.result = this.result * Math.pow(base, digitCount) + Number.parseInt(input.substr(start, digitCount), base);
+      this.consumed += digitCount;
+    }
+  }
+  stateNumericHex(input, offset) {
+    const startIndex = offset;
+    while (offset < input.length) {
+      const char = input.charCodeAt(offset);
       if (isNumber2(char) || isHexadecimalCharacter2(char)) {
-        const digit = char <= CharCodes2.NINE ? char - CharCodes2.ZERO : (char | TO_LOWER_BIT2) - CharCodes2.LOWER_A + 10;
-        this.result = this.result * 16 + digit;
-        this.consumed++;
-        offset2++;
+        offset += 1;
       } else {
+        this.addToNumericResult(input, startIndex, offset, 16);
         return this.emitNumericEntity(char, 3);
       }
     }
+    this.addToNumericResult(input, startIndex, offset, 16);
     return -1;
   }
-  stateNumericDecimal(input, offset2) {
-    while (offset2 < input.length) {
-      const char = input.charCodeAt(offset2);
+  stateNumericDecimal(input, offset) {
+    const startIndex = offset;
+    while (offset < input.length) {
+      const char = input.charCodeAt(offset);
       if (isNumber2(char)) {
-        this.result = this.result * 10 + (char - CharCodes2.ZERO);
-        this.consumed++;
-        offset2++;
+        offset += 1;
       } else {
+        this.addToNumericResult(input, startIndex, offset, 10);
         return this.emitNumericEntity(char, 2);
       }
     }
+    this.addToNumericResult(input, startIndex, offset, 10);
     return -1;
   }
   emitNumericEntity(lastCp, expectedLength) {
@@ -6589,48 +8547,12 @@ var EntityDecoder2 = class {
     }
     return this.consumed;
   }
-  stateNamedEntity(input, offset2) {
+  stateNamedEntity(input, offset) {
     const { decodeTree } = this;
     let current = decodeTree[this.treeIndex];
     let valueLength = (current & BinTrieFlags2.VALUE_LENGTH) >> 14;
-    while (offset2 < input.length) {
-      if (valueLength === 0 && (current & BinTrieFlags2.FLAG13) !== 0) {
-        const runLength = (current & BinTrieFlags2.BRANCH_LENGTH) >> 7;
-        if (this.runConsumed === 0) {
-          const firstChar = current & BinTrieFlags2.JUMP_TABLE;
-          if (input.charCodeAt(offset2) !== firstChar) {
-            return this.result === 0 ? 0 : this.emitNotTerminatedNamedEntity();
-          }
-          offset2++;
-          this.excess++;
-          this.runConsumed++;
-        }
-        while (this.runConsumed < runLength) {
-          if (offset2 >= input.length) {
-            return -1;
-          }
-          const charIndexInPacked = this.runConsumed - 1;
-          const packedWord = decodeTree[this.treeIndex + 1 + (charIndexInPacked >> 1)];
-          const expectedChar = charIndexInPacked % 2 === 0 ? packedWord & 255 : packedWord >> 8 & 255;
-          if (input.charCodeAt(offset2) !== expectedChar) {
-            this.runConsumed = 0;
-            return this.result === 0 ? 0 : this.emitNotTerminatedNamedEntity();
-          }
-          offset2++;
-          this.excess++;
-          this.runConsumed++;
-        }
-        this.runConsumed = 0;
-        this.treeIndex += 1 + (runLength >> 1);
-        current = decodeTree[this.treeIndex];
-        valueLength = (current & BinTrieFlags2.VALUE_LENGTH) >> 14;
-      }
-      if (offset2 >= input.length)
-        break;
-      const char = input.charCodeAt(offset2);
-      if (char === CharCodes2.SEMI && valueLength !== 0 && (current & BinTrieFlags2.FLAG13) !== 0) {
-        return this.emitNamedEntityData(this.treeIndex, valueLength, this.consumed + this.excess);
-      }
+    for (; offset < input.length; offset++, this.excess++) {
+      const char = input.charCodeAt(offset);
       this.treeIndex = determineBranch2(decodeTree, current, this.treeIndex + Math.max(1, valueLength), char);
       if (this.treeIndex < 0) {
         return this.result === 0 || this.decodeMode === DecodingMode2.Attribute && (valueLength === 0 || isEntityInAttributeInvalidEnd2(char)) ? 0 : this.emitNotTerminatedNamedEntity();
@@ -6641,14 +8563,12 @@ var EntityDecoder2 = class {
         if (char === CharCodes2.SEMI) {
           return this.emitNamedEntityData(this.treeIndex, valueLength, this.consumed + this.excess);
         }
-        if (this.decodeMode !== DecodingMode2.Strict && (current & BinTrieFlags2.FLAG13) === 0) {
+        if (this.decodeMode !== DecodingMode2.Strict) {
           this.result = this.treeIndex;
           this.consumed += this.excess;
           this.excess = 0;
         }
       }
-      offset2++;
-      this.excess++;
     }
     return -1;
   }
@@ -6662,7 +8582,7 @@ var EntityDecoder2 = class {
   }
   emitNamedEntityData(result, valueLength, consumed) {
     const { decodeTree } = this;
-    this.emitCodePoint(valueLength === 1 ? decodeTree[result] & ~(BinTrieFlags2.VALUE_LENGTH | BinTrieFlags2.FLAG13) : decodeTree[result + 1], consumed);
+    this.emitCodePoint(valueLength === 1 ? decodeTree[result] & ~BinTrieFlags2.VALUE_LENGTH : decodeTree[result + 1], consumed);
     if (valueLength === 3) {
       this.emitCodePoint(decodeTree[result + 2], consumed);
     }
@@ -6700,20 +8620,17 @@ function determineBranch2(decodeTree, current, nodeIndex, char) {
     const value = char - jumpOffset;
     return value < 0 || value >= branchCount ? -1 : decodeTree[nodeIndex + value] - 1;
   }
-  const packedKeySlots = branchCount + 1 >> 1;
-  let lo = 0;
-  let hi = branchCount - 1;
+  let lo = nodeIndex;
+  let hi = lo + branchCount - 1;
   while (lo <= hi) {
     const mid = lo + hi >>> 1;
-    const slot = mid >> 1;
-    const packed = decodeTree[nodeIndex + slot];
-    const midKey = packed >> (mid & 1) * 8 & 255;
-    if (midKey < char) {
+    const midValue = decodeTree[mid];
+    if (midValue < char) {
       lo = mid + 1;
-    } else if (midKey > char) {
+    } else if (midValue > char) {
       hi = mid - 1;
     } else {
-      return decodeTree[nodeIndex + packedKeySlots + mid];
+      return decodeTree[mid + branchCount];
     }
   }
   return -1;
@@ -6963,10 +8880,10 @@ var Tokenizer = class {
   isTagStartChar(c) {
     return this.xmlMode ? !isEndOfTagSection(c) : isASCIIAlpha(c);
   }
-  startSpecial(sequence, offset2) {
+  startSpecial(sequence, offset) {
     this.isSpecial = true;
     this.currentSequence = sequence;
-    this.sequenceIndex = offset2;
+    this.sequenceIndex = offset;
     this.state = State.SpecialStartSequence;
   }
   stateBeforeTagName(c) {
@@ -7194,19 +9111,13 @@ var Tokenizer = class {
     this.entityDecoder.startEntity(this.xmlMode ? DecodingMode2.Strict : this.baseState === State.Text || this.baseState === State.InSpecialTag ? DecodingMode2.Legacy : DecodingMode2.Attribute);
   }
   stateInEntity() {
-    const indexInBuffer = this.index - this.offset;
-    const length = this.entityDecoder.write(this.buffer, indexInBuffer);
+    const length = this.entityDecoder.write(this.buffer, this.index - this.offset);
     if (length >= 0) {
       this.state = this.baseState;
       if (length === 0) {
-        this.index -= 1;
+        this.index = this.entityStart;
       }
     } else {
-      if (indexInBuffer < this.buffer.length && this.buffer.charCodeAt(indexInBuffer) === CharCodes3.Amp) {
-        this.state = this.baseState;
-        this.index -= 1;
-        return;
-      }
       this.index = this.offset + this.buffer.length - 1;
     }
   }
@@ -7502,9 +9413,9 @@ var Parser = class {
     this.foreignContext = [!this.htmlMode];
     (_f = (_e = this.cbs).onparserinit) === null || _f === void 0 ? void 0 : _f.call(_e, this);
   }
-  ontext(start2, endIndex) {
+  ontext(start, endIndex) {
     var _a5, _b;
-    const data2 = this.getSlice(start2, endIndex);
+    const data2 = this.getSlice(start, endIndex);
     this.endIndex = endIndex - 1;
     (_b = (_a5 = this.cbs).ontext) === null || _b === void 0 ? void 0 : _b.call(_a5, data2);
     this.startIndex = endIndex;
@@ -7518,9 +9429,9 @@ var Parser = class {
   isVoidElement(name) {
     return this.htmlMode && voidElements.has(name);
   }
-  onopentagname(start2, endIndex) {
+  onopentagname(start, endIndex) {
     this.endIndex = endIndex;
-    let name = this.getSlice(start2, endIndex);
+    let name = this.getSlice(start, endIndex);
     if (this.lowerCaseTagNames) {
       name = name.toLowerCase();
     }
@@ -7568,10 +9479,10 @@ var Parser = class {
     this.endOpenTag(false);
     this.startIndex = endIndex + 1;
   }
-  onclosetag(start2, endIndex) {
+  onclosetag(start, endIndex) {
     var _a5, _b, _c, _d, _e, _f, _g, _h;
     this.endIndex = endIndex;
-    let name = this.getSlice(start2, endIndex);
+    let name = this.getSlice(start, endIndex);
     if (this.lowerCaseTagNames) {
       name = name.toLowerCase();
     }
@@ -7614,13 +9525,13 @@ var Parser = class {
       this.stack.shift();
     }
   }
-  onattribname(start2, endIndex) {
-    this.startIndex = start2;
-    const name = this.getSlice(start2, endIndex);
+  onattribname(start, endIndex) {
+    this.startIndex = start;
+    const name = this.getSlice(start, endIndex);
     this.attribname = this.lowerCaseAttributeNames ? name.toLowerCase() : name;
   }
-  onattribdata(start2, endIndex) {
-    this.attribvalue += this.getSlice(start2, endIndex);
+  onattribdata(start, endIndex) {
+    this.attribvalue += this.getSlice(start, endIndex);
   }
   onattribentity(cp) {
     this.attribvalue += fromCodePoint2(cp);
@@ -7642,35 +9553,35 @@ var Parser = class {
     }
     return name;
   }
-  ondeclaration(start2, endIndex) {
+  ondeclaration(start, endIndex) {
     this.endIndex = endIndex;
-    const value = this.getSlice(start2, endIndex);
+    const value = this.getSlice(start, endIndex);
     if (this.cbs.onprocessinginstruction) {
       const name = this.getInstructionName(value);
       this.cbs.onprocessinginstruction(`!${name}`, `!${value}`);
     }
     this.startIndex = endIndex + 1;
   }
-  onprocessinginstruction(start2, endIndex) {
+  onprocessinginstruction(start, endIndex) {
     this.endIndex = endIndex;
-    const value = this.getSlice(start2, endIndex);
+    const value = this.getSlice(start, endIndex);
     if (this.cbs.onprocessinginstruction) {
       const name = this.getInstructionName(value);
       this.cbs.onprocessinginstruction(`?${name}`, `?${value}`);
     }
     this.startIndex = endIndex + 1;
   }
-  oncomment(start2, endIndex, offset2) {
+  oncomment(start, endIndex, offset) {
     var _a5, _b, _c, _d;
     this.endIndex = endIndex;
-    (_b = (_a5 = this.cbs).oncomment) === null || _b === void 0 ? void 0 : _b.call(_a5, this.getSlice(start2, endIndex - offset2));
+    (_b = (_a5 = this.cbs).oncomment) === null || _b === void 0 ? void 0 : _b.call(_a5, this.getSlice(start, endIndex - offset));
     (_d = (_c = this.cbs).oncommentend) === null || _d === void 0 ? void 0 : _d.call(_c);
     this.startIndex = endIndex + 1;
   }
-  oncdata(start2, endIndex, offset2) {
+  oncdata(start, endIndex, offset) {
     var _a5, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     this.endIndex = endIndex;
-    const value = this.getSlice(start2, endIndex - offset2);
+    const value = this.getSlice(start, endIndex - offset);
     if (!this.htmlMode || this.options.recognizeCDATA) {
       (_b = (_a5 = this.cbs).oncdatastart) === null || _b === void 0 ? void 0 : _b.call(_a5);
       (_d = (_c = this.cbs).ontext) === null || _d === void 0 ? void 0 : _d.call(_c, value);
@@ -7713,14 +9624,14 @@ var Parser = class {
     this.reset();
     this.end(data2);
   }
-  getSlice(start2, end3) {
-    while (start2 - this.bufferOffset >= this.buffers[0].length) {
+  getSlice(start, end2) {
+    while (start - this.bufferOffset >= this.buffers[0].length) {
       this.shiftBuffer();
     }
-    let slice2 = this.buffers[0].slice(start2 - this.bufferOffset, end3 - this.bufferOffset);
-    while (end3 - this.bufferOffset > this.buffers[0].length) {
+    let slice2 = this.buffers[0].slice(start - this.bufferOffset, end2 - this.bufferOffset);
+    while (end2 - this.bufferOffset > this.buffers[0].length) {
       this.shiftBuffer();
-      slice2 += this.buffers[0].slice(0, end3 - this.bufferOffset);
+      slice2 += this.buffers[0].slice(0, end2 - this.bufferOffset);
     }
     return slice2;
   }
@@ -8056,8 +9967,8 @@ function hasClass(className) {
     let idx = -1;
     if (clazz && className.length > 0) {
       while ((idx = clazz.indexOf(className, idx + 1)) > -1) {
-        const end3 = idx + className.length;
-        if ((idx === 0 || rspace.test(clazz[idx - 1])) && (end3 === clazz.length || rspace.test(clazz[end3]))) {
+        const end2 = idx + className.length;
+        if ((idx === 0 || rspace.test(clazz[idx - 1])) && (end2 === clazz.length || rspace.test(clazz[end2]))) {
           return true;
         }
       }
@@ -8283,24 +10194,24 @@ function parse(selector) {
 }
 function parseSelector(subselects2, selector, selectorIndex) {
   let tokens = [];
-  function getName2(offset2) {
-    const match = selector.slice(selectorIndex + offset2).match(reName);
+  function getName2(offset) {
+    const match = selector.slice(selectorIndex + offset).match(reName);
     if (!match) {
       throw new Error(`Expected name, found ${selector.slice(selectorIndex)}`);
     }
     const [name] = match;
-    selectorIndex += offset2 + name.length;
+    selectorIndex += offset + name.length;
     return unescapeCSS(name);
   }
-  function stripWhitespace(offset2) {
-    selectorIndex += offset2;
+  function stripWhitespace(offset) {
+    selectorIndex += offset;
     while (selectorIndex < selector.length && isWhitespace2(selector.charCodeAt(selectorIndex))) {
       selectorIndex++;
     }
   }
   function readValueWithParenthesis() {
     selectorIndex += 1;
-    const start2 = selectorIndex;
+    const start = selectorIndex;
     let counter = 1;
     for (; counter > 0 && selectorIndex < selector.length; selectorIndex++) {
       if (selector.charCodeAt(selectorIndex) === 40 && !isEscaped(selectorIndex)) {
@@ -8312,7 +10223,7 @@ function parseSelector(subselects2, selector, selectorIndex) {
     if (counter) {
       throw new Error("Parenthesis not matched");
     }
-    return unescapeCSS(selector.slice(start2, selectorIndex - 1));
+    return unescapeCSS(selector.slice(start, selectorIndex - 1));
   }
   function isEscaped(pos) {
     let slashCount = 0;
@@ -8850,13 +10761,13 @@ function parse2(formula) {
     return 1;
   }
   function readNumber() {
-    const start2 = idx;
+    const start = idx;
     let value = 0;
     while (idx < formula.length && formula.charCodeAt(idx) >= ZERO && formula.charCodeAt(idx) <= NINE) {
       value = value * 10 + (formula.charCodeAt(idx) - ZERO);
       idx++;
     }
-    return idx === start2 ? null : value;
+    return idx === start ? null : value;
   }
   function skipWhitespace() {
     while (idx < formula.length && whitespace.has(formula.charCodeAt(idx))) {
@@ -8898,7 +10809,7 @@ function getChildFunc(next2, adapter2) {
 }
 var filters = {
   contains(next2, text3, { adapter: adapter2 }) {
-    return function contains3(elem) {
+    return function contains2(elem) {
       return next2(elem) && adapter2.getText(elem).includes(text3);
     };
   },
@@ -9720,30 +11631,30 @@ function _findBySelector(selector, limit) {
   return this._make(select(selector, elems, options, limit));
 }
 function _getMatcher(matchMap) {
-  return function(fn2, ...postFns) {
+  return function(fn, ...postFns) {
     return function(selector) {
       var _a5;
-      let matched = matchMap(fn2, this);
+      let matched = matchMap(fn, this);
       if (selector) {
         matched = filterArray(matched, selector, this.options.xmlMode, (_a5 = this._root) === null || _a5 === void 0 ? void 0 : _a5[0]);
       }
-      return this._make(this.length > 1 && matched.length > 1 ? postFns.reduce((elems, fn3) => fn3(elems), matched) : matched);
+      return this._make(this.length > 1 && matched.length > 1 ? postFns.reduce((elems, fn2) => fn2(elems), matched) : matched);
     };
   };
 }
-var _matcher = _getMatcher((fn2, elems) => {
+var _matcher = _getMatcher((fn, elems) => {
   let ret = [];
   for (let i = 0; i < elems.length; i++) {
-    const value = fn2(elems[i]);
+    const value = fn(elems[i]);
     if (value.length > 0)
       ret = ret.concat(value);
   }
   return ret;
 });
-var _singleMatcher = _getMatcher((fn2, elems) => {
+var _singleMatcher = _getMatcher((fn, elems) => {
   const ret = [];
   for (let i = 0; i < elems.length; i++) {
-    const value = fn2(elems[i]);
+    const value = fn(elems[i]);
     if (value !== null) {
       ret.push(value);
     }
@@ -9838,18 +11749,18 @@ function contents() {
   const elems = this.toArray().reduce((newElems, elem) => hasChildren(elem) ? newElems.concat(elem.children) : newElems, []);
   return this._make(elems);
 }
-function each(fn2) {
+function each(fn) {
   let i = 0;
   const len = this.length;
-  while (i < len && fn2.call(this[i], i, this[i]) !== false)
+  while (i < len && fn.call(this[i], i, this[i]) !== false)
     ++i;
   return this;
 }
-function map(fn2) {
+function map(fn) {
   let elems = [];
   for (let i = 0; i < this.length; i++) {
     const el = this[i];
-    const val2 = fn2.call(el, i, el);
+    const val2 = fn.call(el, i, el);
     if (val2 != null) {
       elems = elems.concat(val2);
     }
@@ -9931,8 +11842,8 @@ function index(selectorOrNeedle) {
   }
   return Array.prototype.indexOf.call($haystack, needle);
 }
-function slice(start2, end3) {
-  return this._make(Array.prototype.slice.call(this, start2, end3));
+function slice(start, end2) {
+  return this._make(Array.prototype.slice.call(this, start, end2));
 }
 function end() {
   var _a5;
@@ -10466,12 +12377,12 @@ function extract2(map2) {
     const descr = map2[key];
     const isArray = Array.isArray(descr);
     const { selector, value } = getExtractDescr(isArray ? descr[0] : descr);
-    const fn2 = typeof value === "function" ? value : typeof value === "string" ? (el) => this._make(el).prop(value) : (el) => this._make(el).extract(value);
+    const fn = typeof value === "function" ? value : typeof value === "string" ? (el) => this._make(el).prop(value) : (el) => this._make(el).extract(value);
     if (isArray) {
-      ret[key] = this._findBySelector(selector, Number.POSITIVE_INFINITY).map((_, el) => fn2(el, key, ret)).get();
+      ret[key] = this._findBySelector(selector, Number.POSITIVE_INFINITY).map((_, el) => fn(el, key, ret)).get();
     } else {
       const $2 = this._findBySelector(selector, 1);
-      ret[key] = $2.length > 0 ? fn2($2[0], key, ret) : void 0;
+      ret[key] = $2.length > 0 ? fn($2[0], key, ret) : void 0;
     }
   }
   return ret;
@@ -10737,9 +12648,9 @@ var Preprocessor = class {
     return this.droppedBufferSize + this.pos;
   }
   getError(code, cpOffset) {
-    const { line, col, offset: offset2 } = this;
+    const { line, col, offset } = this;
     const startCol = col + cpOffset;
-    const startOffset = offset2 + cpOffset;
+    const startOffset = offset + cpOffset;
     return {
       code,
       startLine: line,
@@ -10817,8 +12728,8 @@ var Preprocessor = class {
     }
     return true;
   }
-  peek(offset2) {
-    const pos = this.pos + offset2;
+  peek(offset) {
+    const pos = this.pos + offset;
     if (pos >= this.html.length) {
       this.endOfChunkHit = !this.lastChunkWritten;
       return CODE_POINTS.EOF;
@@ -11028,76 +12939,76 @@ var EntityDecoder3 = class {
     this.excess = 1;
     this.consumed = 1;
   }
-  write(input, offset2) {
+  write(input, offset) {
     switch (this.state) {
       case EntityDecoderState3.EntityStart: {
-        if (input.charCodeAt(offset2) === CharCodes4.NUM) {
+        if (input.charCodeAt(offset) === CharCodes4.NUM) {
           this.state = EntityDecoderState3.NumericStart;
           this.consumed += 1;
-          return this.stateNumericStart(input, offset2 + 1);
+          return this.stateNumericStart(input, offset + 1);
         }
         this.state = EntityDecoderState3.NamedEntity;
-        return this.stateNamedEntity(input, offset2);
+        return this.stateNamedEntity(input, offset);
       }
       case EntityDecoderState3.NumericStart: {
-        return this.stateNumericStart(input, offset2);
+        return this.stateNumericStart(input, offset);
       }
       case EntityDecoderState3.NumericDecimal: {
-        return this.stateNumericDecimal(input, offset2);
+        return this.stateNumericDecimal(input, offset);
       }
       case EntityDecoderState3.NumericHex: {
-        return this.stateNumericHex(input, offset2);
+        return this.stateNumericHex(input, offset);
       }
       case EntityDecoderState3.NamedEntity: {
-        return this.stateNamedEntity(input, offset2);
+        return this.stateNamedEntity(input, offset);
       }
     }
   }
-  stateNumericStart(input, offset2) {
-    if (offset2 >= input.length) {
+  stateNumericStart(input, offset) {
+    if (offset >= input.length) {
       return -1;
     }
-    if ((input.charCodeAt(offset2) | TO_LOWER_BIT3) === CharCodes4.LOWER_X) {
+    if ((input.charCodeAt(offset) | TO_LOWER_BIT3) === CharCodes4.LOWER_X) {
       this.state = EntityDecoderState3.NumericHex;
       this.consumed += 1;
-      return this.stateNumericHex(input, offset2 + 1);
+      return this.stateNumericHex(input, offset + 1);
     }
     this.state = EntityDecoderState3.NumericDecimal;
-    return this.stateNumericDecimal(input, offset2);
+    return this.stateNumericDecimal(input, offset);
   }
-  addToNumericResult(input, start2, end3, base) {
-    if (start2 !== end3) {
-      const digitCount = end3 - start2;
-      this.result = this.result * Math.pow(base, digitCount) + Number.parseInt(input.substr(start2, digitCount), base);
+  addToNumericResult(input, start, end2, base) {
+    if (start !== end2) {
+      const digitCount = end2 - start;
+      this.result = this.result * Math.pow(base, digitCount) + Number.parseInt(input.substr(start, digitCount), base);
       this.consumed += digitCount;
     }
   }
-  stateNumericHex(input, offset2) {
-    const startIndex = offset2;
-    while (offset2 < input.length) {
-      const char = input.charCodeAt(offset2);
+  stateNumericHex(input, offset) {
+    const startIndex = offset;
+    while (offset < input.length) {
+      const char = input.charCodeAt(offset);
       if (isNumber3(char) || isHexadecimalCharacter3(char)) {
-        offset2 += 1;
+        offset += 1;
       } else {
-        this.addToNumericResult(input, startIndex, offset2, 16);
+        this.addToNumericResult(input, startIndex, offset, 16);
         return this.emitNumericEntity(char, 3);
       }
     }
-    this.addToNumericResult(input, startIndex, offset2, 16);
+    this.addToNumericResult(input, startIndex, offset, 16);
     return -1;
   }
-  stateNumericDecimal(input, offset2) {
-    const startIndex = offset2;
-    while (offset2 < input.length) {
-      const char = input.charCodeAt(offset2);
+  stateNumericDecimal(input, offset) {
+    const startIndex = offset;
+    while (offset < input.length) {
+      const char = input.charCodeAt(offset);
       if (isNumber3(char)) {
-        offset2 += 1;
+        offset += 1;
       } else {
-        this.addToNumericResult(input, startIndex, offset2, 10);
+        this.addToNumericResult(input, startIndex, offset, 10);
         return this.emitNumericEntity(char, 2);
       }
     }
-    this.addToNumericResult(input, startIndex, offset2, 10);
+    this.addToNumericResult(input, startIndex, offset, 10);
     return -1;
   }
   emitNumericEntity(lastCp, expectedLength) {
@@ -11120,12 +13031,12 @@ var EntityDecoder3 = class {
     }
     return this.consumed;
   }
-  stateNamedEntity(input, offset2) {
+  stateNamedEntity(input, offset) {
     const { decodeTree } = this;
     let current = decodeTree[this.treeIndex];
     let valueLength = (current & BinTrieFlags3.VALUE_LENGTH) >> 14;
-    for (; offset2 < input.length; offset2++, this.excess++) {
-      const char = input.charCodeAt(offset2);
+    for (; offset < input.length; offset++, this.excess++) {
+      const char = input.charCodeAt(offset);
       this.treeIndex = determineBranch3(decodeTree, current, this.treeIndex + Math.max(1, valueLength), char);
       if (this.treeIndex < 0) {
         return this.result === 0 || this.decodeMode === DecodingMode3.Attribute && (valueLength === 0 || isEntityInAttributeInvalidEnd3(char)) ? 0 : this.emitNotTerminatedNamedEntity();
@@ -11897,14 +13808,14 @@ var Tokenizer2 = class {
     var _a5, _b;
     (_b = (_a5 = this.handler).onParseError) === null || _b === void 0 ? void 0 : _b.call(_a5, this.preprocessor.getError(code, cpOffset));
   }
-  getCurrentLocation(offset2) {
+  getCurrentLocation(offset) {
     if (!this.options.sourceCodeLocationInfo) {
       return null;
     }
     return {
       startLine: this.preprocessor.line,
-      startCol: this.preprocessor.col - offset2,
-      startOffset: this.preprocessor.offset - offset2,
+      startCol: this.preprocessor.col - offset,
+      startOffset: this.preprocessor.offset - offset,
       endLine: -1,
       endCol: -1,
       endOffset: -1
@@ -11999,11 +13910,11 @@ var Tokenizer2 = class {
       location: this.getCurrentLocation(2)
     };
   }
-  _createCommentToken(offset2) {
+  _createCommentToken(offset) {
     this.currentToken = {
       type: TokenType.COMMENT,
       data: "",
-      location: this.getCurrentLocation(offset2)
+      location: this.getCurrentLocation(offset)
     };
   }
   _createDoctypeToken(initialName) {
@@ -18233,7 +20144,7 @@ var adapter = {
       attribsNamespace[attrName] = attrs[i].namespace;
       attribsPrefix[attrName] = attrs[i].prefix;
     }
-    const node = new Element2(tagName, attribs, []);
+    const node = new Element(tagName, attribs, []);
     node.namespace = namespaceURI;
     node["x-attribsNamespace"] = attribsNamespace;
     node["x-attribsPrefix"] = attribsPrefix;
@@ -18419,6 +20330,346 @@ function renderWithParse5(dom) {
 var parse5 = getParse((content, options, isDocument2, context) => options._useHtmlParser2 ? parseDocument(content, options) : parseWithParse5(content, options, isDocument2, context));
 var load = getLoad(parse5, (dom, options) => options._useHtmlParser2 ? esm_default(dom, options) : renderWithParse5(dom));
 
+// src/org/wanxp/utils/DoubanChallengeUtil.ts
+var DoubanChallengeUtil = class {
+  static parse(html3) {
+    if (!html3 || html3.indexOf('name="cha"') < 0 || html3.indexOf('name="sol"') < 0) {
+      return null;
+    }
+    const $2 = load(html3);
+    const form = $2('form#sec[action="/c"]');
+    if (form.length === 0) {
+      return null;
+    }
+    const token = form.find('input[name="tok"]').attr("value") || "";
+    const challenge = form.find('input[name="cha"]').attr("value") || "";
+    const redirectUrl = form.find('input[name="red"]').attr("value") || "";
+    if (!token || !challenge || !redirectUrl) {
+      return null;
+    }
+    const difficultyMatch = html3.match(/difficulty\s*=\s*(\d+)/);
+    const parsedDifficulty = difficultyMatch ? Number(difficultyMatch[1]) : this.DEFAULT_DIFFICULTY;
+    const difficulty = Number.isInteger(parsedDifficulty) && parsedDifficulty > 0 && parsedDifficulty <= 6 ? parsedDifficulty : this.DEFAULT_DIFFICULTY;
+    return { token, challenge, redirectUrl, difficulty };
+  }
+  static solve(challenge) {
+    return __async(this, null, function* () {
+      const targetPrefix = "0".repeat(challenge.difficulty);
+      for (let nonce = 1; nonce <= this.MAX_NONCE; nonce++) {
+        const hash = yield this.sha512(challenge.challenge + nonce);
+        if (hash.startsWith(targetPrefix)) {
+          return nonce;
+        }
+      }
+      throw new Error("Douban proof-of-work challenge exceeded the maximum nonce");
+    });
+  }
+  static buildRequestBody(challenge, solution) {
+    return new URLSearchParams({
+      tok: challenge.token,
+      cha: challenge.challenge,
+      sol: String(solution),
+      red: challenge.redirectUrl
+    }).toString();
+  }
+  static sha512(value) {
+    return __async(this, null, function* () {
+      try {
+        const nodeCrypto = require("crypto");
+        return nodeCrypto.createHash("sha512").update(value).digest("hex");
+      } catch (_) {
+        if (typeof crypto === "undefined" || !crypto.subtle) {
+          throw new Error("SHA-512 is unavailable in this environment");
+        }
+        const bytes = new TextEncoder().encode(value);
+        const digest = yield crypto.subtle.digest("SHA-512", bytes);
+        return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+      }
+    });
+  }
+};
+DoubanChallengeUtil.VERIFY_URL = "https://sec.douban.com/c";
+DoubanChallengeUtil.DEFAULT_DIFFICULTY = 4;
+DoubanChallengeUtil.MAX_NONCE = 5e6;
+
+// src/org/wanxp/utils/DoubanHttpUtil.ts
+var DoubanHttpUtil = class {
+  static httpRequestGet(url, headers, settingsManager) {
+    return __async(this, null, function* () {
+      settingsManager.debug(`\u8BF7\u6C42\u5730\u5740:${url}`);
+      settingsManager.debug(`Obsidian-Douban:\u4ECE\u7F51\u7EDC\u83B7\u53D6\u7F51\u9875\u5F00\u59CB:
+url:${url}
+headers:${JSON.stringify(headers)}`);
+      let response = yield HttpUtil.getText(url, headers, settingsManager);
+      if (response.status == 403) {
+        throw new Error(i18nHelper.getMessage("130106"));
+      }
+      let html3 = response.textString;
+      const challenge = DoubanChallengeUtil.parse(html3);
+      if (challenge) {
+        settingsManager.debug(`Obsidian-Douban:\u68C0\u6D4B\u5230\u8C46\u74E3\u5B89\u5168\u9A8C\u8BC1\uFF0C\u5F00\u59CB\u81EA\u52A8\u9A8C\u8BC1`);
+        const solution = yield DoubanChallengeUtil.solve(challenge);
+        const body = DoubanChallengeUtil.buildRequestBody(challenge, solution);
+        const challengeHeaders = this.buildChallengeHeaders(headers);
+        response = yield HttpUtil.httpRequest(DoubanChallengeUtil.VERIFY_URL, challengeHeaders, settingsManager, { method: "POST", body });
+        html3 = response.textString;
+        if (response.status >= 400 || DoubanChallengeUtil.parse(html3)) {
+          throw new Error(`Douban proof-of-work verification failed with status ${response.status}`);
+        }
+      }
+      return yield this.humanCheck(html3, url, settingsManager);
+    });
+  }
+  static buildChallengeHeaders(headers = {}) {
+    const result = {};
+    Object.entries(headers).forEach(([key, value]) => {
+      const lowerKey = key.toLowerCase();
+      if (value == null || value === "" || lowerKey === "host" || lowerKey === "content-length" || lowerKey === "content-type") {
+        return;
+      }
+      result[key] = String(value);
+    });
+    result["Content-Type"] = "application/x-www-form-urlencoded";
+    result["Origin"] = "https://sec.douban.com";
+    result["Referer"] = "https://sec.douban.com/";
+    return result;
+  }
+  constructor(fileHandler) {
+    this.fileHandler = fileHandler;
+  }
+  static humanCheck(html3, url, settingsManager) {
+    return __async(this, null, function* () {
+      if (!html3) {
+        return html3;
+      }
+      if (settingsManager) {
+        settingsManager.debug(html3);
+      }
+      if (html3 && html3.toString().indexOf("<title>\u7981\u6B62\u8BBF\u95EE</title>") != -1) {
+        const loginModel = new DoubanHumanCheckModel(url);
+        yield loginModel.load();
+        return "";
+      } else {
+        return html3;
+      }
+    });
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/AbstractSearchPageFetcher.ts
+var AbstractSearchPageFetcher = class {
+  constructor(settingsManager) {
+    this.settingsManager = settingsManager;
+  }
+  support(type, pageNum) {
+    throw new Error("Method not implemented.");
+  }
+  fetch(keyword, pageNum, pageSize) {
+    const start = Math.floor((pageNum - 1) * pageSize);
+    const url = this.getSearchUrl(keyword, start, pageSize);
+    if (!url) {
+      return Promise.resolve("");
+    }
+    return DoubanHttpUtil.httpRequestGet(url, this.settingsManager.getHeaders(), this.settingsManager).catch((e) => {
+      throw log.error(i18nHelper.getMessage("130101").replace("{0}", e.toString()), e);
+    });
+  }
+  getSearchUrl(keyword, start, pageSize) {
+    keyword = keyword.trim();
+    if (keyword.length == 0) {
+      return "";
+    }
+    keyword = HttpUtil.encodeUrl(keyword);
+    return this.getUrl(keyword, start, pageSize);
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/AllPageSearchPageFetcher.ts
+var AllPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
+  getUrl(keyword, start, pageSize) {
+    return `https://www.douban.com/j/search?q=${keyword}&start=${start}`;
+  }
+  support(type) {
+    return type == SupportType.all;
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/MoviePageSearchPageFetcher.ts
+var MoviePageSearchPageFetcher = class extends AbstractSearchPageFetcher {
+  getUrl(keyword, start, pageSize) {
+    return `https://www.douban.com/j/search?q=${keyword}&start=${start}&cat=1002`;
+  }
+  support(type) {
+    return type == SupportType.movie;
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/BookPageSearchPageFetcher.ts
+var BookPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
+  getUrl(keyword, start, pageSize) {
+    return `https://www.douban.com/j/search?q=${keyword}&start=${start}&cat=1001`;
+  }
+  support(type) {
+    return type == SupportType.book;
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/GamePageSearchPageFetcher.ts
+var GamePageSearchPageFetcher = class extends AbstractSearchPageFetcher {
+  getUrl(keyword, start, pageSize) {
+    return `https://www.douban.com/j/search?q=${keyword}&start=${start}&cat=3114`;
+  }
+  support(type) {
+    return type == SupportType.game;
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/MusicPageSearchPageFetcher.ts
+var MusicPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
+  getUrl(keyword, start, pageSize) {
+    return `https://www.douban.com/j/search?q=${keyword}&start=${start}&cat=1003`;
+  }
+  support(type) {
+    return type == SupportType.music;
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/TheaterPageSearchPageFetcher.ts
+var TheaterPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
+  getUrl(keyword, start, pageSize) {
+    return `https://www.douban.com/j/search?q=${keyword}&start=${start}&cat=3069`;
+  }
+  support(type) {
+    return type == SupportType.theater;
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/NotePageSearchPageFetcher.ts
+var NotePageSearchPageFetcher = class extends AbstractSearchPageFetcher {
+  getUrl(keyword, start, pageSize) {
+    return `https://www.douban.com/j/search?q=${keyword}&start=${start}&cat=1015`;
+  }
+  support(type, pageNum) {
+    return type == SupportType.note && pageNum > 1;
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/NoteFirstPageSearchPageFetcher.ts
+var NoteFirstPageSearchPageFetcher = class extends AbstractSearchPageFetcher {
+  getUrl(keyword, start, pageSize) {
+    return `https://www.douban.com/search?cat=1015&q=${keyword}`;
+  }
+  support(type, pageNum) {
+    return type == SupportType.note && pageNum == 1;
+  }
+};
+
+// src/org/wanxp/douban/data/search/searcher/SearchPageFetcher.ts
+var SearchPageFetcher = class {
+  constructor(settingsManager) {
+    this.fetchers = [];
+    this.fetchers.push(new AllPageSearchPageFetcher(settingsManager));
+    this.fetchers.push(new MoviePageSearchPageFetcher(settingsManager));
+    this.fetchers.push(new BookPageSearchPageFetcher(settingsManager));
+    this.fetchers.push(new GamePageSearchPageFetcher(settingsManager));
+    this.fetchers.push(new MusicPageSearchPageFetcher(settingsManager));
+    this.fetchers.push(new TheaterPageSearchPageFetcher(settingsManager));
+    this.fetchers.push(new NotePageSearchPageFetcher(settingsManager));
+    this.fetchers.push(new NoteFirstPageSearchPageFetcher(settingsManager));
+  }
+  fetch(keyword, type, pageNum, pageSize) {
+    for (const fetcher of this.fetchers) {
+      if (fetcher.support(type, pageNum)) {
+        return fetcher.fetch(keyword, pageNum, pageSize);
+      }
+    }
+    throw new Error(`not support type:${type} pageNum:${pageNum}`);
+  }
+};
+
+// src/org/wanxp/douban/data/model/SearchPageInfo.ts
+var SearchPageInfo = class {
+  constructor(total, pageNum, pageSize, type) {
+    this._total = total;
+    this._pageNum = pageNum;
+    this._pageSize = pageSize;
+    this._hasNext = pageNum * pageSize < total;
+    this._type = type;
+  }
+  nextPage() {
+    if (!this._hasNext) {
+      return this;
+    }
+    return new SearchPageInfo(this.total, this._pageNum + 1, this._pageSize, this._type);
+  }
+  previousPage() {
+    if (this._pageNum == 0) {
+      return this;
+    }
+    return new SearchPageInfo(this.total, this._pageNum - 1, this._pageSize, this._type);
+  }
+  typePage(type) {
+    return new SearchPageInfo(this.total, 0, this._pageSize, this._type);
+  }
+  get hasNext() {
+    return this._hasNext;
+  }
+  get hasPrevious() {
+    return this._pageNum > 1;
+  }
+  get start() {
+    return (this._pageNum - 1) * this._pageSize + 1;
+  }
+  get total() {
+    return this._total;
+  }
+  set total(total) {
+    this._total = total;
+  }
+  get pageSize() {
+    return this._pageSize;
+  }
+  get pageNum() {
+    return this._pageNum;
+  }
+  get type() {
+    return this._type;
+  }
+  allPage() {
+    if (this._pageNum == 0) {
+      return this;
+    }
+    return new SearchPageInfo(this.total, this._pageNum - 1, this._pageSize, SupportType.all);
+  }
+};
+
+// src/org/wanxp/douban/data/model/SearchPageTypeOf.ts
+var SearchPageTypeOf = class extends SearchPageInfo {
+  constructor(total, pageNum, pageSize, type, list) {
+    super(total, pageNum, pageSize, type);
+    this._list = list;
+  }
+  get list() {
+    return this._list;
+  }
+  static empty(type) {
+    return new SearchPageTypeOf(0, 1, 0, type, []);
+  }
+  static emptyWithNoType() {
+    return new SearchPageTypeOf(0, 1, 0, null, []);
+  }
+};
+
+// src/org/wanxp/douban/data/model/SearchPage.ts
+var SearchPage = class extends SearchPageTypeOf {
+  static empty(type) {
+    return new SearchPage(0, 1, 0, type, []);
+  }
+  static emptyWithNoType() {
+    return new SearchPage(0, 1, 0, null, []);
+  }
+};
+
 // src/org/wanxp/douban/data/search/SearchParser.ts
 var SearchParserHandler = class {
   static parseSearch(dataHtml) {
@@ -18565,7 +20816,7 @@ var SearcherV2 = class {
 };
 
 // src/org/wanxp/douban/data/search/DoubanSearchFuzzySuggestModal.ts
-var DoubanFuzzySuggester = class extends import_obsidian6.FuzzySuggestModal {
+var DoubanFuzzySuggester = class extends import_obsidian7.FuzzySuggestModal {
   constructor(plugin, context, searchItem) {
     super(plugin.app);
     this.plugin = plugin;
@@ -18588,6 +20839,8 @@ var DoubanFuzzySuggester = class extends import_obsidian6.FuzzySuggestModal {
   }
   onChooseItem(item, evt) {
     return __async(this, null, function* () {
+      evt.preventDefault();
+      evt.stopImmediatePropagation();
       if (this.isNavigate(item)) {
         if (yield this.handleNavigate(item)) {
           this.start();
@@ -18674,11 +20927,6 @@ var DoubanFuzzySuggester = class extends import_obsidian6.FuzzySuggestModal {
 };
 
 // src/org/wanxp/douban/data/model/DoubanSubject.ts
-var DoubanSubject = class {
-  constructor() {
-    this.handledStatus = SubjectHandledStatus.init;
-  }
-};
 var ParameterMap = new Map([
   ["id", ""]
 ]);
@@ -18690,6 +20938,7 @@ var DoubanParameterName = {
   SCORE_STAR: "scoreStar",
   IMAGE: "image",
   IMAGE_URL: "imageData.url",
+  IMAGE_NAME: "imageName",
   URL: "url",
   DESC: "desc",
   PUBLISHER: "publisher",
@@ -18702,7 +20951,7 @@ var DoubanParameterName = {
 };
 
 // src/org/wanxp/douban/data/handler/DoubanAbstractLoadHandler.ts
-var import_obsidian8 = __toModule(require("obsidian"));
+var import_obsidian9 = __toModule(require("obsidian"));
 
 // src/org/wanxp/constant/DefaultTemplateContent.ts
 var DEFAULT_TEMPLATE_CONTENT = {
@@ -18824,6 +21073,27 @@ desc: {{desc}}
 ---
 
 ![image]({{image}})	
+`,
+  theaterTemplateFileContent: `---
+doubanId: {{id}}
+title: {{title}}
+type: {{type}}
+score: {{score}}
+scoreStar: {{scoreStar}}
+genre: {{genre}}
+datePublished: {{datePublished}}
+director: {{director}}
+actor: {{actor}}
+author: {{author}}
+publisher: {{publisher}}
+url: {{url}}
+aliases: {{aliases}}
+language: {{language}}
+createTime: {{currentDate}} {{currentTime}}
+desc: {{desc}}
+---
+
+![image]({{image}})
 `,
   teleplayTemplateFileContent: `---
 doubanId: {{id}}
@@ -19002,6 +21272,35 @@ Comment:
 ---
 {{myComment}}
 `,
+  theaterTemplateFileContent: `---
+doubanId: {{id}}
+title: {{title}}
+type: {{type}}
+score: {{score}}
+scoreStar: {{scoreStar}}
+myRating: {{myRating}}
+myRatingStar: {{myRatingStar}}
+genre: {{genre}}
+datePublished: {{datePublished}}
+director: {{director}}
+actor: {{actor}}
+author: {{author}}
+publisher: {{publisher}}
+tags: {{myTags}}
+state: {{myState}}
+url: {{url}}
+aliases: {{aliases}}
+language: {{language}}
+createTime: {{currentDate}} {{currentTime}}
+collectionDate: {{myCollectionDate}}
+desc: {{desc}}
+---
+
+![image]({{image}})
+
+Comment:
+{{myComment}}
+`,
   teleplayTemplateFileContent: `---
 doubanId: {{id}}
 title: {{title}}
@@ -19066,54 +21365,64 @@ var DoubanSubjectState;
   DoubanSubjectState3["do"] = "do";
   DoubanSubjectState3["collect"] = "collect";
 })(DoubanSubjectState || (DoubanSubjectState = {}));
-var DoubanSubjectStateRecords_ALL = {
-  [DoubanSubjectState.not]: i18nHelper.getMessage("500101"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500102"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500103"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500104")
-};
-var DoubanSubjectStateRecords_MOVIE = {
-  [DoubanSubjectState.not]: i18nHelper.getMessage("500201"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500202"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500203"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500204")
-};
-var DoubanSubjectStateRecords_BOOK = {
-  [DoubanSubjectState.not]: i18nHelper.getMessage("500301"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500302"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500303"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500304")
-};
-var DoubanSubjectStateRecords_MUSIC = {
-  [DoubanSubjectState.not]: i18nHelper.getMessage("500401"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500402"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500403"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500404")
-};
-var DoubanSubjectStateRecords_NOTE = {
-  [DoubanSubjectState.not]: i18nHelper.getMessage("500501"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500502"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500503"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500504")
-};
-var DoubanSubjectStateRecords_GAME = {
-  [DoubanSubjectState.not]: i18nHelper.getMessage("500601"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500602"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500603"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500604")
-};
-var DoubanSubjectStateRecords_TELEPLAY = {
-  [DoubanSubjectState.not]: i18nHelper.getMessage("500701"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500702"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500703"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500704")
-};
-var DoubanSubjectStateRecords_THEATER = {
-  [DoubanSubjectState.not]: i18nHelper.getMessage("500701"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500702"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500703"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500704")
-};
+function dynamicStateRecord(entries) {
+  const result = {};
+  Object.entries(entries).forEach(([key, messageKey]) => {
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      get: () => i18nHelper.getMessage(messageKey)
+    });
+  });
+  return result;
+}
+var DoubanSubjectStateRecords_ALL = dynamicStateRecord({
+  [DoubanSubjectState.not]: "500101",
+  [DoubanSubjectState.wish]: "500102",
+  [DoubanSubjectState.do]: "500103",
+  [DoubanSubjectState.collect]: "500104"
+});
+var DoubanSubjectStateRecords_MOVIE = dynamicStateRecord({
+  [DoubanSubjectState.not]: "500201",
+  [DoubanSubjectState.wish]: "500202",
+  [DoubanSubjectState.do]: "500203",
+  [DoubanSubjectState.collect]: "500204"
+});
+var DoubanSubjectStateRecords_BOOK = dynamicStateRecord({
+  [DoubanSubjectState.not]: "500301",
+  [DoubanSubjectState.wish]: "500302",
+  [DoubanSubjectState.do]: "500303",
+  [DoubanSubjectState.collect]: "500304"
+});
+var DoubanSubjectStateRecords_MUSIC = dynamicStateRecord({
+  [DoubanSubjectState.not]: "500401",
+  [DoubanSubjectState.wish]: "500402",
+  [DoubanSubjectState.do]: "500403",
+  [DoubanSubjectState.collect]: "500404"
+});
+var DoubanSubjectStateRecords_NOTE = dynamicStateRecord({
+  [DoubanSubjectState.not]: "500501",
+  [DoubanSubjectState.wish]: "500502",
+  [DoubanSubjectState.do]: "500503",
+  [DoubanSubjectState.collect]: "500504"
+});
+var DoubanSubjectStateRecords_GAME = dynamicStateRecord({
+  [DoubanSubjectState.not]: "500601",
+  [DoubanSubjectState.wish]: "500602",
+  [DoubanSubjectState.do]: "500603",
+  [DoubanSubjectState.collect]: "500604"
+});
+var DoubanSubjectStateRecords_TELEPLAY = dynamicStateRecord({
+  [DoubanSubjectState.not]: "500701",
+  [DoubanSubjectState.wish]: "500702",
+  [DoubanSubjectState.do]: "500703",
+  [DoubanSubjectState.collect]: "500704"
+});
+var DoubanSubjectStateRecords_THEATER = dynamicStateRecord({
+  [DoubanSubjectState.not]: "500701",
+  [DoubanSubjectState.wish]: "500702",
+  [DoubanSubjectState.do]: "500703",
+  [DoubanSubjectState.collect]: "500704"
+});
 var DoubanSubjectStateRecords = {
   [SupportType.all]: DoubanSubjectStateRecords_ALL,
   [SupportType.movie]: DoubanSubjectStateRecords_MOVIE,
@@ -19125,41 +21434,37 @@ var DoubanSubjectStateRecords = {
   [SupportType.theater]: DoubanSubjectStateRecords_THEATER
 };
 var ALL = "ALL";
-var DoubanSubjectStateRecords_MOVIE_SYNC = {
-  [ALL]: i18nHelper.getMessage("500004"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500202"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500203"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500204")
-};
-var DoubanSubjectStateRecords_TELEPLAY_SYNC = {
-  [ALL]: i18nHelper.getMessage("500004"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500202"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500203"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500204")
-};
-var DoubanSubjectStateRecords_BOOK_SYNC = {
-  [ALL]: i18nHelper.getMessage("500004"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500302"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500303"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500304")
-};
-var DoubanSubjectStateRecords_GAME_SYNC = {
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500602"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500603"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500604")
-};
-var DoubanSubjectStateRecords_BROADCAST_SYNC = {
-  [ALL]: i18nHelper.getMessage("500004")
-};
-var DoubanSubjectStateRecords_NOTE_SYNC = {
-  [ALL]: i18nHelper.getMessage("500004")
-};
-var DoubanSubjectStateRecords_MUSIC_SYNC = {
-  [ALL]: i18nHelper.getMessage("500004"),
-  [DoubanSubjectState.wish]: i18nHelper.getMessage("500402"),
-  [DoubanSubjectState.do]: i18nHelper.getMessage("500403"),
-  [DoubanSubjectState.collect]: i18nHelper.getMessage("500404")
-};
+var DoubanSubjectStateRecords_MOVIE_SYNC = dynamicStateRecord({
+  [ALL]: "500004",
+  [DoubanSubjectState.wish]: "500202",
+  [DoubanSubjectState.do]: "500203",
+  [DoubanSubjectState.collect]: "500204"
+});
+var DoubanSubjectStateRecords_TELEPLAY_SYNC = dynamicStateRecord({
+  [ALL]: "500004",
+  [DoubanSubjectState.wish]: "500202",
+  [DoubanSubjectState.do]: "500203",
+  [DoubanSubjectState.collect]: "500204"
+});
+var DoubanSubjectStateRecords_BOOK_SYNC = dynamicStateRecord({
+  [ALL]: "500004",
+  [DoubanSubjectState.wish]: "500302",
+  [DoubanSubjectState.do]: "500303",
+  [DoubanSubjectState.collect]: "500304"
+});
+var DoubanSubjectStateRecords_GAME_SYNC = dynamicStateRecord({
+  [DoubanSubjectState.wish]: "500602",
+  [DoubanSubjectState.do]: "500603",
+  [DoubanSubjectState.collect]: "500604"
+});
+var DoubanSubjectStateRecords_BROADCAST_SYNC = dynamicStateRecord({ [ALL]: "500004" });
+var DoubanSubjectStateRecords_NOTE_SYNC = dynamicStateRecord({ [ALL]: "500004" });
+var DoubanSubjectStateRecords_MUSIC_SYNC = dynamicStateRecord({
+  [ALL]: "500004",
+  [DoubanSubjectState.wish]: "500402",
+  [DoubanSubjectState.do]: "500403",
+  [DoubanSubjectState.collect]: "500404"
+});
 var DoubanSubjectStateRecords_SYNC = {
   [SyncType.movie]: DoubanSubjectStateRecords_MOVIE_SYNC,
   [SyncType.book]: DoubanSubjectStateRecords_BOOK_SYNC,
@@ -19248,7 +21553,7 @@ var YamlUtil = class {
       if (dataField && dataField.type === DataValueType.date) {
         return text3;
       }
-      YamlUtil.handleSpecialChar(text3);
+      text3 = YamlUtil.handleSpecialChar(text3);
     }
     return text3;
   }
@@ -19278,7 +21583,7 @@ var FieldVariable = class {
 };
 
 // src/org/wanxp/utils/FileUtil.ts
-var import_obsidian7 = __toModule(require("obsidian"));
+var import_obsidian8 = __toModule(require("obsidian"));
 var FileUtil = {
   parse(pathString) {
     const regex = /(?<dir>([^/\\]+[/\\])*)(?<name>[^/\\]*$)/;
@@ -19289,12 +21594,11 @@ var FileUtil = {
   },
   join(...strings) {
     const parts = strings.map((s) => String(s).trim()).filter((s) => s != null);
-    return (0, import_obsidian7.normalizePath)(parts.join("/"));
+    return (0, import_obsidian8.normalizePath)(parts.join("/"));
   },
   replaceSpecialCharactersForFileName(fileNameInput) {
     let fileName = fileNameInput.replaceAll(/[\\/:*?"<>|]/g, "_");
     fileName = fileName.replaceAll(/[\n\r\t]/g, "_");
-    fileName = fileName.replaceAll(/\s+/g, "_");
     fileName = fileName.replaceAll(/^\.+/g, "_");
     fileName = fileName.replaceAll(/\.+$/g, "_");
     fileName = fileName.replaceAll(/_+/g, "_");
@@ -19313,10 +21617,12 @@ var VariableUtil = class {
       return content;
     }
     if (obj instanceof Map) {
+      this.applyArrayLengthLimits(subjectType, obj, settingManager);
       this.handleCustomVariable(subjectType, obj, settingManager, "text");
       content = this.replaceMap(obj, allVariables, content, settingManager, targetType);
     } else {
       const map2 = this.objToMap(obj);
+      this.applyArrayLengthLimits(subjectType, map2, settingManager);
       this.handleCustomVariable(subjectType, map2, settingManager, "text");
       content = this.replaceMap(map2, allVariables, content, settingManager, targetType);
     }
@@ -19483,6 +21789,42 @@ var VariableUtil = class {
     });
     return map2;
   }
+  static applyArrayLengthLimits(subjectType, variableMap, settingManager) {
+    if (!variableMap || variableMap.size == 0) {
+      return;
+    }
+    const limits = settingManager.getSetting("arrayLengthLimits");
+    if (!limits || limits.length == 0) {
+      return;
+    }
+    const effectiveLimits = new Map();
+    limits.filter((l) => l && l.field && l.limit && l.limit > 0).filter((l) => {
+      if (!l.type) {
+        return false;
+      }
+      const t = String(l.type).toLowerCase();
+      return t === SupportType.all || t === subjectType;
+    }).forEach((l) => {
+      const existing = effectiveLimits.get(l.field);
+      if (existing == null || l.limit < existing) {
+        effectiveLimits.set(l.field, l.limit);
+      }
+    });
+    if (effectiveLimits.size == 0) {
+      return;
+    }
+    effectiveLimits.forEach((limit, fieldName) => {
+      const dataField = variableMap.get(fieldName);
+      if (!dataField) {
+        return;
+      }
+      const value = dataField.value;
+      if (Array.isArray(value) && value.length > limit) {
+        const truncated = value.slice(0, limit);
+        variableMap.set(fieldName, new DataField(dataField.name, dataField.type, dataField.origin, truncated));
+      }
+    });
+  }
   static handleText(v, targetType, dataField = null) {
     if (targetType === "yml_text") {
       return YamlUtil.handleText(v, dataField);
@@ -19498,10 +21840,10 @@ var VariableUtil = class {
 
 // src/org/wanxp/utils/NumberUtil.ts
 var NumberUtil = class {
-  static getRandomNum(min2, max2) {
-    const range = max2 - min2;
+  static getRandomNum(min, max) {
+    const range = max - min;
     const rand = Math.random();
-    return min2 + Math.round(rand * range);
+    return min + Math.round(rand * range);
   }
   static getRateStar(rate, rateMax, options) {
     if (rate > rateMax) {
@@ -19536,6 +21878,137 @@ var NumberUtil = class {
     return Number(value);
   }
 };
+
+// src/org/wanxp/utils/DoubanPageParser.ts
+var DoubanPageParser = class {
+  static normalizeText(value) {
+    if (!value) {
+      return "";
+    }
+    return value.replace(/\r\n?/g, "\n").split("\n").map((line) => line.replace(/[\t\f\v ]+/g, " ").trim()).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  }
+  static extractText(html3, selectors) {
+    for (const selector of selectors) {
+      const elements = html3(selector).get();
+      if (elements.length === 0) {
+        continue;
+      }
+      const paragraphs = elements.map((element) => {
+        const fragment = html3(element).html();
+        const value = fragment == null ? html3(element).text() : load(`<div>${fragment.replace(/<br\s*\/?\s*>/gi, "\n")}</div>`)("div").text();
+        return this.normalizeText(value);
+      }).filter(Boolean);
+      if (paragraphs.length > 0) {
+        return paragraphs.join("\n\n");
+      }
+    }
+    return "";
+  }
+  static parseUserTags(html3) {
+    const labeled = this.findLabeledElement(html3, /^标签\s*[:：]/);
+    if (!labeled) {
+      return null;
+    }
+    let text3 = this.normalizeText(html3(labeled).text()).replace(/^标签\s*[:：]\s*/, "");
+    if (!text3 && labeled.parent) {
+      text3 = this.normalizeText(html3(labeled.parent).text()).replace(/^标签\s*[:：]\s*/, "");
+    }
+    const tags = text3.split(/\s+/).map((tag) => tag.trim()).filter(Boolean);
+    return tags.length > 0 ? tags : null;
+  }
+  static parseUserComment(html3, fallbackSelectors = []) {
+    const explicit = this.extractText(html3, [
+      ...fallbackSelectors,
+      ...this.USER_SCOPES.flatMap((scope) => [
+        `${scope} textarea[name='comment']`,
+        `${scope} [data-field='comment']`,
+        `${scope} .comment-text`,
+        `${scope} .comment-content`
+      ])
+    ]);
+    if (explicit && this.isCommentCandidate(explicit)) {
+      return explicit;
+    }
+    const tagElement = this.findLabeledElement(html3, /^标签\s*[:：]/);
+    if (tagElement) {
+      let sibling = tagElement.nextSibling;
+      while (sibling) {
+        const candidate = this.normalizeText(html3(sibling).text());
+        if (this.isCommentCandidate(candidate)) {
+          return candidate;
+        }
+        sibling = sibling.nextSibling;
+      }
+    }
+    const candidates = [];
+    for (const scope of this.USER_SCOPES) {
+      html3(`${scope} span, ${scope} p, ${scope} div`).each((_index, element) => {
+        if (html3(element).children().length > 0) {
+          return;
+        }
+        const candidate = this.normalizeText(html3(element).text());
+        if (this.isCommentCandidate(candidate)) {
+          candidates.push(candidate);
+        }
+      });
+      if (candidates.length > 0) {
+        break;
+      }
+    }
+    return candidates.length > 0 ? candidates[candidates.length - 1] : null;
+  }
+  static collectFollowingFieldText(html3, labelElement) {
+    const values = [];
+    let sibling = labelElement.nextSibling;
+    while (sibling) {
+      if (sibling.type === "tag" && sibling.name === "br") {
+        break;
+      }
+      const value = this.normalizeText(html3(sibling).text());
+      if (value && !/^[\/、,，;；]+$/.test(value)) {
+        values.push(value);
+      }
+      sibling = sibling.nextSibling;
+    }
+    return Array.from(new Set(values)).join(" / ");
+  }
+  static findLabeledElement(html3, label) {
+    for (const scope of this.USER_SCOPES) {
+      const elements = html3(`${scope} span, ${scope} div, ${scope} p`).get();
+      const matching = elements.map((element) => ({ element, text: this.normalizeText(html3(element).text()) })).filter((item) => label.test(item.text)).sort((a, b) => a.text.length - b.text.length);
+      if (matching.length > 0) {
+        return matching[0].element;
+      }
+    }
+    return null;
+  }
+  static isCommentCandidate(text3) {
+    if (!text3 || text3.length < 2) {
+      return false;
+    }
+    if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(text3) || /^\d+(?:\.\d+)?$/.test(text3)) {
+      return false;
+    }
+    if (/^标签\s*[:：]/.test(text3) || /^(我的)?评价\s*[:：]?$/.test(text3)) {
+      return false;
+    }
+    if (/^(想看|看过|在看|想读|读过|在读|想听|听过|在听|想玩|玩过|在玩)/.test(text3)) {
+      return false;
+    }
+    if (/^(修改|删除|评分|暂无评价)$/.test(text3)) {
+      return false;
+    }
+    if (/^[一二三四五1-5]星$/.test(text3) || /^(很差|较差|还行|推荐|力荐)$/.test(text3)) {
+      return false;
+    }
+    return true;
+  }
+};
+DoubanPageParser.USER_SCOPES = [
+  "#interest_sect_level",
+  ".collection-section",
+  "#interest_section"
+];
 
 // src/org/wanxp/douban/data/handler/DoubanAbstractLoadHandler.ts
 var DoubanAbstractLoadHandler = class {
@@ -19695,17 +22168,51 @@ var DoubanAbstractLoadHandler = class {
       return "";
     }
     if (context.listItem) {
-      const newName = context.listItem.title.trim().replaceAll(" ", "");
+      const listedName = context.listItem.title.trim();
       switch (personNameMode) {
         case PersonNameMode.CH_NAME:
-          return newName;
-          break;
+          return listedName;
         case PersonNameMode.EN_NAME:
-          return name.trim().replaceAll(" ", "").replaceAll(newName, "");
-          break;
+          const originalName = name.trim();
+          if (this.removeWhitespace(originalName) === this.removeWhitespace(listedName)) {
+            return originalName;
+          }
+          const withoutListedName = this.removeTextIgnoringWhitespace(originalName, listedName).trim();
+          return withoutListedName || originalName;
       }
     }
     return this.getPersonNameByMode(name, personNameMode);
+  }
+  removeWhitespace(value) {
+    return (value || "").replace(/\s+/g, "");
+  }
+  removeTextIgnoringWhitespace(value, textToRemove) {
+    const compactNeedle = this.removeWhitespace(textToRemove);
+    if (!compactNeedle) {
+      return value;
+    }
+    const compactValue = this.removeWhitespace(value);
+    const compactIndex = compactValue.indexOf(compactNeedle);
+    if (compactIndex < 0) {
+      return value;
+    }
+    let compactPosition = 0;
+    let start = -1;
+    let end2 = value.length;
+    for (let index2 = 0; index2 < value.length; index2++) {
+      if (/\s/.test(value[index2])) {
+        continue;
+      }
+      if (compactPosition === compactIndex) {
+        start = index2;
+      }
+      compactPosition++;
+      if (compactPosition === compactIndex + compactNeedle.length) {
+        end2 = index2 + 1;
+        break;
+      }
+    }
+    return start >= 0 ? value.substring(0, start) + value.substring(end2) : value;
   }
   html_decode(str) {
     let s = "";
@@ -19730,6 +22237,7 @@ var DoubanAbstractLoadHandler = class {
     return VariableUtil.replaceSubject(variableMap, template, this.getSupportType(), this.doubanPlugin.settingsManager, "path");
   }
   buildVariableMap(extract3, context) {
+    extract3.desc = DoubanPageParser.normalizeText(extract3.desc);
     const variableMap = new Map();
     for (const [key, value] of Object.entries(extract3)) {
       if (!value) {
@@ -19742,12 +22250,14 @@ var DoubanAbstractLoadHandler = class {
       variableMap.set(key, new DataField(key, type, value, value));
     }
     variableMap.set(DoubanParameterName.IMAGE_URL, new DataField(DoubanParameterName.IMAGE_URL, DataValueType.url, extract3.imageUrl, extract3.imageUrl));
-    variableMap.set(DoubanParameterName.YEAR_PUBLISHED, new DataField(DoubanParameterName.YEAR_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian8.moment)(extract3.datePublished).format("yyyy") : ""));
-    variableMap.set(DoubanParameterName.DATE_PUBLISHED, new DataField(DoubanParameterName.DATE_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian8.moment)(extract3.datePublished).format(context.settings.dateFormat) : ""));
-    variableMap.set(DoubanParameterName.TIME_PUBLISHED, new DataField(DoubanParameterName.TIME_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian8.moment)(extract3.datePublished).format(context.settings.timeFormat) : ""));
+    const imageName = this.getImageBasename(extract3.image);
+    variableMap.set(DoubanParameterName.IMAGE_NAME, new DataField(DoubanParameterName.IMAGE_NAME, DataValueType.string, imageName, imageName));
+    variableMap.set(DoubanParameterName.YEAR_PUBLISHED, new DataField(DoubanParameterName.YEAR_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian9.moment)(extract3.datePublished).format("yyyy") : ""));
+    variableMap.set(DoubanParameterName.DATE_PUBLISHED, new DataField(DoubanParameterName.DATE_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian9.moment)(extract3.datePublished).format(context.settings.dateFormat) : ""));
+    variableMap.set(DoubanParameterName.TIME_PUBLISHED, new DataField(DoubanParameterName.TIME_PUBLISHED, DataValueType.date, extract3.datePublished, extract3.datePublished ? (0, import_obsidian9.moment)(extract3.datePublished).format(context.settings.timeFormat) : ""));
     const currentDate = new Date();
-    variableMap.set(DoubanParameterName.CURRENT_DATE, new DataField(DoubanParameterName.CURRENT_DATE, DataValueType.date, currentDate, (0, import_obsidian8.moment)(currentDate).format(context.settings.dateFormat)));
-    variableMap.set(DoubanParameterName.CURRENT_TIME, new DataField(DoubanParameterName.CURRENT_TIME, DataValueType.date, currentDate, (0, import_obsidian8.moment)(currentDate).format(context.settings.timeFormat)));
+    variableMap.set(DoubanParameterName.CURRENT_DATE, new DataField(DoubanParameterName.CURRENT_DATE, DataValueType.date, currentDate, (0, import_obsidian9.moment)(currentDate).format(context.settings.dateFormat)));
+    variableMap.set(DoubanParameterName.CURRENT_TIME, new DataField(DoubanParameterName.CURRENT_TIME, DataValueType.date, currentDate, (0, import_obsidian9.moment)(currentDate).format(context.settings.timeFormat)));
     return variableMap;
   }
   parseUserInfo(resultContent, variableMap, extract3, context) {
@@ -19785,7 +22295,7 @@ var DoubanAbstractLoadHandler = class {
       variableMap.set(DoubanUserParameterName.MY_RATING_STAR, new DataField(DoubanUserParameterName.MY_RATING_STAR, DataValueType.string, userState.rate, NumberUtil.getRateStar(userState.rate, 5, { scoreSetting: context.settings.scoreSetting })));
     }
     if (userState.collectionDate) {
-      variableMap.set(DoubanUserParameterName.MY_COLLECTION_DATE, new DataField(DoubanUserParameterName.MY_COLLECTION_DATE, DataValueType.date, userState.collectionDate, userState.collectionDate ? (0, import_obsidian8.moment)(userState.collectionDate).format(context.settings.dateFormat) : ""));
+      variableMap.set(DoubanUserParameterName.MY_COLLECTION_DATE, new DataField(DoubanUserParameterName.MY_COLLECTION_DATE, DataValueType.date, userState.collectionDate, userState.collectionDate ? (0, import_obsidian9.moment)(userState.collectionDate).format(context.settings.dateFormat) : ""));
     }
   }
   getTemplateKey() {
@@ -19808,6 +22318,9 @@ var DoubanAbstractLoadHandler = class {
         break;
       case SupportType.note:
         templateKey = TemplateKey.noteTemplateFile;
+        break;
+      case SupportType.theater:
+        templateKey = TemplateKey.theaterTemplateFile;
         break;
       default:
         templateKey = null;
@@ -19942,10 +22455,19 @@ var DoubanAbstractLoadHandler = class {
   initImageVariableMap(extract3, context, variableMap) {
     variableMap.set(DoubanParameterName.IMAGE_URL, new DataField(DoubanParameterName.IMAGE_URL, DataValueType.url, extract3.imageUrl, extract3.imageUrl));
     variableMap.set(DoubanParameterName.IMAGE, new DataField(DoubanParameterName.IMAGE, DataValueType.path, extract3.image, extract3.image));
+    const imageName = this.getImageBasename(extract3.image);
+    variableMap.set(DoubanParameterName.IMAGE_NAME, new DataField(DoubanParameterName.IMAGE_NAME, DataValueType.string, imageName, imageName));
+  }
+  getImageBasename(image) {
+    if (!image) {
+      return "";
+    }
+    const cleanPath = image.split(/[?#]/, 1)[0].replace(/\\/g, "/");
+    return cleanPath.substring(cleanPath.lastIndexOf("/") + 1);
   }
   handleImage(image, folder, filename, context, showError, headers) {
     return __async(this, null, function* () {
-      if (context.settings.pictureBedFlag && import_obsidian8.Platform.isDesktopApp) {
+      if (context.settings.pictureBedFlag && import_obsidian9.Platform.isDesktopApp) {
         const checked = yield context.netFileHandler.downloadDBUploadPicGoByClipboardBefore(context);
         if (!checked) {
           log.notice("\u8FDE\u63A5PicGo\u8F6F\u4EF6\u5931\u8D25, \u8BF7\u68C0\u67E5\u662F\u5426\u5DF2\u5F00\u542FPicGo\u7684Server\u670D\u52A1 \u6216 \u68C0\u67E5\u63D2\u4EF6\u4E2D\u914D\u7F6E\u5730\u5740\u662F\u5426\u6B63\u786E\uFF0C\u73B0\u4F7F\u7528\u9ED8\u8BA4\u7684\u4E0B\u8F7D\u5230\u672C\u5730\u7684\u65B9\u5F0F");
@@ -19992,11 +22514,12 @@ var DoubanBookParameter = {
   menu: "menu",
   price: "price",
   binding: "binding",
-  producer: "producer"
+  producer: "producer",
+  popularComments: "popularComments"
 };
 
 // src/org/wanxp/douban/data/handler/DoubanBookLoadHandler.ts
-var import_obsidian9 = __toModule(require("obsidian"));
+var import_obsidian10 = __toModule(require("obsidian"));
 var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -20022,7 +22545,7 @@ var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
   }
   analysisUser(html3, context) {
     const rate = html3("input#n_rating").val();
-    const tags = this.getTags(html3);
+    const tags = DoubanPageParser.parseUserTags(html3);
     const stateWord = html3("div#interest_sect_level > div.a_stars > span.mr10").text().trim();
     const collectionDateStr = html3("div#interest_sect_level > div.a_stars > span.mr10").next().text().trim();
     const userState1 = DoubanAbstractLoadHandler.getUserState(stateWord);
@@ -20033,18 +22556,10 @@ var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
       rate: rate ? Number(rate) : null,
       state: userState1,
       stateName,
-      collectionDate: collectionDateStr ? (0, import_obsidian9.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian10.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment
     };
     return { data: html3, userState };
-  }
-  getTags(html3) {
-    const tagsText = html3("#interest_sect_level span.color_gray").get().map((span) => html3(span).text().trim()).find((text3) => /^标签[:：]/.test(text3));
-    if (!tagsText) {
-      return null;
-    }
-    const tags = tagsText.replace(/^标签[:：]/, "").trim().split(/\s+/).filter((tag) => tag);
-    return tags.length > 0 ? tags : null;
   }
   getBookStateName(stateWord) {
     if (!stateWord) {
@@ -20062,14 +22577,18 @@ var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
     return "";
   }
   parseSubjectFromHtml(html3, context) {
-    let desc = html3(".intro p").text();
+    let desc = DoubanPageParser.extractText(html3, [
+      "#link-report .all.hidden .intro p",
+      ".related_info .all.hidden .intro p",
+      ".intro p"
+    ]);
     if (!desc) {
-      desc = html3(html3("head > meta[property= 'og:description']").get(0)).attr("content");
+      desc = DoubanPageParser.normalizeText(html3("head > meta[property='og:description']").attr("content"));
     }
     const image = html3(html3("head > meta[property= 'og:image']").get(0)).attr("content");
     let item = html3(html3("head > script[type='application/ld+json']").get(0)).text();
     item = super.html_decode(item);
-    const obj = JSON.parse(item.replace(/[\r\n\t\s+]/g, ""));
+    const obj = JSON.parse(item);
     const title = obj.name;
     const url = obj.url;
     const author = obj.author.map((a) => a.name);
@@ -20086,7 +22605,9 @@ var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
         html3(info.parent).find("a").map((index3, a) => {
           value.push(html3(a).text().trim());
         });
-      } else if (key.indexOf("\u4F5C\u8005") >= 0 || key.indexOf("\u4E1B\u4E66") >= 0 || key.indexOf("\u51FA\u7248\u793E") >= 0 || key.indexOf("\u51FA\u54C1\u65B9") >= 0) {
+      } else if (key.indexOf("\u51FA\u7248\u793E") >= 0 || key.indexOf("\u51FA\u54C1\u65B9") >= 0) {
+        value = DoubanPageParser.collectFollowingFieldText(html3, info);
+      } else if (key.indexOf("\u4F5C\u8005") >= 0 || key.indexOf("\u4E1B\u4E66") >= 0) {
         value = html3(info.next.next).text().trim();
       } else {
         value = html3(info.next).text().trim();
@@ -20119,34 +22640,13 @@ var DoubanBookLoadHandler = class extends DoubanAbstractLoadHandler {
       url,
       genre: [],
       binding: valueMap.has("binding") ? valueMap.get("binding") : "",
-      producer: valueMap.has("producer") ? valueMap.get("producer") : ""
+      producer: valueMap.has("producer") ? valueMap.get("producer") : "",
+      popularComments: Array.from(new Set(html3("#hot-comments .comment-item .short, #comments .comment-item .short, .comment-item .short").get().map((element) => DoubanPageParser.normalizeText(html3(element).text())).filter(Boolean))).slice(0, 5)
     };
     return result;
   }
   getComment(html3) {
-    let comment = html3("#interest_sect_level span").get().map((span) => html3(span).text().trim()).filter((text3) => this.isCommentCandidate(text3)).pop();
-    if (comment) {
-      return comment;
-    }
-    return this.getPropertyValue(html3, PropertyName.comment);
-  }
-  isCommentCandidate(text3) {
-    if (!text3) {
-      return false;
-    }
-    if (/^\d{4}-\d{2}-\d{2}$/.test(text3)) {
-      return false;
-    }
-    if (/^标签[:：]/.test(text3)) {
-      return false;
-    }
-    if (/^(我的)?评价[:：]?$/.test(text3)) {
-      return false;
-    }
-    if (text3.indexOf("\u6211\u8BFB\u8FC7\u8FD9\u672C\u4E66") >= 0 || text3.indexOf("\u6211\u60F3\u8BFB\u8FD9\u672C\u4E66") >= 0 || text3.indexOf("\u6211\u5728\u8BFB\u8FD9\u672C\u4E66") >= 0) {
-      return false;
-    }
-    return true;
+    return DoubanPageParser.parseUserComment(html3, this.doubanPlugin.settingsManager.getSelector(this.getSupportType(), PropertyName.comment));
   }
 };
 var BookKeyValueMap = new Map([
@@ -20183,7 +22683,7 @@ function getProperty(o, name) {
 }
 
 // src/org/wanxp/douban/data/handler/DoubanMovieLoadHandler.ts
-var import_obsidian10 = __toModule(require("obsidian"));
+var import_obsidian11 = __toModule(require("obsidian"));
 var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -20208,8 +22708,7 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
   }
   analysisUser(html3, context) {
     let rate = html3("input#n_rating").val();
-    let tagsStr = html3("div#interest_sect_level > div.a_stars > span.color_gray").text().trim();
-    let tags = tagsStr ? tagsStr.replace("\u6807\u7B7E:", "").trim().split(" ") : null;
+    let tags = DoubanPageParser.parseUserTags(html3);
     let stateWord = html3("div#interest_sect_level > div.a_stars > span.mr10").text().trim();
     let collectionDateStr = html3("div#interest_sect_level > div.a_stars > span.mr10 > span.collection_date").text().trim();
     let userState1 = DoubanAbstractLoadHandler.getUserState(stateWord);
@@ -20218,17 +22717,13 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian10.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian11.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
   }
   getComment(html3, context) {
-    const component = html3("div#interest_sect_level > div.a_stars > span.color_gray").next().next().text().trim();
-    if (component) {
-      return component;
-    }
-    return this.getPropertyValue(html3, PropertyName.comment);
+    return DoubanPageParser.parseUserComment(html3, this.doubanPlugin.settingsManager.getSelector(this.getSupportType(), PropertyName.comment));
   }
   parseSubjectFromHtml(html3, context) {
     let movie = html3("script").get().filter((scd) => html3(scd).attr("type") == "application/ld+json").map((i) => {
@@ -20244,7 +22739,7 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
       const result = {
         id: id ? id[0] : "",
         title,
-        type: this.getSupportType(),
+        type: obj["@type"] === "TVSeries" ? SupportType.teleplay : this.getSupportType(),
         score: obj.aggregateRating ? obj.aggregateRating.ratingValue : void 0,
         originalTitle,
         desc: obj.description,
@@ -20276,10 +22771,11 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
       const id = idMatch ? idMatch[0] : "";
       const scoreText = html3("#interest_sectl strong[property='v:average']").text();
       const score = scoreText ? parseFloat(scoreText) : void 0;
+      const isTeleplay = html3("#info span.pl").get().some((element) => /集数|单集片长/.test(html3(element).text()));
       movie = {
         id,
         title,
-        type: this.getSupportType(),
+        type: isTeleplay ? SupportType.teleplay : this.getSupportType(),
         score,
         originalTitle: title,
         desc: desc2,
@@ -20302,7 +22798,12 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
     }
     this.handlePersonNameByMeta(html3, movie, context, "video:actor", "actor");
     this.handlePersonNameByMeta(html3, movie, context, "video:director", "director");
-    const desc = html3("span[property='v:summary']").text();
+    const desc = DoubanPageParser.extractText(html3, [
+      "[id^='link-report'] > span.all.hidden",
+      "#link-report .all.hidden p",
+      "#link-report span.all.hidden",
+      "span[property='v:summary']"
+    ]);
     if (desc) {
       movie.desc = desc;
     }
@@ -20325,6 +22826,9 @@ var DoubanMovieLoadHandler = class extends DoubanAbstractLoadHandler {
     movie.country = valueMap.has("country") ? valueMap.get("country") : [];
     movie.language = valueMap.has("language") ? valueMap.get("language") : [];
     movie.time = valueMap.has("time") ? valueMap.get("time") : "";
+    if (movie.type === SupportType.teleplay) {
+      movie.episode = valueMap.has("episode") ? valueMap.get("episode") : "";
+    }
     movie.aliases = valueMap.has("aliases") ? valueMap.get("aliases") : [];
     movie.IMDb = valueMap.has("IMDb") ? valueMap.get("IMDb") : "";
     return movie;
@@ -20334,12 +22838,14 @@ var MovieKeyValueMap = new Map([
   ["\u5236\u7247\u56FD\u5BB6/\u5730\u533A:", "country"],
   ["\u8BED\u8A00:", "language"],
   ["\u7247\u957F:", "time"],
+  ["\u96C6\u6570:", "episode"],
+  ["\u5355\u96C6\u7247\u957F:", "time"],
   ["\u53C8\u540D:", "aliases"],
   ["IMDb:", "IMDb"]
 ]);
 
 // src/org/wanxp/douban/data/handler/DoubanMusicLoadHandler.ts
-var import_obsidian11 = __toModule(require("obsidian"));
+var import_obsidian12 = __toModule(require("obsidian"));
 var DoubanMusicLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -20360,29 +22866,29 @@ var DoubanMusicLoadHandler = class extends DoubanAbstractLoadHandler {
   }
   analysisUser(html3, context) {
     const rate = html3("input#n_rating").val();
-    const tagsStr = html3("span#rating").next().next().text().trim();
-    const tags = tagsStr ? tagsStr.replace("\u6807\u7B7E:", "").trim().split(" ") : null;
+    const tags = DoubanPageParser.parseUserTags(html3);
     const stateWord = html3("div#interest_sect_level > div.a_stars > span.mr10").text().trim();
     const collectionDateStr = html3("div#interest_sect_level > div.a_stars > span.mr10").next().text().trim();
     const userState1 = DoubanAbstractLoadHandler.getUserState(stateWord);
-    const component = html3("span#rating").next().next().next().next().text().trim();
+    const component = DoubanPageParser.parseUserComment(html3);
     const userState = {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian11.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian12.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
   }
   parseSubjectFromHtml(html3, context) {
     const title = html3(html3("head > meta[property= 'og:title']").get(0)).attr("content");
-    let desc = html3("span.all.hidden").text();
+    let desc = DoubanPageParser.extractText(html3, [
+      "#link-report span.all.hidden p",
+      "#link-report span.all.hidden",
+      "span[property='v:summary']"
+    ]);
     if (!desc) {
-      desc = html3("span[property='v:summary']").text();
-    }
-    if (!desc) {
-      desc = html3(html3("head > meta[property= 'og:description']").get(0)).attr("content");
+      desc = DoubanPageParser.normalizeText(html3("head > meta[property='og:description']").attr("content"));
     }
     const url = html3(html3("head > meta[property= 'og:url']").get(0)).attr("content");
     const image = html3(html3("head > meta[property= 'og:image']").get(0)).attr("content");
@@ -20521,7 +23027,7 @@ var DoubanOtherLoadHandler = class extends DoubanAbstractLoadHandler {
 };
 
 // src/org/wanxp/douban/data/handler/DoubanTeleplayLoadHandler.ts
-var import_obsidian12 = __toModule(require("obsidian"));
+var import_obsidian13 = __toModule(require("obsidian"));
 var DoubanTeleplayLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -20546,18 +23052,16 @@ var DoubanTeleplayLoadHandler = class extends DoubanAbstractLoadHandler {
   }
   analysisUser(html3, context) {
     const rate = html3("input#n_rating").val();
-    const rating = html3("span#rating");
-    const tagsStr = rating.next().next().text().trim();
-    const tags = tagsStr ? tagsStr.replace("\u6807\u7B7E:", "").trim().split(" ") : null;
+    const tags = DoubanPageParser.parseUserTags(html3);
     const stateWord = html3("div#interest_sect_level > div.a_stars > span.mr10").text().trim();
     const collectionDateStr = html3("div#interest_sect_level > div.a_stars > span.mr10 > span.collection_date").text().trim();
     const userState1 = DoubanAbstractLoadHandler.getUserState(stateWord);
-    const component = rating.next().next().next().next().text().trim();
+    const component = DoubanPageParser.parseUserComment(html3);
     const userState = {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian12.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian13.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
@@ -20636,7 +23140,12 @@ var DoubanTeleplayLoadHandler = class extends DoubanAbstractLoadHandler {
     }
     this.handlePersonNameByMeta(html3, teleplay, context, "video:actor", "actor");
     this.handlePersonNameByMeta(html3, teleplay, context, "video:director", "director");
-    const desc = html3("span[property='v:summary']").text();
+    const desc = DoubanPageParser.extractText(html3, [
+      "[id^='link-report'] > span.all.hidden",
+      "#link-report .all.hidden p",
+      "#link-report span.all.hidden",
+      "span[property='v:summary']"
+    ]);
     if (desc) {
       teleplay.desc = desc;
     }
@@ -20673,7 +23182,7 @@ var TeleplayKeyValueMap = new Map([
 ]);
 
 // src/org/wanxp/douban/data/handler/DoubanGameLoadHandler.ts
-var import_obsidian13 = __toModule(require("obsidian"));
+var import_obsidian14 = __toModule(require("obsidian"));
 var DoubanGameLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -20695,19 +23204,17 @@ var DoubanGameLoadHandler = class extends DoubanAbstractLoadHandler {
   }
   analysisUser(html3, context) {
     let rate = html3("input#n_rating").val();
-    const rating = html3("span#rating");
-    const tagsStr = rating.parent().next().text().trim();
-    const tags = tagsStr ? tagsStr.replace("\u6807\u7B7E:", "").trim().split(" ") : null;
+    const tags = DoubanPageParser.parseUserTags(html3);
     const collected = html3("div.collection-section > div.collection-rating-stars > div.collection-collected");
     const stateWord = collected.find("span.collection-result").text().trim();
     const collectionDateStr = collected.find("span.color_gray").text().trim();
     const userState1 = DoubanAbstractLoadHandler.getUserState(stateWord);
-    const component = rating.parent().next().next().text().trim();
+    const component = DoubanPageParser.parseUserComment(html3);
     const userState = {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian13.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian14.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
@@ -20723,7 +23230,10 @@ var DoubanGameLoadHandler = class extends DoubanAbstractLoadHandler {
     let detailDom = html3(html3("dl.thing-attr").get(0));
     let dt = detailDom.find("dt");
     let image = html3(html3("#content > div > div.article > div.mod.item-subject > div.item-subject-info > div > a > img").get(0)).attr("src");
-    let desc = html3(html3("#link-report > p").get(0)).text();
+    let desc = DoubanPageParser.extractText(html3, [
+      "#link-report .all.hidden p",
+      "#link-report p"
+    ]);
     let url = `https://www.douban.com/game/${id}/`;
     let valueMap = new Map();
     let value;
@@ -20771,13 +23281,7 @@ var GameKeyValueMap = new Map([
 ]);
 
 // src/org/wanxp/douban/data/handler/DoubanTheaterLoadHandler.ts
-var import_obsidian14 = __toModule(require("obsidian"));
-
-// src/org/wanxp/douban/data/model/DoubanTheaterSubject.ts
-var DoubanTheaterSubject = class extends DoubanSubject {
-};
-
-// src/org/wanxp/douban/data/handler/DoubanTheaterLoadHandler.ts
+var import_obsidian15 = __toModule(require("obsidian"));
 var DoubanTheaterLoadHandler = class extends DoubanAbstractLoadHandler {
   constructor(doubanPlugin) {
     super(doubanPlugin);
@@ -20786,7 +23290,7 @@ var DoubanTheaterLoadHandler = class extends DoubanAbstractLoadHandler {
     return SupportType.theater;
   }
   getHighQuantityImageUrl(fileName) {
-    return `https://img9.doubanio.com/view/photo/l/public/${fileName}`;
+    return `https://img9.doubanio.com/pview/drama_subject_poster/large/public/${fileName}`;
   }
   getSubjectUrl(id) {
     return `https://www.douban.com/location/drama/${id}/`;
@@ -20798,29 +23302,64 @@ var DoubanTheaterLoadHandler = class extends DoubanAbstractLoadHandler {
     variableMap.set("aliases", new DataField("aliases", DataValueType.array, extract3.aliases, (extract3.aliases || []).map((a) => a.trim().replace(TITLE_ALIASES_SPECIAL_CHAR_REG_G, "_").replace(/_+/g, "_").replace(/^_/, "").replace(/_$/, ""))));
   }
   support(extract3) {
-    return extract3 && extract3.type && (extract3.type.contains("\u821E\u53F0\u5267") || extract3.type.contains("\u821E\u5267") || extract3.type.contains("Theater") || extract3.type.contains("theater"));
+    var _a5;
+    return !!extract3 && (((_a5 = extract3.url) == null ? void 0 : _a5.indexOf("/location/drama/")) >= 0 || extract3.type === SupportType.theater || /舞台剧|音乐剧|话剧|舞剧|歌剧|戏曲|脱口秀|Theater/i.test(extract3.type || ""));
   }
   analysisUser(html3, context) {
     const rate = html3("input#n_rating").val();
-    const tagsStr = html3("div#interest_sect_level > div.a_stars > span.color_gray").text().trim();
-    const tags = tagsStr ? tagsStr.replace("\u6807\u7B7E:", "").trim().split(" ") : null;
-    const stateWord = html3("#interest_sect_level > h2").text().trim();
+    const tags = DoubanPageParser.parseUserTags(html3);
+    const stateWord = html3("#interest_sect_level .mr10").first().text().trim() || html3("#interest_sect_level > h2").text().trim();
     const collectionDateStr = html3("div#interest_sect_level > div.a_stars > span.mr10 > span.collection_date").text().trim();
     const userState1 = DoubanAbstractLoadHandler.getUserState(stateWord);
-    const component = this.getPropertyValue(html3, PropertyName.comment);
+    const component = DoubanPageParser.parseUserComment(html3);
     const userState = {
       tags,
       rate: rate ? Number(rate) : null,
       state: userState1,
-      collectionDate: collectionDateStr ? (0, import_obsidian14.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
+      collectionDate: collectionDateStr ? (0, import_obsidian15.moment)(collectionDateStr, "YYYY-MM-DD").toDate() : null,
       comment: component
     };
     return { data: html3, userState };
   }
   parseSubjectFromHtml(html3, context) {
-    const obj = new DoubanTheaterSubject();
-    obj.id = this.getPropertyValue(html3, PropertyName.id);
-    return obj;
+    var _a5, _b;
+    const pageId = html3("[data-object_id]").first().attr("data-object_id") || html3("[share-id]").first().attr("share-id") || html3("script").get().map((element) => {
+      var _a6;
+      return (_a6 = html3(element).text().match(/_subject_\s*=\s*\{[^}]*\bid\s*:\s*["'](\d+)["']/)) == null ? void 0 : _a6[1];
+    }).find(Boolean) || "";
+    const url = html3("link[rel='canonical']").attr("href") || html3("meta[property='og:url']").attr("content") || html3("[data-url*='/location/drama/']").first().attr("data-url") || "";
+    const values = new Map();
+    html3(".drama-info .meta dl dt").each((_index, labelElement) => {
+      const label = DoubanPageParser.normalizeText(html3(labelElement).text()).replace(/[：:]$/, "");
+      const valueElement = html3(labelElement).next("dd");
+      const linkedValues = valueElement.find("[itemprop='name'], a").get().map((element) => DoubanPageParser.normalizeText(html3(element).text())).filter(Boolean);
+      const rawValue = DoubanPageParser.normalizeText(valueElement.text());
+      values.set(label, linkedValues.length > 0 ? Array.from(new Set(linkedValues)) : rawValue.split(/\s*\/\s*/).filter(Boolean));
+    });
+    const title = DoubanPageParser.normalizeText(html3(".drama-info [itemprop='name']").first().text() || html3(".drama-info h1").text());
+    const image = html3(".drama-info [itemprop='image']").attr("src") || "";
+    const dateText = (values.get("\u6F14\u51FA\u65E5\u671F") || [])[0] || "";
+    const dateMatch = dateText.match(/\d{4}-\d{1,2}-\d{1,2}/);
+    return {
+      id: StringUtil.analyzeIdByUrl(url) || pageId || StringUtil.analyzeIdByUrl(((_a5 = context.listItem) == null ? void 0 : _a5.url) || ""),
+      title,
+      type: this.getSupportType(),
+      score: Number(html3(".drama-info [itemprop='ratingValue']").first().text()) || null,
+      image,
+      imageUrl: image,
+      url: url || (((_b = context.listItem) == null ? void 0 : _b.url) || ""),
+      desc: DoubanPageParser.extractText(html3, [".article .mod .pure-text", ".pure-text"]),
+      publisher: (values.get("\u6F14\u51FA\u56E2\u4F53") || []).join(" / "),
+      datePublished: dateMatch ? new Date(dateMatch[0]) : void 0,
+      genre: values.get("\u7C7B\u578B") || [],
+      director: values.get("\u5BFC\u6F14") || [],
+      author: values.get("\u7F16\u5267") || [],
+      actor: values.get("\u4E3B\u6F14") || [],
+      aggregateRating: void 0,
+      originalTitle: (values.get("\u539F\u540D") || [])[0] || "",
+      aliases: values.get("\u53C8\u540D") || [],
+      language: values.get("\u8BED\u8A00") || []
+    };
   }
 };
 
@@ -20831,13 +23370,13 @@ var DoubanSearchChooseItemHandler = class {
     this._doubanPlugin = doubanPlugin;
     this._doubanSubjectHandlerDefault = new DoubanOtherLoadHandler(doubanPlugin);
     this._doubanSubjectHandlers = [
+      new DoubanTheaterLoadHandler(doubanPlugin),
       new DoubanMovieLoadHandler(doubanPlugin),
       new DoubanBookLoadHandler(doubanPlugin),
       new DoubanTeleplayLoadHandler(doubanPlugin),
       new DoubanMusicLoadHandler(doubanPlugin),
       new DoubanNoteLoadHandler(doubanPlugin),
       new DoubanGameLoadHandler(doubanPlugin),
-      new DoubanTheaterLoadHandler(doubanPlugin),
       this._doubanSubjectHandlerDefault
     ];
   }
@@ -20848,9 +23387,9 @@ var DoubanSearchChooseItemHandler = class {
       }
       let doubanSubjectHandlers = this._doubanSubjectHandlers.filter((h) => h.support(searchExtract));
       if (doubanSubjectHandlers && doubanSubjectHandlers.length > 0) {
-        yield doubanSubjectHandlers[0].handle(searchExtract.id, context);
+        return yield doubanSubjectHandlers[0].handle(searchExtract.id, context);
       } else {
-        yield this._doubanSubjectHandlerDefault.handle(searchExtract.id, context);
+        return yield this._doubanSubjectHandlerDefault.handle(searchExtract.id, context);
       }
     });
   }
@@ -20872,93 +23411,12 @@ var DoubanSearchChooseItemHandler = class {
 };
 
 // src/org/wanxp/douban/data/search/DoubanSearchModal.ts
-var import_obsidian15 = __toModule(require("obsidian"));
-
-// src/org/wanxp/utils/TimeUtil.ts
-var TimeUtil = class {
-  static estimateTime(needHandled, overSlowSize) {
-    if (needHandled <= 0) {
-      return 0;
-    }
-    let times = 0;
-    if (overSlowSize) {
-      if (needHandled <= BasicConst.SLOW_SIZE) {
-        times = ESTIMATE_TIME_PER_WITH_REQUEST * needHandled;
-      } else {
-        times = ESTIMATE_TIME_PER_WITH_REQUEST * BasicConst.SLOW_SIZE + ESTIMATE_TIME_PER_WITH_REQUEST_SLOW * Math.max(needHandled - BasicConst.SLOW_SIZE, 0);
-      }
-    } else {
-      times = ESTIMATE_TIME_PER_WITH_REQUEST * needHandled;
-    }
-    return times;
-  }
-  static estimateTimeMsg(needHandled, overSlowSize) {
-    const times = this.estimateTime(needHandled, overSlowSize);
-    if (times <= 0) {
-      return 0 + i18nHelper.getMessage("SECOND");
-    }
-    return this.formatDuring(times);
-  }
-  static formatDuring(mss) {
-    let show = false;
-    let message = "";
-    const days = Math.floor(mss / (1e3 * 60 * 60 * 24));
-    const hours = Math.floor(mss % (1e3 * 60 * 60 * 24) / (1e3 * 60 * 60));
-    const minutes = Math.floor(mss % (1e3 * 60 * 60) / (1e3 * 60));
-    const seconds = Math.floor(mss % (1e3 * 60) / 1e3);
-    if (days > 0) {
-      show = true;
-      message += days + i18nHelper.getMessage("DAY");
-    }
-    if (hours > 0 || show) {
-      show = true;
-      message += hours + i18nHelper.getMessage("HOUR");
-    }
-    if (minutes > 0 || show) {
-      show = true;
-      message += minutes + i18nHelper.getMessage("MINUTE");
-    }
-    if (seconds > 0 || show) {
-      message += seconds + i18nHelper.getMessage("SECOND");
-    }
-    return message;
-  }
-  static formatDate(date, format = "yyyy-MM-dd HH:mm:ss") {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const hour = date.getHours();
-    const minute = date.getMinutes();
-    const second = date.getSeconds();
-    const formatMap = {
-      yyyy: year.toString(),
-      MM: month.toString().padStart(2, "0"),
-      dd: day.toString().padStart(2, "0"),
-      HH: hour.toString().padStart(2, "0"),
-      mm: minute.toString().padStart(2, "0"),
-      ss: second.toString().padStart(2, "0")
-    };
-    return format.replace(/yyyy|MM|dd|HH|mm|ss/g, (match) => formatMap[match]);
-  }
-  static getLastMonth() {
-    const date = new Date();
-    date.setMonth(date.getMonth() - 1);
-    return date;
-  }
-};
-var sleep = (ms) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-var sleepRange = (msMin, msMax) => {
-  const msTime = NumberUtil.getRandomNum(msMin, msMax);
-  return new Promise((resolve) => setTimeout(resolve, msTime));
-};
-
-// src/org/wanxp/douban/data/search/DoubanSearchModal.ts
-var DoubanSearchModal = class extends import_obsidian15.Modal {
+var import_obsidian16 = __toModule(require("obsidian"));
+var DoubanSearchModal = class extends import_obsidian16.Modal {
   constructor(app, plugin, context, type) {
     super(app);
     this.searchType = SupportType.all;
+    this.submitted = false;
     this.plugin = plugin;
     this.context = context;
     this.searchType = type != null ? type : SupportType.all;
@@ -20967,30 +23425,34 @@ var DoubanSearchModal = class extends import_obsidian15.Modal {
     let { contentEl } = this;
     contentEl.createEl("h3", { text: i18nHelper.getMessage("110003") });
     const content = contentEl.createDiv("content");
+    content.addClass("obsidian_douban_search_fields");
     const inputs = content.createDiv("inputs");
-    const searchInput = new import_obsidian15.TextComponent(inputs).onChange((searchTerm) => {
+    const searchInput = new import_obsidian16.TextComponent(inputs).onChange((searchTerm) => {
       this.searchTerm = searchTerm;
     });
     inputs.addClass("obsidian_douban_search_input_content");
     searchInput.inputEl.size = 40;
     searchInput.inputEl.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
-        sleep(1e3);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.submitted = true;
         this.close();
       }
     });
     inputs.addClass("obsidian_douban_search_input");
     const typeSelect = content.createDiv("type-select");
-    const typeSelectInput = new import_obsidian15.DropdownComponent(typeSelect).addOptions(SearchTypeRecords).setValue(this.searchType).onChange((value) => {
+    const typeSelectInput = new import_obsidian16.DropdownComponent(typeSelect).addOptions(SearchTypeRecords).setValue(this.searchType).onChange((value) => {
       this.searchType = value;
     });
     typeSelect.addClass("obsidian_douban_search_input_type");
     const controls = contentEl.createDiv("controls");
     controls.addClass("obsidian_douban_search_controls");
-    new import_obsidian15.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110004")).setCta().onClick(() => {
+    new import_obsidian16.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110004")).setCta().onClick(() => {
+      this.submitted = true;
       this.close();
     }).setClass("obsidian_douban_search_button");
-    new import_obsidian15.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => {
+    new import_obsidian16.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => {
       this.close();
     }).setClass("obsidian_douban_cancel_button");
   }
@@ -20998,7 +23460,7 @@ var DoubanSearchModal = class extends import_obsidian15.Modal {
     return __async(this, null, function* () {
       let { contentEl } = this;
       contentEl.empty();
-      if (this.searchTerm) {
+      if (this.submitted && this.searchTerm) {
         yield this.plugin.search(this.searchTerm, this.searchType, this.context);
       }
     });
@@ -21006,1571 +23468,23 @@ var DoubanSearchModal = class extends import_obsidian15.Modal {
 };
 
 // src/org/wanxp/douban/setting/DoubanSettingTab.ts
-var import_obsidian28 = __toModule(require("obsidian"));
+var import_obsidian31 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/setting/OutputSettingsHelper.ts
-var import_obsidian20 = __toModule(require("obsidian"));
+var import_obsidian21 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/setting/TemplateSettingHelper.ts
-var import_obsidian19 = __toModule(require("obsidian"));
+var import_obsidian20 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/setting/model/FileTreeSelectSuggest.ts
+var import_obsidian18 = __toModule(require("obsidian"));
+
+// src/org/wanxp/douban/setting/model/TextInputSuggest.ts
 var import_obsidian17 = __toModule(require("obsidian"));
-
-// src/org/wanxp/douban/setting/model/TextInputSuggest.ts
-var import_obsidian16 = __toModule(require("obsidian"));
-
-// src/org/wanxp/douban/setting/model/Suggest.ts
-var wrapAround = (value, size) => {
-  return (value % size + size) % size;
-};
-var Suggest = class {
-  constructor(owner, containerEl, scope) {
-    this.owner = owner;
-    this.containerEl = containerEl;
-    containerEl.on("click", ".suggestion-item", this.onSuggestionClick.bind(this));
-    containerEl.on("mousemove", ".suggestion-item", this.onSuggestionMouseover.bind(this));
-    scope.register([], "ArrowUp", (event) => {
-      if (!event.isComposing) {
-        this.setSelectedItem(this.selectedItem - 1, true);
-        return false;
-      }
-    });
-    scope.register([], "ArrowDown", (event) => {
-      if (!event.isComposing) {
-        this.setSelectedItem(this.selectedItem + 1, true);
-        return false;
-      }
-    });
-    scope.register([], "Enter", (event) => {
-      if (!event.isComposing) {
-        this.useSelectedItem(event);
-        return false;
-      }
-    });
-  }
-  onSuggestionClick(event, el) {
-    event.preventDefault();
-    const item = this.suggestions.indexOf(el);
-    this.setSelectedItem(item, false);
-    this.useSelectedItem(event);
-  }
-  onSuggestionMouseover(_event, el) {
-    const item = this.suggestions.indexOf(el);
-    this.setSelectedItem(item, false);
-  }
-  setSuggestions(values) {
-    this.containerEl.empty();
-    const suggestionEls = [];
-    values.forEach((value) => {
-      const suggestionEl = this.containerEl.createDiv("suggestion-item");
-      this.owner.renderSuggestion(value, suggestionEl);
-      suggestionEls.push(suggestionEl);
-    });
-    this.values = values;
-    this.suggestions = suggestionEls;
-    this.setSelectedItem(0, false);
-  }
-  useSelectedItem(event) {
-    const currentValue = this.values[this.selectedItem];
-    if (currentValue) {
-      this.owner.selectSuggestion(currentValue, event);
-    }
-  }
-  setSelectedItem(selectedIndex, scrollIntoView) {
-    const normalizedIndex = wrapAround(selectedIndex, this.suggestions.length);
-    const prevSelectedSuggestion = this.suggestions[this.selectedItem];
-    const selectedSuggestion = this.suggestions[normalizedIndex];
-    prevSelectedSuggestion == null ? void 0 : prevSelectedSuggestion.removeClass("is-selected");
-    selectedSuggestion == null ? void 0 : selectedSuggestion.addClass("is-selected");
-    this.selectedItem = normalizedIndex;
-    if (scrollIntoView) {
-      selectedSuggestion.scrollIntoView(false);
-    }
-  }
-};
-
-// node_modules/@popperjs/core/lib/enums.js
-var top = "top";
-var bottom = "bottom";
-var right = "right";
-var left = "left";
-var auto = "auto";
-var basePlacements = [top, bottom, right, left];
-var start = "start";
-var end2 = "end";
-var clippingParents = "clippingParents";
-var viewport = "viewport";
-var popper = "popper";
-var reference = "reference";
-var variationPlacements = /* @__PURE__ */ basePlacements.reduce(function(acc, placement) {
-  return acc.concat([placement + "-" + start, placement + "-" + end2]);
-}, []);
-var placements = /* @__PURE__ */ [].concat(basePlacements, [auto]).reduce(function(acc, placement) {
-  return acc.concat([placement, placement + "-" + start, placement + "-" + end2]);
-}, []);
-var beforeRead = "beforeRead";
-var read = "read";
-var afterRead = "afterRead";
-var beforeMain = "beforeMain";
-var main = "main";
-var afterMain = "afterMain";
-var beforeWrite = "beforeWrite";
-var write = "write";
-var afterWrite = "afterWrite";
-var modifierPhases = [beforeRead, read, afterRead, beforeMain, main, afterMain, beforeWrite, write, afterWrite];
-
-// node_modules/@popperjs/core/lib/dom-utils/getNodeName.js
-function getNodeName(element) {
-  return element ? (element.nodeName || "").toLowerCase() : null;
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getWindow.js
-function getWindow(node) {
-  if (node == null) {
-    return window;
-  }
-  if (node.toString() !== "[object Window]") {
-    var ownerDocument = node.ownerDocument;
-    return ownerDocument ? ownerDocument.defaultView || window : window;
-  }
-  return node;
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/instanceOf.js
-function isElement(node) {
-  var OwnElement = getWindow(node).Element;
-  return node instanceof OwnElement || node instanceof Element;
-}
-function isHTMLElement(node) {
-  var OwnElement = getWindow(node).HTMLElement;
-  return node instanceof OwnElement || node instanceof HTMLElement;
-}
-function isShadowRoot(node) {
-  if (typeof ShadowRoot === "undefined") {
-    return false;
-  }
-  var OwnElement = getWindow(node).ShadowRoot;
-  return node instanceof OwnElement || node instanceof ShadowRoot;
-}
-
-// node_modules/@popperjs/core/lib/modifiers/applyStyles.js
-function applyStyles(_ref) {
-  var state = _ref.state;
-  Object.keys(state.elements).forEach(function(name) {
-    var style = state.styles[name] || {};
-    var attributes2 = state.attributes[name] || {};
-    var element = state.elements[name];
-    if (!isHTMLElement(element) || !getNodeName(element)) {
-      return;
-    }
-    Object.assign(element.style, style);
-    Object.keys(attributes2).forEach(function(name2) {
-      var value = attributes2[name2];
-      if (value === false) {
-        element.removeAttribute(name2);
-      } else {
-        element.setAttribute(name2, value === true ? "" : value);
-      }
-    });
-  });
-}
-function effect(_ref2) {
-  var state = _ref2.state;
-  var initialStyles = {
-    popper: {
-      position: state.options.strategy,
-      left: "0",
-      top: "0",
-      margin: "0"
-    },
-    arrow: {
-      position: "absolute"
-    },
-    reference: {}
-  };
-  Object.assign(state.elements.popper.style, initialStyles.popper);
-  state.styles = initialStyles;
-  if (state.elements.arrow) {
-    Object.assign(state.elements.arrow.style, initialStyles.arrow);
-  }
-  return function() {
-    Object.keys(state.elements).forEach(function(name) {
-      var element = state.elements[name];
-      var attributes2 = state.attributes[name] || {};
-      var styleProperties = Object.keys(state.styles.hasOwnProperty(name) ? state.styles[name] : initialStyles[name]);
-      var style = styleProperties.reduce(function(style2, property) {
-        style2[property] = "";
-        return style2;
-      }, {});
-      if (!isHTMLElement(element) || !getNodeName(element)) {
-        return;
-      }
-      Object.assign(element.style, style);
-      Object.keys(attributes2).forEach(function(attribute) {
-        element.removeAttribute(attribute);
-      });
-    });
-  };
-}
-var applyStyles_default = {
-  name: "applyStyles",
-  enabled: true,
-  phase: "write",
-  fn: applyStyles,
-  effect,
-  requires: ["computeStyles"]
-};
-
-// node_modules/@popperjs/core/lib/utils/getBasePlacement.js
-function getBasePlacement(placement) {
-  return placement.split("-")[0];
-}
-
-// node_modules/@popperjs/core/lib/utils/math.js
-var max = Math.max;
-var min = Math.min;
-var round = Math.round;
-
-// node_modules/@popperjs/core/lib/utils/userAgent.js
-function getUAString() {
-  var uaData = navigator.userAgentData;
-  if (uaData != null && uaData.brands && Array.isArray(uaData.brands)) {
-    return uaData.brands.map(function(item) {
-      return item.brand + "/" + item.version;
-    }).join(" ");
-  }
-  return navigator.userAgent;
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/isLayoutViewport.js
-function isLayoutViewport() {
-  return !/^((?!chrome|android).)*safari/i.test(getUAString());
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getBoundingClientRect.js
-function getBoundingClientRect(element, includeScale, isFixedStrategy) {
-  if (includeScale === void 0) {
-    includeScale = false;
-  }
-  if (isFixedStrategy === void 0) {
-    isFixedStrategy = false;
-  }
-  var clientRect = element.getBoundingClientRect();
-  var scaleX = 1;
-  var scaleY = 1;
-  if (includeScale && isHTMLElement(element)) {
-    scaleX = element.offsetWidth > 0 ? round(clientRect.width) / element.offsetWidth || 1 : 1;
-    scaleY = element.offsetHeight > 0 ? round(clientRect.height) / element.offsetHeight || 1 : 1;
-  }
-  var _ref = isElement(element) ? getWindow(element) : window, visualViewport = _ref.visualViewport;
-  var addVisualOffsets = !isLayoutViewport() && isFixedStrategy;
-  var x = (clientRect.left + (addVisualOffsets && visualViewport ? visualViewport.offsetLeft : 0)) / scaleX;
-  var y = (clientRect.top + (addVisualOffsets && visualViewport ? visualViewport.offsetTop : 0)) / scaleY;
-  var width = clientRect.width / scaleX;
-  var height = clientRect.height / scaleY;
-  return {
-    width,
-    height,
-    top: y,
-    right: x + width,
-    bottom: y + height,
-    left: x,
-    x,
-    y
-  };
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getLayoutRect.js
-function getLayoutRect(element) {
-  var clientRect = getBoundingClientRect(element);
-  var width = element.offsetWidth;
-  var height = element.offsetHeight;
-  if (Math.abs(clientRect.width - width) <= 1) {
-    width = clientRect.width;
-  }
-  if (Math.abs(clientRect.height - height) <= 1) {
-    height = clientRect.height;
-  }
-  return {
-    x: element.offsetLeft,
-    y: element.offsetTop,
-    width,
-    height
-  };
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/contains.js
-function contains2(parent2, child) {
-  var rootNode = child.getRootNode && child.getRootNode();
-  if (parent2.contains(child)) {
-    return true;
-  } else if (rootNode && isShadowRoot(rootNode)) {
-    var next2 = child;
-    do {
-      if (next2 && parent2.isSameNode(next2)) {
-        return true;
-      }
-      next2 = next2.parentNode || next2.host;
-    } while (next2);
-  }
-  return false;
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getComputedStyle.js
-function getComputedStyle(element) {
-  return getWindow(element).getComputedStyle(element);
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/isTableElement.js
-function isTableElement(element) {
-  return ["table", "td", "th"].indexOf(getNodeName(element)) >= 0;
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getDocumentElement.js
-function getDocumentElement(element) {
-  return ((isElement(element) ? element.ownerDocument : element.document) || window.document).documentElement;
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getParentNode.js
-function getParentNode(element) {
-  if (getNodeName(element) === "html") {
-    return element;
-  }
-  return element.assignedSlot || element.parentNode || (isShadowRoot(element) ? element.host : null) || getDocumentElement(element);
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getOffsetParent.js
-function getTrueOffsetParent(element) {
-  if (!isHTMLElement(element) || getComputedStyle(element).position === "fixed") {
-    return null;
-  }
-  return element.offsetParent;
-}
-function getContainingBlock(element) {
-  var isFirefox = /firefox/i.test(getUAString());
-  var isIE = /Trident/i.test(getUAString());
-  if (isIE && isHTMLElement(element)) {
-    var elementCss = getComputedStyle(element);
-    if (elementCss.position === "fixed") {
-      return null;
-    }
-  }
-  var currentNode = getParentNode(element);
-  if (isShadowRoot(currentNode)) {
-    currentNode = currentNode.host;
-  }
-  while (isHTMLElement(currentNode) && ["html", "body"].indexOf(getNodeName(currentNode)) < 0) {
-    var css2 = getComputedStyle(currentNode);
-    if (css2.transform !== "none" || css2.perspective !== "none" || css2.contain === "paint" || ["transform", "perspective"].indexOf(css2.willChange) !== -1 || isFirefox && css2.willChange === "filter" || isFirefox && css2.filter && css2.filter !== "none") {
-      return currentNode;
-    } else {
-      currentNode = currentNode.parentNode;
-    }
-  }
-  return null;
-}
-function getOffsetParent(element) {
-  var window2 = getWindow(element);
-  var offsetParent = getTrueOffsetParent(element);
-  while (offsetParent && isTableElement(offsetParent) && getComputedStyle(offsetParent).position === "static") {
-    offsetParent = getTrueOffsetParent(offsetParent);
-  }
-  if (offsetParent && (getNodeName(offsetParent) === "html" || getNodeName(offsetParent) === "body" && getComputedStyle(offsetParent).position === "static")) {
-    return window2;
-  }
-  return offsetParent || getContainingBlock(element) || window2;
-}
-
-// node_modules/@popperjs/core/lib/utils/getMainAxisFromPlacement.js
-function getMainAxisFromPlacement(placement) {
-  return ["top", "bottom"].indexOf(placement) >= 0 ? "x" : "y";
-}
-
-// node_modules/@popperjs/core/lib/utils/within.js
-function within(min2, value, max2) {
-  return max(min2, min(value, max2));
-}
-function withinMaxClamp(min2, value, max2) {
-  var v = within(min2, value, max2);
-  return v > max2 ? max2 : v;
-}
-
-// node_modules/@popperjs/core/lib/utils/getFreshSideObject.js
-function getFreshSideObject() {
-  return {
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0
-  };
-}
-
-// node_modules/@popperjs/core/lib/utils/mergePaddingObject.js
-function mergePaddingObject(paddingObject) {
-  return Object.assign({}, getFreshSideObject(), paddingObject);
-}
-
-// node_modules/@popperjs/core/lib/utils/expandToHashMap.js
-function expandToHashMap(value, keys) {
-  return keys.reduce(function(hashMap, key) {
-    hashMap[key] = value;
-    return hashMap;
-  }, {});
-}
-
-// node_modules/@popperjs/core/lib/modifiers/arrow.js
-var toPaddingObject = function toPaddingObject2(padding, state) {
-  padding = typeof padding === "function" ? padding(Object.assign({}, state.rects, {
-    placement: state.placement
-  })) : padding;
-  return mergePaddingObject(typeof padding !== "number" ? padding : expandToHashMap(padding, basePlacements));
-};
-function arrow(_ref) {
-  var _state$modifiersData$;
-  var state = _ref.state, name = _ref.name, options = _ref.options;
-  var arrowElement = state.elements.arrow;
-  var popperOffsets2 = state.modifiersData.popperOffsets;
-  var basePlacement = getBasePlacement(state.placement);
-  var axis = getMainAxisFromPlacement(basePlacement);
-  var isVertical = [left, right].indexOf(basePlacement) >= 0;
-  var len = isVertical ? "height" : "width";
-  if (!arrowElement || !popperOffsets2) {
-    return;
-  }
-  var paddingObject = toPaddingObject(options.padding, state);
-  var arrowRect = getLayoutRect(arrowElement);
-  var minProp = axis === "y" ? top : left;
-  var maxProp = axis === "y" ? bottom : right;
-  var endDiff = state.rects.reference[len] + state.rects.reference[axis] - popperOffsets2[axis] - state.rects.popper[len];
-  var startDiff = popperOffsets2[axis] - state.rects.reference[axis];
-  var arrowOffsetParent = getOffsetParent(arrowElement);
-  var clientSize = arrowOffsetParent ? axis === "y" ? arrowOffsetParent.clientHeight || 0 : arrowOffsetParent.clientWidth || 0 : 0;
-  var centerToReference = endDiff / 2 - startDiff / 2;
-  var min2 = paddingObject[minProp];
-  var max2 = clientSize - arrowRect[len] - paddingObject[maxProp];
-  var center = clientSize / 2 - arrowRect[len] / 2 + centerToReference;
-  var offset2 = within(min2, center, max2);
-  var axisProp = axis;
-  state.modifiersData[name] = (_state$modifiersData$ = {}, _state$modifiersData$[axisProp] = offset2, _state$modifiersData$.centerOffset = offset2 - center, _state$modifiersData$);
-}
-function effect2(_ref2) {
-  var state = _ref2.state, options = _ref2.options;
-  var _options$element = options.element, arrowElement = _options$element === void 0 ? "[data-popper-arrow]" : _options$element;
-  if (arrowElement == null) {
-    return;
-  }
-  if (typeof arrowElement === "string") {
-    arrowElement = state.elements.popper.querySelector(arrowElement);
-    if (!arrowElement) {
-      return;
-    }
-  }
-  if (!contains2(state.elements.popper, arrowElement)) {
-    return;
-  }
-  state.elements.arrow = arrowElement;
-}
-var arrow_default = {
-  name: "arrow",
-  enabled: true,
-  phase: "main",
-  fn: arrow,
-  effect: effect2,
-  requires: ["popperOffsets"],
-  requiresIfExists: ["preventOverflow"]
-};
-
-// node_modules/@popperjs/core/lib/utils/getVariation.js
-function getVariation(placement) {
-  return placement.split("-")[1];
-}
-
-// node_modules/@popperjs/core/lib/modifiers/computeStyles.js
-var unsetSides = {
-  top: "auto",
-  right: "auto",
-  bottom: "auto",
-  left: "auto"
-};
-function roundOffsetsByDPR(_ref, win) {
-  var x = _ref.x, y = _ref.y;
-  var dpr = win.devicePixelRatio || 1;
-  return {
-    x: round(x * dpr) / dpr || 0,
-    y: round(y * dpr) / dpr || 0
-  };
-}
-function mapToStyles(_ref2) {
-  var _Object$assign2;
-  var popper2 = _ref2.popper, popperRect = _ref2.popperRect, placement = _ref2.placement, variation = _ref2.variation, offsets = _ref2.offsets, position = _ref2.position, gpuAcceleration = _ref2.gpuAcceleration, adaptive = _ref2.adaptive, roundOffsets = _ref2.roundOffsets, isFixed = _ref2.isFixed;
-  var _offsets$x = offsets.x, x = _offsets$x === void 0 ? 0 : _offsets$x, _offsets$y = offsets.y, y = _offsets$y === void 0 ? 0 : _offsets$y;
-  var _ref3 = typeof roundOffsets === "function" ? roundOffsets({
-    x,
-    y
-  }) : {
-    x,
-    y
-  };
-  x = _ref3.x;
-  y = _ref3.y;
-  var hasX = offsets.hasOwnProperty("x");
-  var hasY = offsets.hasOwnProperty("y");
-  var sideX = left;
-  var sideY = top;
-  var win = window;
-  if (adaptive) {
-    var offsetParent = getOffsetParent(popper2);
-    var heightProp = "clientHeight";
-    var widthProp = "clientWidth";
-    if (offsetParent === getWindow(popper2)) {
-      offsetParent = getDocumentElement(popper2);
-      if (getComputedStyle(offsetParent).position !== "static" && position === "absolute") {
-        heightProp = "scrollHeight";
-        widthProp = "scrollWidth";
-      }
-    }
-    offsetParent = offsetParent;
-    if (placement === top || (placement === left || placement === right) && variation === end2) {
-      sideY = bottom;
-      var offsetY = isFixed && offsetParent === win && win.visualViewport ? win.visualViewport.height : offsetParent[heightProp];
-      y -= offsetY - popperRect.height;
-      y *= gpuAcceleration ? 1 : -1;
-    }
-    if (placement === left || (placement === top || placement === bottom) && variation === end2) {
-      sideX = right;
-      var offsetX = isFixed && offsetParent === win && win.visualViewport ? win.visualViewport.width : offsetParent[widthProp];
-      x -= offsetX - popperRect.width;
-      x *= gpuAcceleration ? 1 : -1;
-    }
-  }
-  var commonStyles = Object.assign({
-    position
-  }, adaptive && unsetSides);
-  var _ref4 = roundOffsets === true ? roundOffsetsByDPR({
-    x,
-    y
-  }, getWindow(popper2)) : {
-    x,
-    y
-  };
-  x = _ref4.x;
-  y = _ref4.y;
-  if (gpuAcceleration) {
-    var _Object$assign;
-    return Object.assign({}, commonStyles, (_Object$assign = {}, _Object$assign[sideY] = hasY ? "0" : "", _Object$assign[sideX] = hasX ? "0" : "", _Object$assign.transform = (win.devicePixelRatio || 1) <= 1 ? "translate(" + x + "px, " + y + "px)" : "translate3d(" + x + "px, " + y + "px, 0)", _Object$assign));
-  }
-  return Object.assign({}, commonStyles, (_Object$assign2 = {}, _Object$assign2[sideY] = hasY ? y + "px" : "", _Object$assign2[sideX] = hasX ? x + "px" : "", _Object$assign2.transform = "", _Object$assign2));
-}
-function computeStyles(_ref5) {
-  var state = _ref5.state, options = _ref5.options;
-  var _options$gpuAccelerat = options.gpuAcceleration, gpuAcceleration = _options$gpuAccelerat === void 0 ? true : _options$gpuAccelerat, _options$adaptive = options.adaptive, adaptive = _options$adaptive === void 0 ? true : _options$adaptive, _options$roundOffsets = options.roundOffsets, roundOffsets = _options$roundOffsets === void 0 ? true : _options$roundOffsets;
-  var commonStyles = {
-    placement: getBasePlacement(state.placement),
-    variation: getVariation(state.placement),
-    popper: state.elements.popper,
-    popperRect: state.rects.popper,
-    gpuAcceleration,
-    isFixed: state.options.strategy === "fixed"
-  };
-  if (state.modifiersData.popperOffsets != null) {
-    state.styles.popper = Object.assign({}, state.styles.popper, mapToStyles(Object.assign({}, commonStyles, {
-      offsets: state.modifiersData.popperOffsets,
-      position: state.options.strategy,
-      adaptive,
-      roundOffsets
-    })));
-  }
-  if (state.modifiersData.arrow != null) {
-    state.styles.arrow = Object.assign({}, state.styles.arrow, mapToStyles(Object.assign({}, commonStyles, {
-      offsets: state.modifiersData.arrow,
-      position: "absolute",
-      adaptive: false,
-      roundOffsets
-    })));
-  }
-  state.attributes.popper = Object.assign({}, state.attributes.popper, {
-    "data-popper-placement": state.placement
-  });
-}
-var computeStyles_default = {
-  name: "computeStyles",
-  enabled: true,
-  phase: "beforeWrite",
-  fn: computeStyles,
-  data: {}
-};
-
-// node_modules/@popperjs/core/lib/modifiers/eventListeners.js
-var passive = {
-  passive: true
-};
-function effect3(_ref) {
-  var state = _ref.state, instance = _ref.instance, options = _ref.options;
-  var _options$scroll = options.scroll, scroll = _options$scroll === void 0 ? true : _options$scroll, _options$resize = options.resize, resize = _options$resize === void 0 ? true : _options$resize;
-  var window2 = getWindow(state.elements.popper);
-  var scrollParents = [].concat(state.scrollParents.reference, state.scrollParents.popper);
-  if (scroll) {
-    scrollParents.forEach(function(scrollParent) {
-      scrollParent.addEventListener("scroll", instance.update, passive);
-    });
-  }
-  if (resize) {
-    window2.addEventListener("resize", instance.update, passive);
-  }
-  return function() {
-    if (scroll) {
-      scrollParents.forEach(function(scrollParent) {
-        scrollParent.removeEventListener("scroll", instance.update, passive);
-      });
-    }
-    if (resize) {
-      window2.removeEventListener("resize", instance.update, passive);
-    }
-  };
-}
-var eventListeners_default = {
-  name: "eventListeners",
-  enabled: true,
-  phase: "write",
-  fn: function fn() {
-  },
-  effect: effect3,
-  data: {}
-};
-
-// node_modules/@popperjs/core/lib/utils/getOppositePlacement.js
-var hash = {
-  left: "right",
-  right: "left",
-  bottom: "top",
-  top: "bottom"
-};
-function getOppositePlacement(placement) {
-  return placement.replace(/left|right|bottom|top/g, function(matched) {
-    return hash[matched];
-  });
-}
-
-// node_modules/@popperjs/core/lib/utils/getOppositeVariationPlacement.js
-var hash2 = {
-  start: "end",
-  end: "start"
-};
-function getOppositeVariationPlacement(placement) {
-  return placement.replace(/start|end/g, function(matched) {
-    return hash2[matched];
-  });
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getWindowScroll.js
-function getWindowScroll(node) {
-  var win = getWindow(node);
-  var scrollLeft = win.pageXOffset;
-  var scrollTop = win.pageYOffset;
-  return {
-    scrollLeft,
-    scrollTop
-  };
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getWindowScrollBarX.js
-function getWindowScrollBarX(element) {
-  return getBoundingClientRect(getDocumentElement(element)).left + getWindowScroll(element).scrollLeft;
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getViewportRect.js
-function getViewportRect(element, strategy) {
-  var win = getWindow(element);
-  var html3 = getDocumentElement(element);
-  var visualViewport = win.visualViewport;
-  var width = html3.clientWidth;
-  var height = html3.clientHeight;
-  var x = 0;
-  var y = 0;
-  if (visualViewport) {
-    width = visualViewport.width;
-    height = visualViewport.height;
-    var layoutViewport = isLayoutViewport();
-    if (layoutViewport || !layoutViewport && strategy === "fixed") {
-      x = visualViewport.offsetLeft;
-      y = visualViewport.offsetTop;
-    }
-  }
-  return {
-    width,
-    height,
-    x: x + getWindowScrollBarX(element),
-    y
-  };
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getDocumentRect.js
-function getDocumentRect(element) {
-  var _element$ownerDocumen;
-  var html3 = getDocumentElement(element);
-  var winScroll = getWindowScroll(element);
-  var body = (_element$ownerDocumen = element.ownerDocument) == null ? void 0 : _element$ownerDocumen.body;
-  var width = max(html3.scrollWidth, html3.clientWidth, body ? body.scrollWidth : 0, body ? body.clientWidth : 0);
-  var height = max(html3.scrollHeight, html3.clientHeight, body ? body.scrollHeight : 0, body ? body.clientHeight : 0);
-  var x = -winScroll.scrollLeft + getWindowScrollBarX(element);
-  var y = -winScroll.scrollTop;
-  if (getComputedStyle(body || html3).direction === "rtl") {
-    x += max(html3.clientWidth, body ? body.clientWidth : 0) - width;
-  }
-  return {
-    width,
-    height,
-    x,
-    y
-  };
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/isScrollParent.js
-function isScrollParent(element) {
-  var _getComputedStyle = getComputedStyle(element), overflow = _getComputedStyle.overflow, overflowX = _getComputedStyle.overflowX, overflowY = _getComputedStyle.overflowY;
-  return /auto|scroll|overlay|hidden/.test(overflow + overflowY + overflowX);
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getScrollParent.js
-function getScrollParent(node) {
-  if (["html", "body", "#document"].indexOf(getNodeName(node)) >= 0) {
-    return node.ownerDocument.body;
-  }
-  if (isHTMLElement(node) && isScrollParent(node)) {
-    return node;
-  }
-  return getScrollParent(getParentNode(node));
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/listScrollParents.js
-function listScrollParents(element, list) {
-  var _element$ownerDocumen;
-  if (list === void 0) {
-    list = [];
-  }
-  var scrollParent = getScrollParent(element);
-  var isBody = scrollParent === ((_element$ownerDocumen = element.ownerDocument) == null ? void 0 : _element$ownerDocumen.body);
-  var win = getWindow(scrollParent);
-  var target = isBody ? [win].concat(win.visualViewport || [], isScrollParent(scrollParent) ? scrollParent : []) : scrollParent;
-  var updatedList = list.concat(target);
-  return isBody ? updatedList : updatedList.concat(listScrollParents(getParentNode(target)));
-}
-
-// node_modules/@popperjs/core/lib/utils/rectToClientRect.js
-function rectToClientRect(rect) {
-  return Object.assign({}, rect, {
-    left: rect.x,
-    top: rect.y,
-    right: rect.x + rect.width,
-    bottom: rect.y + rect.height
-  });
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getClippingRect.js
-function getInnerBoundingClientRect(element, strategy) {
-  var rect = getBoundingClientRect(element, false, strategy === "fixed");
-  rect.top = rect.top + element.clientTop;
-  rect.left = rect.left + element.clientLeft;
-  rect.bottom = rect.top + element.clientHeight;
-  rect.right = rect.left + element.clientWidth;
-  rect.width = element.clientWidth;
-  rect.height = element.clientHeight;
-  rect.x = rect.left;
-  rect.y = rect.top;
-  return rect;
-}
-function getClientRectFromMixedType(element, clippingParent, strategy) {
-  return clippingParent === viewport ? rectToClientRect(getViewportRect(element, strategy)) : isElement(clippingParent) ? getInnerBoundingClientRect(clippingParent, strategy) : rectToClientRect(getDocumentRect(getDocumentElement(element)));
-}
-function getClippingParents(element) {
-  var clippingParents2 = listScrollParents(getParentNode(element));
-  var canEscapeClipping = ["absolute", "fixed"].indexOf(getComputedStyle(element).position) >= 0;
-  var clipperElement = canEscapeClipping && isHTMLElement(element) ? getOffsetParent(element) : element;
-  if (!isElement(clipperElement)) {
-    return [];
-  }
-  return clippingParents2.filter(function(clippingParent) {
-    return isElement(clippingParent) && contains2(clippingParent, clipperElement) && getNodeName(clippingParent) !== "body";
-  });
-}
-function getClippingRect(element, boundary, rootBoundary, strategy) {
-  var mainClippingParents = boundary === "clippingParents" ? getClippingParents(element) : [].concat(boundary);
-  var clippingParents2 = [].concat(mainClippingParents, [rootBoundary]);
-  var firstClippingParent = clippingParents2[0];
-  var clippingRect = clippingParents2.reduce(function(accRect, clippingParent) {
-    var rect = getClientRectFromMixedType(element, clippingParent, strategy);
-    accRect.top = max(rect.top, accRect.top);
-    accRect.right = min(rect.right, accRect.right);
-    accRect.bottom = min(rect.bottom, accRect.bottom);
-    accRect.left = max(rect.left, accRect.left);
-    return accRect;
-  }, getClientRectFromMixedType(element, firstClippingParent, strategy));
-  clippingRect.width = clippingRect.right - clippingRect.left;
-  clippingRect.height = clippingRect.bottom - clippingRect.top;
-  clippingRect.x = clippingRect.left;
-  clippingRect.y = clippingRect.top;
-  return clippingRect;
-}
-
-// node_modules/@popperjs/core/lib/utils/computeOffsets.js
-function computeOffsets(_ref) {
-  var reference2 = _ref.reference, element = _ref.element, placement = _ref.placement;
-  var basePlacement = placement ? getBasePlacement(placement) : null;
-  var variation = placement ? getVariation(placement) : null;
-  var commonX = reference2.x + reference2.width / 2 - element.width / 2;
-  var commonY = reference2.y + reference2.height / 2 - element.height / 2;
-  var offsets;
-  switch (basePlacement) {
-    case top:
-      offsets = {
-        x: commonX,
-        y: reference2.y - element.height
-      };
-      break;
-    case bottom:
-      offsets = {
-        x: commonX,
-        y: reference2.y + reference2.height
-      };
-      break;
-    case right:
-      offsets = {
-        x: reference2.x + reference2.width,
-        y: commonY
-      };
-      break;
-    case left:
-      offsets = {
-        x: reference2.x - element.width,
-        y: commonY
-      };
-      break;
-    default:
-      offsets = {
-        x: reference2.x,
-        y: reference2.y
-      };
-  }
-  var mainAxis = basePlacement ? getMainAxisFromPlacement(basePlacement) : null;
-  if (mainAxis != null) {
-    var len = mainAxis === "y" ? "height" : "width";
-    switch (variation) {
-      case start:
-        offsets[mainAxis] = offsets[mainAxis] - (reference2[len] / 2 - element[len] / 2);
-        break;
-      case end2:
-        offsets[mainAxis] = offsets[mainAxis] + (reference2[len] / 2 - element[len] / 2);
-        break;
-      default:
-    }
-  }
-  return offsets;
-}
-
-// node_modules/@popperjs/core/lib/utils/detectOverflow.js
-function detectOverflow(state, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var _options = options, _options$placement = _options.placement, placement = _options$placement === void 0 ? state.placement : _options$placement, _options$strategy = _options.strategy, strategy = _options$strategy === void 0 ? state.strategy : _options$strategy, _options$boundary = _options.boundary, boundary = _options$boundary === void 0 ? clippingParents : _options$boundary, _options$rootBoundary = _options.rootBoundary, rootBoundary = _options$rootBoundary === void 0 ? viewport : _options$rootBoundary, _options$elementConte = _options.elementContext, elementContext = _options$elementConte === void 0 ? popper : _options$elementConte, _options$altBoundary = _options.altBoundary, altBoundary = _options$altBoundary === void 0 ? false : _options$altBoundary, _options$padding = _options.padding, padding = _options$padding === void 0 ? 0 : _options$padding;
-  var paddingObject = mergePaddingObject(typeof padding !== "number" ? padding : expandToHashMap(padding, basePlacements));
-  var altContext = elementContext === popper ? reference : popper;
-  var popperRect = state.rects.popper;
-  var element = state.elements[altBoundary ? altContext : elementContext];
-  var clippingClientRect = getClippingRect(isElement(element) ? element : element.contextElement || getDocumentElement(state.elements.popper), boundary, rootBoundary, strategy);
-  var referenceClientRect = getBoundingClientRect(state.elements.reference);
-  var popperOffsets2 = computeOffsets({
-    reference: referenceClientRect,
-    element: popperRect,
-    strategy: "absolute",
-    placement
-  });
-  var popperClientRect = rectToClientRect(Object.assign({}, popperRect, popperOffsets2));
-  var elementClientRect = elementContext === popper ? popperClientRect : referenceClientRect;
-  var overflowOffsets = {
-    top: clippingClientRect.top - elementClientRect.top + paddingObject.top,
-    bottom: elementClientRect.bottom - clippingClientRect.bottom + paddingObject.bottom,
-    left: clippingClientRect.left - elementClientRect.left + paddingObject.left,
-    right: elementClientRect.right - clippingClientRect.right + paddingObject.right
-  };
-  var offsetData = state.modifiersData.offset;
-  if (elementContext === popper && offsetData) {
-    var offset2 = offsetData[placement];
-    Object.keys(overflowOffsets).forEach(function(key) {
-      var multiply = [right, bottom].indexOf(key) >= 0 ? 1 : -1;
-      var axis = [top, bottom].indexOf(key) >= 0 ? "y" : "x";
-      overflowOffsets[key] += offset2[axis] * multiply;
-    });
-  }
-  return overflowOffsets;
-}
-
-// node_modules/@popperjs/core/lib/utils/computeAutoPlacement.js
-function computeAutoPlacement(state, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var _options = options, placement = _options.placement, boundary = _options.boundary, rootBoundary = _options.rootBoundary, padding = _options.padding, flipVariations = _options.flipVariations, _options$allowedAutoP = _options.allowedAutoPlacements, allowedAutoPlacements = _options$allowedAutoP === void 0 ? placements : _options$allowedAutoP;
-  var variation = getVariation(placement);
-  var placements2 = variation ? flipVariations ? variationPlacements : variationPlacements.filter(function(placement2) {
-    return getVariation(placement2) === variation;
-  }) : basePlacements;
-  var allowedPlacements = placements2.filter(function(placement2) {
-    return allowedAutoPlacements.indexOf(placement2) >= 0;
-  });
-  if (allowedPlacements.length === 0) {
-    allowedPlacements = placements2;
-  }
-  var overflows = allowedPlacements.reduce(function(acc, placement2) {
-    acc[placement2] = detectOverflow(state, {
-      placement: placement2,
-      boundary,
-      rootBoundary,
-      padding
-    })[getBasePlacement(placement2)];
-    return acc;
-  }, {});
-  return Object.keys(overflows).sort(function(a, b) {
-    return overflows[a] - overflows[b];
-  });
-}
-
-// node_modules/@popperjs/core/lib/modifiers/flip.js
-function getExpandedFallbackPlacements(placement) {
-  if (getBasePlacement(placement) === auto) {
-    return [];
-  }
-  var oppositePlacement = getOppositePlacement(placement);
-  return [getOppositeVariationPlacement(placement), oppositePlacement, getOppositeVariationPlacement(oppositePlacement)];
-}
-function flip(_ref) {
-  var state = _ref.state, options = _ref.options, name = _ref.name;
-  if (state.modifiersData[name]._skip) {
-    return;
-  }
-  var _options$mainAxis = options.mainAxis, checkMainAxis = _options$mainAxis === void 0 ? true : _options$mainAxis, _options$altAxis = options.altAxis, checkAltAxis = _options$altAxis === void 0 ? true : _options$altAxis, specifiedFallbackPlacements = options.fallbackPlacements, padding = options.padding, boundary = options.boundary, rootBoundary = options.rootBoundary, altBoundary = options.altBoundary, _options$flipVariatio = options.flipVariations, flipVariations = _options$flipVariatio === void 0 ? true : _options$flipVariatio, allowedAutoPlacements = options.allowedAutoPlacements;
-  var preferredPlacement = state.options.placement;
-  var basePlacement = getBasePlacement(preferredPlacement);
-  var isBasePlacement = basePlacement === preferredPlacement;
-  var fallbackPlacements = specifiedFallbackPlacements || (isBasePlacement || !flipVariations ? [getOppositePlacement(preferredPlacement)] : getExpandedFallbackPlacements(preferredPlacement));
-  var placements2 = [preferredPlacement].concat(fallbackPlacements).reduce(function(acc, placement2) {
-    return acc.concat(getBasePlacement(placement2) === auto ? computeAutoPlacement(state, {
-      placement: placement2,
-      boundary,
-      rootBoundary,
-      padding,
-      flipVariations,
-      allowedAutoPlacements
-    }) : placement2);
-  }, []);
-  var referenceRect = state.rects.reference;
-  var popperRect = state.rects.popper;
-  var checksMap = new Map();
-  var makeFallbackChecks = true;
-  var firstFittingPlacement = placements2[0];
-  for (var i = 0; i < placements2.length; i++) {
-    var placement = placements2[i];
-    var _basePlacement = getBasePlacement(placement);
-    var isStartVariation = getVariation(placement) === start;
-    var isVertical = [top, bottom].indexOf(_basePlacement) >= 0;
-    var len = isVertical ? "width" : "height";
-    var overflow = detectOverflow(state, {
-      placement,
-      boundary,
-      rootBoundary,
-      altBoundary,
-      padding
-    });
-    var mainVariationSide = isVertical ? isStartVariation ? right : left : isStartVariation ? bottom : top;
-    if (referenceRect[len] > popperRect[len]) {
-      mainVariationSide = getOppositePlacement(mainVariationSide);
-    }
-    var altVariationSide = getOppositePlacement(mainVariationSide);
-    var checks = [];
-    if (checkMainAxis) {
-      checks.push(overflow[_basePlacement] <= 0);
-    }
-    if (checkAltAxis) {
-      checks.push(overflow[mainVariationSide] <= 0, overflow[altVariationSide] <= 0);
-    }
-    if (checks.every(function(check) {
-      return check;
-    })) {
-      firstFittingPlacement = placement;
-      makeFallbackChecks = false;
-      break;
-    }
-    checksMap.set(placement, checks);
-  }
-  if (makeFallbackChecks) {
-    var numberOfChecks = flipVariations ? 3 : 1;
-    var _loop = function _loop2(_i2) {
-      var fittingPlacement = placements2.find(function(placement2) {
-        var checks2 = checksMap.get(placement2);
-        if (checks2) {
-          return checks2.slice(0, _i2).every(function(check) {
-            return check;
-          });
-        }
-      });
-      if (fittingPlacement) {
-        firstFittingPlacement = fittingPlacement;
-        return "break";
-      }
-    };
-    for (var _i = numberOfChecks; _i > 0; _i--) {
-      var _ret = _loop(_i);
-      if (_ret === "break")
-        break;
-    }
-  }
-  if (state.placement !== firstFittingPlacement) {
-    state.modifiersData[name]._skip = true;
-    state.placement = firstFittingPlacement;
-    state.reset = true;
-  }
-}
-var flip_default = {
-  name: "flip",
-  enabled: true,
-  phase: "main",
-  fn: flip,
-  requiresIfExists: ["offset"],
-  data: {
-    _skip: false
-  }
-};
-
-// node_modules/@popperjs/core/lib/modifiers/hide.js
-function getSideOffsets(overflow, rect, preventedOffsets) {
-  if (preventedOffsets === void 0) {
-    preventedOffsets = {
-      x: 0,
-      y: 0
-    };
-  }
-  return {
-    top: overflow.top - rect.height - preventedOffsets.y,
-    right: overflow.right - rect.width + preventedOffsets.x,
-    bottom: overflow.bottom - rect.height + preventedOffsets.y,
-    left: overflow.left - rect.width - preventedOffsets.x
-  };
-}
-function isAnySideFullyClipped(overflow) {
-  return [top, right, bottom, left].some(function(side) {
-    return overflow[side] >= 0;
-  });
-}
-function hide(_ref) {
-  var state = _ref.state, name = _ref.name;
-  var referenceRect = state.rects.reference;
-  var popperRect = state.rects.popper;
-  var preventedOffsets = state.modifiersData.preventOverflow;
-  var referenceOverflow = detectOverflow(state, {
-    elementContext: "reference"
-  });
-  var popperAltOverflow = detectOverflow(state, {
-    altBoundary: true
-  });
-  var referenceClippingOffsets = getSideOffsets(referenceOverflow, referenceRect);
-  var popperEscapeOffsets = getSideOffsets(popperAltOverflow, popperRect, preventedOffsets);
-  var isReferenceHidden = isAnySideFullyClipped(referenceClippingOffsets);
-  var hasPopperEscaped = isAnySideFullyClipped(popperEscapeOffsets);
-  state.modifiersData[name] = {
-    referenceClippingOffsets,
-    popperEscapeOffsets,
-    isReferenceHidden,
-    hasPopperEscaped
-  };
-  state.attributes.popper = Object.assign({}, state.attributes.popper, {
-    "data-popper-reference-hidden": isReferenceHidden,
-    "data-popper-escaped": hasPopperEscaped
-  });
-}
-var hide_default = {
-  name: "hide",
-  enabled: true,
-  phase: "main",
-  requiresIfExists: ["preventOverflow"],
-  fn: hide
-};
-
-// node_modules/@popperjs/core/lib/modifiers/offset.js
-function distanceAndSkiddingToXY(placement, rects, offset2) {
-  var basePlacement = getBasePlacement(placement);
-  var invertDistance = [left, top].indexOf(basePlacement) >= 0 ? -1 : 1;
-  var _ref = typeof offset2 === "function" ? offset2(Object.assign({}, rects, {
-    placement
-  })) : offset2, skidding = _ref[0], distance = _ref[1];
-  skidding = skidding || 0;
-  distance = (distance || 0) * invertDistance;
-  return [left, right].indexOf(basePlacement) >= 0 ? {
-    x: distance,
-    y: skidding
-  } : {
-    x: skidding,
-    y: distance
-  };
-}
-function offset(_ref2) {
-  var state = _ref2.state, options = _ref2.options, name = _ref2.name;
-  var _options$offset = options.offset, offset2 = _options$offset === void 0 ? [0, 0] : _options$offset;
-  var data2 = placements.reduce(function(acc, placement) {
-    acc[placement] = distanceAndSkiddingToXY(placement, state.rects, offset2);
-    return acc;
-  }, {});
-  var _data$state$placement = data2[state.placement], x = _data$state$placement.x, y = _data$state$placement.y;
-  if (state.modifiersData.popperOffsets != null) {
-    state.modifiersData.popperOffsets.x += x;
-    state.modifiersData.popperOffsets.y += y;
-  }
-  state.modifiersData[name] = data2;
-}
-var offset_default = {
-  name: "offset",
-  enabled: true,
-  phase: "main",
-  requires: ["popperOffsets"],
-  fn: offset
-};
-
-// node_modules/@popperjs/core/lib/modifiers/popperOffsets.js
-function popperOffsets(_ref) {
-  var state = _ref.state, name = _ref.name;
-  state.modifiersData[name] = computeOffsets({
-    reference: state.rects.reference,
-    element: state.rects.popper,
-    strategy: "absolute",
-    placement: state.placement
-  });
-}
-var popperOffsets_default = {
-  name: "popperOffsets",
-  enabled: true,
-  phase: "read",
-  fn: popperOffsets,
-  data: {}
-};
-
-// node_modules/@popperjs/core/lib/utils/getAltAxis.js
-function getAltAxis(axis) {
-  return axis === "x" ? "y" : "x";
-}
-
-// node_modules/@popperjs/core/lib/modifiers/preventOverflow.js
-function preventOverflow(_ref) {
-  var state = _ref.state, options = _ref.options, name = _ref.name;
-  var _options$mainAxis = options.mainAxis, checkMainAxis = _options$mainAxis === void 0 ? true : _options$mainAxis, _options$altAxis = options.altAxis, checkAltAxis = _options$altAxis === void 0 ? false : _options$altAxis, boundary = options.boundary, rootBoundary = options.rootBoundary, altBoundary = options.altBoundary, padding = options.padding, _options$tether = options.tether, tether = _options$tether === void 0 ? true : _options$tether, _options$tetherOffset = options.tetherOffset, tetherOffset = _options$tetherOffset === void 0 ? 0 : _options$tetherOffset;
-  var overflow = detectOverflow(state, {
-    boundary,
-    rootBoundary,
-    padding,
-    altBoundary
-  });
-  var basePlacement = getBasePlacement(state.placement);
-  var variation = getVariation(state.placement);
-  var isBasePlacement = !variation;
-  var mainAxis = getMainAxisFromPlacement(basePlacement);
-  var altAxis = getAltAxis(mainAxis);
-  var popperOffsets2 = state.modifiersData.popperOffsets;
-  var referenceRect = state.rects.reference;
-  var popperRect = state.rects.popper;
-  var tetherOffsetValue = typeof tetherOffset === "function" ? tetherOffset(Object.assign({}, state.rects, {
-    placement: state.placement
-  })) : tetherOffset;
-  var normalizedTetherOffsetValue = typeof tetherOffsetValue === "number" ? {
-    mainAxis: tetherOffsetValue,
-    altAxis: tetherOffsetValue
-  } : Object.assign({
-    mainAxis: 0,
-    altAxis: 0
-  }, tetherOffsetValue);
-  var offsetModifierState = state.modifiersData.offset ? state.modifiersData.offset[state.placement] : null;
-  var data2 = {
-    x: 0,
-    y: 0
-  };
-  if (!popperOffsets2) {
-    return;
-  }
-  if (checkMainAxis) {
-    var _offsetModifierState$;
-    var mainSide = mainAxis === "y" ? top : left;
-    var altSide = mainAxis === "y" ? bottom : right;
-    var len = mainAxis === "y" ? "height" : "width";
-    var offset2 = popperOffsets2[mainAxis];
-    var min2 = offset2 + overflow[mainSide];
-    var max2 = offset2 - overflow[altSide];
-    var additive = tether ? -popperRect[len] / 2 : 0;
-    var minLen = variation === start ? referenceRect[len] : popperRect[len];
-    var maxLen = variation === start ? -popperRect[len] : -referenceRect[len];
-    var arrowElement = state.elements.arrow;
-    var arrowRect = tether && arrowElement ? getLayoutRect(arrowElement) : {
-      width: 0,
-      height: 0
-    };
-    var arrowPaddingObject = state.modifiersData["arrow#persistent"] ? state.modifiersData["arrow#persistent"].padding : getFreshSideObject();
-    var arrowPaddingMin = arrowPaddingObject[mainSide];
-    var arrowPaddingMax = arrowPaddingObject[altSide];
-    var arrowLen = within(0, referenceRect[len], arrowRect[len]);
-    var minOffset = isBasePlacement ? referenceRect[len] / 2 - additive - arrowLen - arrowPaddingMin - normalizedTetherOffsetValue.mainAxis : minLen - arrowLen - arrowPaddingMin - normalizedTetherOffsetValue.mainAxis;
-    var maxOffset = isBasePlacement ? -referenceRect[len] / 2 + additive + arrowLen + arrowPaddingMax + normalizedTetherOffsetValue.mainAxis : maxLen + arrowLen + arrowPaddingMax + normalizedTetherOffsetValue.mainAxis;
-    var arrowOffsetParent = state.elements.arrow && getOffsetParent(state.elements.arrow);
-    var clientOffset = arrowOffsetParent ? mainAxis === "y" ? arrowOffsetParent.clientTop || 0 : arrowOffsetParent.clientLeft || 0 : 0;
-    var offsetModifierValue = (_offsetModifierState$ = offsetModifierState == null ? void 0 : offsetModifierState[mainAxis]) != null ? _offsetModifierState$ : 0;
-    var tetherMin = offset2 + minOffset - offsetModifierValue - clientOffset;
-    var tetherMax = offset2 + maxOffset - offsetModifierValue;
-    var preventedOffset = within(tether ? min(min2, tetherMin) : min2, offset2, tether ? max(max2, tetherMax) : max2);
-    popperOffsets2[mainAxis] = preventedOffset;
-    data2[mainAxis] = preventedOffset - offset2;
-  }
-  if (checkAltAxis) {
-    var _offsetModifierState$2;
-    var _mainSide = mainAxis === "x" ? top : left;
-    var _altSide = mainAxis === "x" ? bottom : right;
-    var _offset = popperOffsets2[altAxis];
-    var _len = altAxis === "y" ? "height" : "width";
-    var _min = _offset + overflow[_mainSide];
-    var _max = _offset - overflow[_altSide];
-    var isOriginSide = [top, left].indexOf(basePlacement) !== -1;
-    var _offsetModifierValue = (_offsetModifierState$2 = offsetModifierState == null ? void 0 : offsetModifierState[altAxis]) != null ? _offsetModifierState$2 : 0;
-    var _tetherMin = isOriginSide ? _min : _offset - referenceRect[_len] - popperRect[_len] - _offsetModifierValue + normalizedTetherOffsetValue.altAxis;
-    var _tetherMax = isOriginSide ? _offset + referenceRect[_len] + popperRect[_len] - _offsetModifierValue - normalizedTetherOffsetValue.altAxis : _max;
-    var _preventedOffset = tether && isOriginSide ? withinMaxClamp(_tetherMin, _offset, _tetherMax) : within(tether ? _tetherMin : _min, _offset, tether ? _tetherMax : _max);
-    popperOffsets2[altAxis] = _preventedOffset;
-    data2[altAxis] = _preventedOffset - _offset;
-  }
-  state.modifiersData[name] = data2;
-}
-var preventOverflow_default = {
-  name: "preventOverflow",
-  enabled: true,
-  phase: "main",
-  fn: preventOverflow,
-  requiresIfExists: ["offset"]
-};
-
-// node_modules/@popperjs/core/lib/dom-utils/getHTMLElementScroll.js
-function getHTMLElementScroll(element) {
-  return {
-    scrollLeft: element.scrollLeft,
-    scrollTop: element.scrollTop
-  };
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getNodeScroll.js
-function getNodeScroll(node) {
-  if (node === getWindow(node) || !isHTMLElement(node)) {
-    return getWindowScroll(node);
-  } else {
-    return getHTMLElementScroll(node);
-  }
-}
-
-// node_modules/@popperjs/core/lib/dom-utils/getCompositeRect.js
-function isElementScaled(element) {
-  var rect = element.getBoundingClientRect();
-  var scaleX = round(rect.width) / element.offsetWidth || 1;
-  var scaleY = round(rect.height) / element.offsetHeight || 1;
-  return scaleX !== 1 || scaleY !== 1;
-}
-function getCompositeRect(elementOrVirtualElement, offsetParent, isFixed) {
-  if (isFixed === void 0) {
-    isFixed = false;
-  }
-  var isOffsetParentAnElement = isHTMLElement(offsetParent);
-  var offsetParentIsScaled = isHTMLElement(offsetParent) && isElementScaled(offsetParent);
-  var documentElement = getDocumentElement(offsetParent);
-  var rect = getBoundingClientRect(elementOrVirtualElement, offsetParentIsScaled, isFixed);
-  var scroll = {
-    scrollLeft: 0,
-    scrollTop: 0
-  };
-  var offsets = {
-    x: 0,
-    y: 0
-  };
-  if (isOffsetParentAnElement || !isOffsetParentAnElement && !isFixed) {
-    if (getNodeName(offsetParent) !== "body" || isScrollParent(documentElement)) {
-      scroll = getNodeScroll(offsetParent);
-    }
-    if (isHTMLElement(offsetParent)) {
-      offsets = getBoundingClientRect(offsetParent, true);
-      offsets.x += offsetParent.clientLeft;
-      offsets.y += offsetParent.clientTop;
-    } else if (documentElement) {
-      offsets.x = getWindowScrollBarX(documentElement);
-    }
-  }
-  return {
-    x: rect.left + scroll.scrollLeft - offsets.x,
-    y: rect.top + scroll.scrollTop - offsets.y,
-    width: rect.width,
-    height: rect.height
-  };
-}
-
-// node_modules/@popperjs/core/lib/utils/orderModifiers.js
-function order(modifiers) {
-  var map2 = new Map();
-  var visited = new Set();
-  var result = [];
-  modifiers.forEach(function(modifier) {
-    map2.set(modifier.name, modifier);
-  });
-  function sort(modifier) {
-    visited.add(modifier.name);
-    var requires = [].concat(modifier.requires || [], modifier.requiresIfExists || []);
-    requires.forEach(function(dep) {
-      if (!visited.has(dep)) {
-        var depModifier = map2.get(dep);
-        if (depModifier) {
-          sort(depModifier);
-        }
-      }
-    });
-    result.push(modifier);
-  }
-  modifiers.forEach(function(modifier) {
-    if (!visited.has(modifier.name)) {
-      sort(modifier);
-    }
-  });
-  return result;
-}
-function orderModifiers(modifiers) {
-  var orderedModifiers = order(modifiers);
-  return modifierPhases.reduce(function(acc, phase) {
-    return acc.concat(orderedModifiers.filter(function(modifier) {
-      return modifier.phase === phase;
-    }));
-  }, []);
-}
-
-// node_modules/@popperjs/core/lib/utils/debounce.js
-function debounce(fn2) {
-  var pending;
-  return function() {
-    if (!pending) {
-      pending = new Promise(function(resolve) {
-        Promise.resolve().then(function() {
-          pending = void 0;
-          resolve(fn2());
-        });
-      });
-    }
-    return pending;
-  };
-}
-
-// node_modules/@popperjs/core/lib/utils/mergeByName.js
-function mergeByName(modifiers) {
-  var merged = modifiers.reduce(function(merged2, current) {
-    var existing = merged2[current.name];
-    merged2[current.name] = existing ? Object.assign({}, existing, current, {
-      options: Object.assign({}, existing.options, current.options),
-      data: Object.assign({}, existing.data, current.data)
-    }) : current;
-    return merged2;
-  }, {});
-  return Object.keys(merged).map(function(key) {
-    return merged[key];
-  });
-}
-
-// node_modules/@popperjs/core/lib/createPopper.js
-var DEFAULT_OPTIONS = {
-  placement: "bottom",
-  modifiers: [],
-  strategy: "absolute"
-};
-function areValidElements() {
-  for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-    args[_key] = arguments[_key];
-  }
-  return !args.some(function(element) {
-    return !(element && typeof element.getBoundingClientRect === "function");
-  });
-}
-function popperGenerator(generatorOptions) {
-  if (generatorOptions === void 0) {
-    generatorOptions = {};
-  }
-  var _generatorOptions = generatorOptions, _generatorOptions$def = _generatorOptions.defaultModifiers, defaultModifiers2 = _generatorOptions$def === void 0 ? [] : _generatorOptions$def, _generatorOptions$def2 = _generatorOptions.defaultOptions, defaultOptions2 = _generatorOptions$def2 === void 0 ? DEFAULT_OPTIONS : _generatorOptions$def2;
-  return function createPopper2(reference2, popper2, options) {
-    if (options === void 0) {
-      options = defaultOptions2;
-    }
-    var state = {
-      placement: "bottom",
-      orderedModifiers: [],
-      options: Object.assign({}, DEFAULT_OPTIONS, defaultOptions2),
-      modifiersData: {},
-      elements: {
-        reference: reference2,
-        popper: popper2
-      },
-      attributes: {},
-      styles: {}
-    };
-    var effectCleanupFns = [];
-    var isDestroyed = false;
-    var instance = {
-      state,
-      setOptions: function setOptions(setOptionsAction) {
-        var options2 = typeof setOptionsAction === "function" ? setOptionsAction(state.options) : setOptionsAction;
-        cleanupModifierEffects();
-        state.options = Object.assign({}, defaultOptions2, state.options, options2);
-        state.scrollParents = {
-          reference: isElement(reference2) ? listScrollParents(reference2) : reference2.contextElement ? listScrollParents(reference2.contextElement) : [],
-          popper: listScrollParents(popper2)
-        };
-        var orderedModifiers = orderModifiers(mergeByName([].concat(defaultModifiers2, state.options.modifiers)));
-        state.orderedModifiers = orderedModifiers.filter(function(m) {
-          return m.enabled;
-        });
-        runModifierEffects();
-        return instance.update();
-      },
-      forceUpdate: function forceUpdate() {
-        if (isDestroyed) {
-          return;
-        }
-        var _state$elements = state.elements, reference3 = _state$elements.reference, popper3 = _state$elements.popper;
-        if (!areValidElements(reference3, popper3)) {
-          return;
-        }
-        state.rects = {
-          reference: getCompositeRect(reference3, getOffsetParent(popper3), state.options.strategy === "fixed"),
-          popper: getLayoutRect(popper3)
-        };
-        state.reset = false;
-        state.placement = state.options.placement;
-        state.orderedModifiers.forEach(function(modifier) {
-          return state.modifiersData[modifier.name] = Object.assign({}, modifier.data);
-        });
-        for (var index2 = 0; index2 < state.orderedModifiers.length; index2++) {
-          if (state.reset === true) {
-            state.reset = false;
-            index2 = -1;
-            continue;
-          }
-          var _state$orderedModifie = state.orderedModifiers[index2], fn2 = _state$orderedModifie.fn, _state$orderedModifie2 = _state$orderedModifie.options, _options = _state$orderedModifie2 === void 0 ? {} : _state$orderedModifie2, name = _state$orderedModifie.name;
-          if (typeof fn2 === "function") {
-            state = fn2({
-              state,
-              options: _options,
-              name,
-              instance
-            }) || state;
-          }
-        }
-      },
-      update: debounce(function() {
-        return new Promise(function(resolve) {
-          instance.forceUpdate();
-          resolve(state);
-        });
-      }),
-      destroy: function destroy() {
-        cleanupModifierEffects();
-        isDestroyed = true;
-      }
-    };
-    if (!areValidElements(reference2, popper2)) {
-      return instance;
-    }
-    instance.setOptions(options).then(function(state2) {
-      if (!isDestroyed && options.onFirstUpdate) {
-        options.onFirstUpdate(state2);
-      }
-    });
-    function runModifierEffects() {
-      state.orderedModifiers.forEach(function(_ref) {
-        var name = _ref.name, _ref$options = _ref.options, options2 = _ref$options === void 0 ? {} : _ref$options, effect4 = _ref.effect;
-        if (typeof effect4 === "function") {
-          var cleanupFn = effect4({
-            state,
-            name,
-            instance,
-            options: options2
-          });
-          var noopFn = function noopFn2() {
-          };
-          effectCleanupFns.push(cleanupFn || noopFn);
-        }
-      });
-    }
-    function cleanupModifierEffects() {
-      effectCleanupFns.forEach(function(fn2) {
-        return fn2();
-      });
-      effectCleanupFns = [];
-    }
-    return instance;
-  };
-}
-
-// node_modules/@popperjs/core/lib/popper.js
-var defaultModifiers = [eventListeners_default, popperOffsets_default, computeStyles_default, applyStyles_default, offset_default, flip_default, preventOverflow_default, arrow_default, hide_default];
-var createPopper = /* @__PURE__ */ popperGenerator({
-  defaultModifiers
-});
-
-// src/org/wanxp/douban/setting/model/TextInputSuggest.ts
-var TextInputSuggest = class {
+var TextInputSuggest = class extends import_obsidian17.AbstractInputSuggest {
   constructor(app, inputEl) {
-    this.app = app;
+    super(app, inputEl);
     this.inputEl = inputEl;
-    this.scope = new import_obsidian16.Scope();
-    this.suggestEl = createDiv("suggestion-container");
-    const suggestion = this.suggestEl.createDiv("suggestion");
-    this.suggest = new Suggest(this, suggestion, this.scope);
-    this.scope.register([], "Escape", this.close.bind(this));
-    this.inputEl.addEventListener("input", this.onInputChanged.bind(this));
-    this.inputEl.addEventListener("focus", this.onInputChanged.bind(this));
-    this.inputEl.addEventListener("blur", this.close.bind(this));
-    this.suggestEl.on("mousedown", ".suggestion-container", (event) => {
-      event.preventDefault();
-    });
-  }
-  onInputChanged() {
-    const inputStr = this.inputEl.value;
-    const suggestions = this.getSuggestions(inputStr);
-    if (suggestions.length > 0) {
-      this.suggest.setSuggestions(suggestions);
-      this.open(this.app.dom.appContainerEl, this.inputEl);
-    }
-  }
-  open(container, inputEl) {
-    this.app.keymap.pushScope(this.scope);
-    container.appendChild(this.suggestEl);
-    this.popper = createPopper(inputEl, this.suggestEl, {
-      placement: "bottom-start",
-      modifiers: [
-        {
-          name: "sameWidth",
-          enabled: true,
-          fn: ({ state, instance }) => {
-            const targetWidth = `${state.rects.reference.width}px`;
-            if (state.styles.popper.width === targetWidth) {
-              return;
-            }
-            state.styles.popper.width = targetWidth;
-            instance.update();
-          },
-          phase: "beforeWrite",
-          requires: ["computeStyles"]
-        }
-      ]
-    });
-  }
-  close() {
-    this.app.keymap.popScope(this.scope);
-    this.suggest.setSuggestions([]);
-    this.popper.destroy();
-    this.suggestEl.detach();
   }
 };
 
@@ -22594,11 +23508,11 @@ var FileTreeSelectSuggest = class extends TextInputSuggest {
     try {
       const testFile = this.app.vault.getAbstractFileByPath(inputStr.trim());
       if (testFile) {
-        if (testFile instanceof import_obsidian17.TFile && testFile.name.endsWith(".md")) {
+        if (testFile instanceof import_obsidian18.TFile && testFile.name.endsWith(".md")) {
           files.push(testFile);
           return files;
         }
-        if (testFile instanceof import_obsidian17.TFolder) {
+        if (testFile instanceof import_obsidian18.TFolder) {
           parentSearchPath = inputStr.trim();
           currentName = "";
         }
@@ -22613,7 +23527,7 @@ var FileTreeSelectSuggest = class extends TextInputSuggest {
     if (currentName == null) {
       currentName = "";
     }
-    const root2 = this.app.vault.getAbstractFileByPath(parentSearchPath);
+    const root2 = parentSearchPath === "/" ? this.app.vault.getRoot() : this.app.vault.getAbstractFileByPath(parentSearchPath);
     if (!root2) {
       return [];
     }
@@ -22636,7 +23550,7 @@ var FileTreeSelectSuggest = class extends TextInputSuggest {
   selectSuggestion(file) {
     this.inputEl.value = file.path;
     this.parentPath = file.path;
-    if (file instanceof import_obsidian17.TFolder) {
+    if (file instanceof import_obsidian18.TFolder) {
       this.inputEl.value += "/";
       this.inputEl.trigger("input");
     } else {
@@ -22647,7 +23561,7 @@ var FileTreeSelectSuggest = class extends TextInputSuggest {
 };
 
 // src/org/wanxp/douban/setting/model/FolderTreeSelectSuggest.ts
-var import_obsidian18 = __toModule(require("obsidian"));
+var import_obsidian19 = __toModule(require("obsidian"));
 var FolderTreeSelectSuggest = class extends TextInputSuggest {
   constructor() {
     super(...arguments);
@@ -22664,10 +23578,10 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
     try {
       const testFile = this.app.vault.getAbstractFileByPath(inputStr.trim());
       if (testFile) {
-        if (testFile instanceof import_obsidian18.TFile) {
+        if (testFile instanceof import_obsidian19.TFile) {
           return files;
         }
-        if (testFile instanceof import_obsidian18.TFolder) {
+        if (testFile instanceof import_obsidian19.TFolder) {
           parentSearchPath = inputStr.trim();
           currentName = "";
         }
@@ -22682,7 +23596,7 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
     if (currentName == null) {
       currentName = "";
     }
-    const root2 = this.app.vault.getAbstractFileByPath(parentSearchPath);
+    const root2 = parentSearchPath === "/" ? this.app.vault.getRoot() : this.app.vault.getAbstractFileByPath(parentSearchPath);
     if (!root2) {
       return [];
     }
@@ -22693,7 +23607,7 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
     return files;
   }
   searchFiles(folder, name, files) {
-    folder.children.filter((f) => f instanceof import_obsidian18.TFolder).forEach((file) => {
+    folder.children.filter((f) => f instanceof import_obsidian19.TFolder).forEach((file) => {
       if (file.name.toLowerCase().contains(name)) {
         files.push(file);
       }
@@ -22705,7 +23619,7 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
   selectSuggestion(file) {
     this.inputEl.value = file.path;
     this.parentPath = file.path;
-    if (file instanceof import_obsidian18.TFolder) {
+    if (file instanceof import_obsidian19.TFolder) {
       this.inputEl.value += "/";
       this.inputEl.trigger("input");
     } else {
@@ -22716,14 +23630,17 @@ var FolderTreeSelectSuggest = class extends TextInputSuggest {
 
 // src/org/wanxp/douban/setting/TemplateSettingHelper.ts
 function constructTemplateUI(containerEl, manager) {
-  containerEl.createEl("p", { text: i18nHelper.getMessage("1204") });
-  new import_obsidian19.Setting(containerEl).setDesc(i18nHelper.getMessage("1205"));
-  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120101", desc: "120102", placeholder: "121701", key: "movieTemplateFile", manager }));
-  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120201", desc: "120202", placeholder: "121701", key: "bookTemplateFile", manager }));
-  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120301", desc: "120302", placeholder: "121701", key: "musicTemplateFile", manager }));
-  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "120401", desc: "120402", placeholder: "121701", key: "noteTemplateFile", manager }));
-  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "121301", desc: "121302", placeholder: "121701", key: "gameTemplateFile", manager }));
-  new import_obsidian19.Setting(containerEl).then(createFileSelectionSetting({ containerEl, name: "121801", desc: "121802", placeholder: "121701", key: "teleplayTemplateFile", manager }));
+  const overview = containerEl.createDiv("obsidian_douban_section_card obsidian_douban_section_overview");
+  overview.createEl("p", { text: i18nHelper.getMessage("1204") });
+  new import_obsidian20.Setting(overview).setClass("obsidian_douban_embedded_setting").setDesc(i18nHelper.getMessage("1205"));
+  const templateList = containerEl.createDiv("obsidian_douban_card_list obsidian_douban_template_list");
+  new import_obsidian20.Setting(templateList).setClass("obsidian_douban_section_card").then(createFileSelectionSetting({ containerEl: templateList, name: "120101", desc: "120102", placeholder: "121701", key: "movieTemplateFile", manager }));
+  new import_obsidian20.Setting(templateList).setClass("obsidian_douban_section_card").then(createFileSelectionSetting({ containerEl: templateList, name: "120201", desc: "120202", placeholder: "121701", key: "bookTemplateFile", manager }));
+  new import_obsidian20.Setting(templateList).setClass("obsidian_douban_section_card").then(createFileSelectionSetting({ containerEl: templateList, name: "120301", desc: "120302", placeholder: "121701", key: "musicTemplateFile", manager }));
+  new import_obsidian20.Setting(templateList).setClass("obsidian_douban_section_card").then(createFileSelectionSetting({ containerEl: templateList, name: "120401", desc: "120402", placeholder: "121701", key: "noteTemplateFile", manager }));
+  new import_obsidian20.Setting(templateList).setClass("obsidian_douban_section_card").then(createFileSelectionSetting({ containerEl: templateList, name: "121301", desc: "121302", placeholder: "121701", key: "gameTemplateFile", manager }));
+  new import_obsidian20.Setting(templateList).setClass("obsidian_douban_section_card").then(createFileSelectionSetting({ containerEl: templateList, name: "121801", desc: "121802", placeholder: "121701", key: "teleplayTemplateFile", manager }));
+  new import_obsidian20.Setting(templateList).setClass("obsidian_douban_section_card").then(createFileSelectionSetting({ containerEl: templateList, name: "theaterTemplateName", desc: "theaterTemplateDesc", placeholder: "121701", key: "theaterTemplateFile", manager }));
 }
 function createFileSelectionSetting({
   containerEl,
@@ -22808,21 +23725,21 @@ function showStarExample(containerEl, manager) {
   containerEl.empty();
   const document2 = new DocumentFragment();
   document2.createDiv("score-show-title").innerHTML = `score: ${NumberUtil.getRateStar(EXAMPLE_RATE, EXAMPLE_RATE_MAX, { scoreSetting: manager.plugin.settings.scoreSetting })}`;
-  new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("120603")).setDesc(document2);
+  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("120603")).setDesc(document2);
 }
 function showFileExample(containerEl, manager) {
   containerEl.empty();
   const document2 = new DocumentFragment();
   document2.createDiv("file-path-example").innerHTML = `${i18nHelper.getMessage("121604")}<a href="https://book.douban.com/subject/2253379/">\u300A\u7B80\u7231\u300B</a>: ${VariableUtil.replaceSubject(EXAMPLE_SUBJECT_MAP, FileUtil.join(manager.plugin.settings.dataFilePath, manager.plugin.settings.dataFileNamePath + ".md"), SupportType.book, manager, "path")}`;
-  new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("120603")).setDesc(document2);
+  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("120603")).setDesc(document2);
 }
 function scoreSettingDisplay(containerEl, manager) {
-  new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("1243")).setDesc(i18nHelper.getMessage("124310", EXAMPLE_RATE, EXAMPLE_RATE_MAX));
+  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("1243")).setDesc(i18nHelper.getMessage("124310", EXAMPLE_RATE, EXAMPLE_RATE_MAX));
   const scoreSettingsUI = containerEl.createDiv("score-settings");
   const scoreShowUI = containerEl.createDiv("score-show");
   const scoreSetting = manager.getSetting("scoreSetting");
   scoreSettingsUI.createEl("span", { text: i18nHelper.getMessage("124120") });
-  const starFullUI = new import_obsidian20.TextComponent(scoreSettingsUI);
+  const starFullUI = new import_obsidian21.TextComponent(scoreSettingsUI);
   starFullUI.setPlaceholder(DEFAULT_SETTINGS.scoreSetting.starFull).setValue(scoreSetting.starFull).onChange((value) => __async(this, null, function* () {
     scoreSetting.starFull = value;
     yield manager.plugin.saveSettings();
@@ -22833,7 +23750,7 @@ function scoreSettingDisplay(containerEl, manager) {
   starFullEl.addClass("obsidian_douban_settings_input");
   scoreSettingsUI.appendChild(starFullEl).appendText("  ");
   scoreSettingsUI.createEl("span", { text: i18nHelper.getMessage("124121") });
-  const starEmptyUI = new import_obsidian20.TextComponent(scoreSettingsUI);
+  const starEmptyUI = new import_obsidian21.TextComponent(scoreSettingsUI);
   starEmptyUI.setPlaceholder(DEFAULT_SETTINGS.scoreSetting.starEmpty).setValue(scoreSetting.starEmpty).onChange((value) => __async(this, null, function* () {
     scoreSetting.starEmpty = value;
     yield manager.plugin.saveSettings();
@@ -22844,7 +23761,7 @@ function scoreSettingDisplay(containerEl, manager) {
   starEmptyEl.size = DEFAULT_SETTINGS_ARRAY_INPUT_SIZE;
   scoreSettingsUI.appendChild(starEmptyEl).appendText("  ");
   scoreSettingsUI.createEl("span", { text: i18nHelper.getMessage("124311") });
-  const maxStarUI = new import_obsidian20.TextComponent(scoreSettingsUI);
+  const maxStarUI = new import_obsidian21.TextComponent(scoreSettingsUI);
   maxStarUI.setPlaceholder(i18nHelper.getMessage("124312") + DEFAULT_SETTINGS.scoreSetting.maxStar).setValue(scoreSetting.maxStar + "").onChange((value) => __async(this, null, function* () {
     if (!NumberUtil.isInt(value) && NumberUtil.value(value) > MAX_STAR_NUMBER && NumberUtil.value(value) < 1) {
       return;
@@ -22858,7 +23775,7 @@ function scoreSettingDisplay(containerEl, manager) {
   maxStarEl.size = DEFAULT_SETTINGS_ARRAY_INPUT_SIZE;
   scoreSettingsUI.appendChild(maxStarEl).appendText("  ");
   scoreSettingsUI.createEl("span", { text: i18nHelper.getMessage("124122") });
-  const displayEmptyStarUI = new import_obsidian20.ToggleComponent(scoreSettingsUI);
+  const displayEmptyStarUI = new import_obsidian21.ToggleComponent(scoreSettingsUI);
   displayEmptyStarUI.setValue(scoreSetting.displayStarEmpty).onChange((value) => __async(this, null, function* () {
     scoreSetting.displayStarEmpty = value;
     yield manager.plugin.saveSettings();
@@ -22870,17 +23787,20 @@ function scoreSettingDisplay(containerEl, manager) {
   showStarExample(scoreShowUI, manager);
 }
 function constructOutUI(containerEl, manager) {
-  new import_obsidian20.Setting(containerEl);
   const attachmentFileSetting = containerEl.createDiv({ cls: "settings-item-attachment" });
   constructAttachmentFileSettingsUI(attachmentFileSetting, manager);
-  const folder = new import_obsidian20.Setting(containerEl);
-  const folderInput = new import_obsidian20.Setting(containerEl);
+  const folder = new import_obsidian21.Setting(containerEl);
+  const folderInput = new import_obsidian21.Setting(containerEl);
   const outFolder = containerEl.createDiv({ cls: "settings-item" });
   const filePathDisplayExample = containerEl.createDiv("filePath-display-example");
   folder.then(createFolderSelectionSetting({ containerEl, name: "121501", desc: "121502", placeholder: null, key: null, manager }, filePathDisplayExample));
   folderInput.then(createFolderSelectionSettingInput({ containerEl, name: null, desc: null, placeholder: "121503", key: "dataFilePath", manager }, filePathDisplayExample));
   constructOutputFileNameUI(outFolder, filePathDisplayExample, manager);
-  new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("121201")).then((setting) => {
+  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("showAfterCreateName")).setDesc(i18nHelper.getMessage("showAfterCreateDesc")).addToggle((toggle) => toggle.setValue(manager.plugin.settings.showAfterCreate).onChange((value) => __async(this, null, function* () {
+    manager.plugin.settings.showAfterCreate = value;
+    yield manager.plugin.saveSettings();
+  })));
+  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("121201")).then((setting) => {
     setting.addDropdown((dropdwon) => {
       setting.descEl.appendChild(createFragment((frag) => {
         frag.appendText(i18nHelper.getMessage("121202"));
@@ -22905,7 +23825,7 @@ function constructOutUI(containerEl, manager) {
 }
 function constructOutputFileNameUI(containerEl, filePathDisplayExample, manager) {
   containerEl.empty();
-  const dataFilePathSetting = new import_obsidian20.Setting(containerEl);
+  const dataFilePathSetting = new import_obsidian21.Setting(containerEl);
   dataFilePathSetting.setName(i18nHelper.getMessage("121601")).setDesc(i18nHelper.getMessage("121602")).addText((textField) => {
     textField.setPlaceholder(DEFAULT_SETTINGS.dataFileNamePath).setValue(manager.plugin.settings.dataFileNamePath).onChange((value) => __async(this, null, function* () {
       manager.plugin.settings.dataFileNamePath = value;
@@ -22924,7 +23844,7 @@ function constructOutputFileNameUI(containerEl, filePathDisplayExample, manager)
 }
 function constructAttachmentFileSettingsUI(containerEl, manager) {
   containerEl.empty();
-  new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("121430")).setDesc(i18nHelper.getMessage("121431")).addToggle((toggleComponent) => {
+  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("121430")).setDesc(i18nHelper.getMessage("121431")).addToggle((toggleComponent) => {
     toggleComponent.setValue(manager.plugin.settings.cacheImage).onChange((value) => __async(this, null, function* () {
       manager.plugin.settings.cacheImage = value;
       yield manager.plugin.saveSettings();
@@ -22932,7 +23852,7 @@ function constructAttachmentFileSettingsUI(containerEl, manager) {
     }));
   });
   if (manager.plugin.settings.cacheImage) {
-    new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("121440")).setDesc(i18nHelper.getMessage("121441")).addToggle((toggleComponent) => {
+    new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("121440")).setDesc(i18nHelper.getMessage("121441")).addToggle((toggleComponent) => {
       toggleComponent.setValue(manager.plugin.settings.pictureBedFlag).onChange((value) => __async(this, null, function* () {
         manager.plugin.settings.pictureBedFlag = value;
         yield manager.plugin.saveSettings();
@@ -22942,13 +23862,13 @@ function constructAttachmentFileSettingsUI(containerEl, manager) {
     if (manager.plugin.settings.pictureBedFlag) {
       constructAttachmentFilePictureBedSettingsUI(containerEl, manager);
     } else {
-      new import_obsidian20.Setting(containerEl).then(createFolderSelectionSetting({ containerEl, name: "121432", desc: "121433", placeholder: null, key: null, manager }));
-      new import_obsidian20.Setting(containerEl).then(createFolderSelectionSettingInput({ containerEl, name: null, desc: null, placeholder: "121434", key: "attachmentPath", manager }));
-      new import_obsidian20.Setting(containerEl).then(createFolderSelectionSetting({ containerEl, name: "121452", desc: "121453", placeholder: null, key: null, manager }));
-      new import_obsidian20.Setting(containerEl).then(createFolderSelectionSettingInput({ containerEl, name: null, desc: null, placeholder: "121454", key: "attachmentFileName", manager }));
+      new import_obsidian21.Setting(containerEl).then(createFolderSelectionSetting({ containerEl, name: "121432", desc: "121433", placeholder: null, key: null, manager }));
+      new import_obsidian21.Setting(containerEl).then(createFolderSelectionSettingInput({ containerEl, name: null, desc: null, placeholder: "121434", key: "attachmentPath", manager }));
+      new import_obsidian21.Setting(containerEl).then(createFolderSelectionSetting({ containerEl, name: "121452", desc: "121453", placeholder: null, key: null, manager }));
+      new import_obsidian21.Setting(containerEl).then(createFolderSelectionSettingInput({ containerEl, name: null, desc: null, placeholder: "121454", key: "attachmentFileName", manager }));
       ;
     }
-    new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("121435")).setDesc(i18nHelper.getMessage("121436")).addToggle((toggleComponent) => {
+    new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("121435")).setDesc(i18nHelper.getMessage("121436")).addToggle((toggleComponent) => {
       toggleComponent.setTooltip(i18nHelper.getMessage("121437")).setValue(manager.plugin.settings.cacheHighQuantityImage).onChange((value) => __async(this, null, function* () {
         manager.plugin.settings.cacheHighQuantityImage = value;
         yield manager.plugin.saveSettings();
@@ -22966,8 +23886,8 @@ function constructAttachmentFilePictureBedSettingsUI(containerEl, manager) {
       pictureBedSetting = PictureBedSetting_PicGo;
     }
   }
-  var pictureBedTypeSettingsUI = new import_obsidian20.Setting(containerEl);
-  var pictureBedPropertySettingsUI = new import_obsidian20.Setting(containerEl).settingEl;
+  var pictureBedTypeSettingsUI = new import_obsidian21.Setting(containerEl);
+  var pictureBedPropertySettingsUI = new import_obsidian21.Setting(containerEl).settingEl;
   pictureBedTypeSettingsUI.setName(i18nHelper.getMessage("121451")).then((setting) => {
     setting.addDropdown((dropdwon) => {
       dropdwon.addOptions(PictureBedTypeRecords);
@@ -22985,7 +23905,7 @@ function constructAttachmentFilePictureBedPropertySettingsUI(containerEl, manage
   const pictureBedSetting = manager.plugin.settings.pictureBedSetting;
   const pictureBedType = manager.plugin.settings.pictureBedType;
   if (pictureBedType == PictureBedType.PicGo) {
-    new import_obsidian20.Setting(containerEl).setName(i18nHelper.getMessage("121461")).addText((textField) => {
+    new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("121461")).addText((textField) => {
       textField.setPlaceholder(PictureBedSetting_PicGo.url).setValue(pictureBedSetting.url).onChange((value) => __async(this, null, function* () {
         pictureBedSetting.url = value;
         yield manager.plugin.saveSettings();
@@ -22996,9 +23916,9 @@ function constructAttachmentFilePictureBedPropertySettingsUI(containerEl, manage
 }
 
 // src/org/wanxp/douban/setting/BasicSettingsHelper.ts
-var import_obsidian21 = __toModule(require("obsidian"));
+var import_obsidian22 = __toModule(require("obsidian"));
 function constructBasicUI(containerEl, manager) {
-  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("120501")).then((setting) => {
+  new import_obsidian22.Setting(containerEl).setName(i18nHelper.getMessage("120501")).then((setting) => {
     setting.addMomentFormat((mf) => {
       setting.descEl.appendChild(createFragment((frag) => {
         frag.appendText(i18nHelper.getMessage("120503"));
@@ -23023,7 +23943,7 @@ function constructBasicUI(containerEl, manager) {
       }));
     });
   });
-  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("120502")).then((setting) => {
+  new import_obsidian22.Setting(containerEl).setName(i18nHelper.getMessage("120502")).then((setting) => {
     setting.addMomentFormat((mf) => {
       setting.descEl.appendChild(createFragment((frag) => {
         frag.appendText(i18nHelper.getMessage("120504"));
@@ -23048,13 +23968,13 @@ function constructBasicUI(containerEl, manager) {
       }));
     });
   });
-  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("121401")).setDesc(i18nHelper.getMessage("121402")).addToggle((toggleComponent) => {
+  new import_obsidian22.Setting(containerEl).setName(i18nHelper.getMessage("121401")).setDesc(i18nHelper.getMessage("121402")).addToggle((toggleComponent) => {
     toggleComponent.setValue(manager.plugin.settings.statusBar).onChange((value) => __async(this, null, function* () {
       manager.plugin.settings.statusBar = value;
       yield manager.plugin.saveSettings();
     }));
   });
-  new import_obsidian21.Setting(containerEl).setName(i18nHelper.getMessage("121410")).setDesc(i18nHelper.getMessage("121411")).addDropdown((dropdown) => {
+  new import_obsidian22.Setting(containerEl).setName(i18nHelper.getMessage("121410")).setDesc(i18nHelper.getMessage("121411")).addDropdown((dropdown) => {
     dropdown.addOptions(SearchTypeRecords).setValue(manager.plugin.settings.searchDefaultType).onChange((value) => __async(this, null, function* () {
       manager.plugin.settings.searchDefaultType = SupportTypeMap[value];
       yield manager.plugin.saveSettings();
@@ -23063,332 +23983,156 @@ function constructBasicUI(containerEl, manager) {
 }
 
 // src/org/wanxp/douban/setting/TemplateVariableSettingsHelper.ts
-var import_obsidian22 = __toModule(require("obsidian"));
-function constructTemplateVariablesUI(containerEl, manager) {
-  containerEl.createEl("p", { text: i18nHelper.getMessage("122003") });
-  const basicVariablesTable = new DocumentFragment();
-  basicVariablesTable.createDiv().innerHTML = `
-${i18nHelper.getMessage("122004")}
-<br>
-<br>
-<table border="1">
-	<tr>
-		<th>${i18nHelper.getMessage("300101")}</th>
-		<th>${i18nHelper.getMessage("300102")}</th>
-		<th>${i18nHelper.getMessage("300103")}</th>
-		<th>${i18nHelper.getMessage("300104")}</th>
-		<th>${i18nHelper.getMessage("300105")}</th>
-		<th>${i18nHelper.getMessage("300106")}</th>
-		<th>${i18nHelper.getMessage("300107")}</th>
-		<th>${i18nHelper.getMessage("300108")}</th>
-	</tr>
-	<tr>
-		<td>id</td>
-		<td>${i18nHelper.getMessage("310101")}</td>
-		<td>${i18nHelper.getMessage("310201")}</td>
-		<td>${i18nHelper.getMessage("310301")}</td>
-		<td>${i18nHelper.getMessage("310401")}</td>
-		<td>${i18nHelper.getMessage("310501")}</td>
-		<td>${i18nHelper.getMessage("310601")}</td>
-		<td>${i18nHelper.getMessage("310701")}</td>
-	</tr>
-	<tr>
-		<td>title</td>
-		<td>${i18nHelper.getMessage("310102")}</td>
-		<td>${i18nHelper.getMessage("310202")}</td>
-		<td>${i18nHelper.getMessage("310302")}</td>
-		<td>${i18nHelper.getMessage("310402")}</td>
-		<td>${i18nHelper.getMessage("310502")}</td>
-		<td>${i18nHelper.getMessage("310602")}</td>
-		<td>${i18nHelper.getMessage("310702")}</td>
-	</tr>
-	<tr>
-		<td>type</td>
-		<td>${i18nHelper.getMessage("310103")}</td>
-		<td>${i18nHelper.getMessage("310203")}</td>
-		<td>${i18nHelper.getMessage("310303")}</td>
-		<td>${i18nHelper.getMessage("310403")}</td>
-		<td>${i18nHelper.getMessage("310503")}</td>
-		<td>${i18nHelper.getMessage("310603")}</td>
-		<td>${i18nHelper.getMessage("310703")}</td>
-	</tr>
-	<tr>
-		<td>score</td>
-		<td>${i18nHelper.getMessage("310104")}</td>
-		<td>${i18nHelper.getMessage("310204")}</td>
-		<td>${i18nHelper.getMessage("310304")}</td>
-		<td>${i18nHelper.getMessage("310404")}</td>
-		<td>${i18nHelper.getMessage("310504")}</td>
-		<td>${i18nHelper.getMessage("310604")}</td>
-		<td>${i18nHelper.getMessage("310704")}</td>
-	</tr>
-		<tr>
-		<td>scoreStar</td>
-		<td>${i18nHelper.getMessage("410200")}</td>
-		<td>${i18nHelper.getMessage("410200")}</td>
-		<td>${i18nHelper.getMessage("410200")}</td>
-		<td>${i18nHelper.getMessage("410200")}</td>
-		<td>${i18nHelper.getMessage("410200")}</td>
-		<td>${i18nHelper.getMessage("410200")}</td>
-		<td>${i18nHelper.getMessage("410200")}</td>
-	</tr>
-	<tr>
-		<td>image</td>
-		<td>${i18nHelper.getMessage("310105")}</td>
-		<td>${i18nHelper.getMessage("310205")}</td>
-		<td>${i18nHelper.getMessage("310305")}</td>
-		<td>${i18nHelper.getMessage("310405")}</td>
-		<td>${i18nHelper.getMessage("310505")}</td>
-		<td>${i18nHelper.getMessage("310605")}</td>
-		<td>${i18nHelper.getMessage("310705")}</td>
-	</tr>
-	<tr>
-		<td>imageData.url</td>
-		<td>${i18nHelper.getMessage("310121")}</td>
-		<td>${i18nHelper.getMessage("310221")}</td>
-		<td>${i18nHelper.getMessage("310321")}</td>
-		<td>${i18nHelper.getMessage("310421")}</td>
-		<td>${i18nHelper.getMessage("310521")}</td>
-		<td>${i18nHelper.getMessage("310621")}</td>
-		<td>${i18nHelper.getMessage("310721")}</td>
-	</tr>
-	<tr>
-		<td>url</td>
-		<td>${i18nHelper.getMessage("310106")}</td>
-		<td>${i18nHelper.getMessage("310206")}</td>
-		<td>${i18nHelper.getMessage("310306")}</td>
-		<td>${i18nHelper.getMessage("310406")}</td>
-		<td>${i18nHelper.getMessage("310506")}</td>
-		<td>${i18nHelper.getMessage("310606")}</td>
-		<td>${i18nHelper.getMessage("310706")}</td>
-	</tr>
-	<tr>
-		<td>desc</td>
-		<td>${i18nHelper.getMessage("310107")}</td>
-		<td>${i18nHelper.getMessage("310207")}</td>
-		<td>${i18nHelper.getMessage("310307")}</td>
-		<td>${i18nHelper.getMessage("310407")}</td>
-		<td>${i18nHelper.getMessage("310507")}</td>
-		<td>${i18nHelper.getMessage("310607")}</td>
-		<td>${i18nHelper.getMessage("310707")}</td>
-		
-	</tr>
-	<tr>
-		<td>publisher</td>
-		<td>${i18nHelper.getMessage("310108")}</td>
-		<td>${i18nHelper.getMessage("310208")}</td>
-		<td>${i18nHelper.getMessage("310308")}</td>
-		<td>${i18nHelper.getMessage("310408")}</td>
-		<td>${i18nHelper.getMessage("310508")}</td>
-		<td>${i18nHelper.getMessage("310608")}</td>
-		<td>${i18nHelper.getMessage("310708")}</td>
-	</tr>
-	<tr>
-		<td>datePublished</td>
-		<td>${i18nHelper.getMessage("310109")}</td>
-		<td>${i18nHelper.getMessage("310209")}</td>
-		<td>${i18nHelper.getMessage("310309")}</td>
-		<td>${i18nHelper.getMessage("310409")}</td>
-		<td>${i18nHelper.getMessage("310509")}</td>
-		<td>${i18nHelper.getMessage("310609")}</td>
-		<td>${i18nHelper.getMessage("310709")}</td>
-	</tr>
-	
-	<tr>
-		<td>yearPublished</td>
-		<td>${i18nHelper.getMessage("310130")}</td>
-		<td>${i18nHelper.getMessage("310230")}</td>
-		<td>${i18nHelper.getMessage("310330")}</td>
-		<td>${i18nHelper.getMessage("310430")}</td>
-		<td>${i18nHelper.getMessage("310530")}</td>
-		<td>${i18nHelper.getMessage("310630")}</td>
-		<td>${i18nHelper.getMessage("310730")}</td>
-	</tr>
-	
-	<tr>
-		<td>genre</td>
-		<td>${i18nHelper.getMessage("310110")}</td>
-		<td>${i18nHelper.getMessage("310210")}</td>
-		<td>${i18nHelper.getMessage("310310")}</td>
-		<td>${i18nHelper.getMessage("310410")}</td>
-		<td>${i18nHelper.getMessage("310510")}</td>
-		<td>${i18nHelper.getMessage("310610")}</td>
-		<td>${i18nHelper.getMessage("310710")}</td>
-	</tr>
-	<tr>
-		<td>currentDate</td>
-		<td>${i18nHelper.getMessage("330101")}</td>
-		<td>${i18nHelper.getMessage("330101")}</td>
-		<td>${i18nHelper.getMessage("330101")}</td>
-		<td>${i18nHelper.getMessage("330101")}</td>
-		<td>${i18nHelper.getMessage("330101")}</td>
-		<td>${i18nHelper.getMessage("330101")}</td>
-		<td>${i18nHelper.getMessage("330101")}</td>
-	</tr>
-	<tr>
-		<td>currentTime</td>
-		<td>${i18nHelper.getMessage("330102")}</td>
-		<td>${i18nHelper.getMessage("330102")}</td>
-		<td>${i18nHelper.getMessage("330102")}</td>
-		<td>${i18nHelper.getMessage("330102")}</td>
-		<td>${i18nHelper.getMessage("330102")}</td>
-		<td>${i18nHelper.getMessage("330102")}</td>
-		<td>${i18nHelper.getMessage("330102")}</td>
-	</tr>
-</table>`;
-  new import_obsidian22.Setting(containerEl).setName(i18nHelper.getMessage("122001")).setDesc(basicVariablesTable);
-  const extraVariablesTable = new DocumentFragment();
-  extraVariablesTable.createDiv().innerHTML = `
-${i18nHelper.getMessage("122004")}
-<br>
-<br>
-<table border="1">
-	<tr>
-		<th>${i18nHelper.getMessage("300101")}</th>
-		<th>${i18nHelper.getMessage("300102")}</th>
-		<th>${i18nHelper.getMessage("300103")}</th>
-		<th>${i18nHelper.getMessage("300104")}</th>
-		<th>${i18nHelper.getMessage("300105")}</th>
-		<th>${i18nHelper.getMessage("300106")}</th>
-		<th>${i18nHelper.getMessage("300107")}</th>
-		<th>${i18nHelper.getMessage("300108")}</th>
-	</tr>
-	<tr>
-		<td>${i18nHelper.getMessage("320101")}</th>
-		<td>${i18nHelper.getMessage("310111")}</th>
-		<td>${i18nHelper.getMessage("310211")}</th>
-		<td>${i18nHelper.getMessage("310311")}</th>
-		<td>${i18nHelper.getMessage("310411")}</th>
-		<td>${i18nHelper.getMessage("310511")}</th>
-		<td>${i18nHelper.getMessage("310611")}</th>
-		<td>${i18nHelper.getMessage("310711")}</th>
-	</tr>
-		<td>${i18nHelper.getMessage("320102")}</th>
-		<td>${i18nHelper.getMessage("310112")}</th>
-		<td>${i18nHelper.getMessage("310212")}</th>
-		<td>${i18nHelper.getMessage("310312")}</th>
-		<td>${i18nHelper.getMessage("310412")}</th>
-		<td>${i18nHelper.getMessage("310512")}</th>
-		<td>${i18nHelper.getMessage("310612")}</th>
-		<td>${i18nHelper.getMessage("310712")}</th>
-	</tr>
-	<tr>
-		<td>${i18nHelper.getMessage("320103")}</th>
-		<td>${i18nHelper.getMessage("310113")}</th>
-		<td>${i18nHelper.getMessage("310213")}</th>
-		<td>${i18nHelper.getMessage("310313")}</th>
-		<td>${i18nHelper.getMessage("310413")}</th>
-		<td>${i18nHelper.getMessage("310513")}</th>
-		<td>${i18nHelper.getMessage("310613")}</th>
-		<td>${i18nHelper.getMessage("310713")}</th>
-	</tr>
-	<tr>
-		<td>${i18nHelper.getMessage("320104")}</th>
-		<td>${i18nHelper.getMessage("310114")}</th>
-		<td>${i18nHelper.getMessage("310214")}</th>
-		<td>${i18nHelper.getMessage("310314")}</th>
-		<td>${i18nHelper.getMessage("310414")}</th>
-		<td>${i18nHelper.getMessage("310514")}</th>
-		<td>${i18nHelper.getMessage("310614")}</th>
-		<td>${i18nHelper.getMessage("310714")}</th>
-	</tr>
-	<tr>
-		<td>${i18nHelper.getMessage("320105")}</th>
-		<td>${i18nHelper.getMessage("310115")}</th>
-		<td>${i18nHelper.getMessage("310215")}</th>
-		<td>${i18nHelper.getMessage("310315")}</th>
-		<td>${i18nHelper.getMessage("310415")}</th>
-		<td>${i18nHelper.getMessage("310515")}</th>
-		<td>${i18nHelper.getMessage("310615")}</th>
-		<td>${i18nHelper.getMessage("310715")}</th>
-	</tr>
-	<tr>
-		<td>${i18nHelper.getMessage("320106")}</th>
-		<td>${i18nHelper.getMessage("310116")}</th>
-		<td>${i18nHelper.getMessage("310216")}</th>
-		<td>${i18nHelper.getMessage("310316")}</th>
-		<td>${i18nHelper.getMessage("310416")}</th>
-		<td>${i18nHelper.getMessage("310516")}</th>
-		<td>${i18nHelper.getMessage("310616")}</th>
-		<td>${i18nHelper.getMessage("310716")}</th>
-	</tr>
-	<tr>
-		<td>${i18nHelper.getMessage("320107")}</th>
-		<td>${i18nHelper.getMessage("310117")}</th>
-		<td>${i18nHelper.getMessage("310217")}</th>
-		<td>${i18nHelper.getMessage("310317")}</th>
-		<td>${i18nHelper.getMessage("310417")}</th>
-		<td>${i18nHelper.getMessage("310517")}</th>
-		<td>${i18nHelper.getMessage("310617")}</th>
-		<td>${i18nHelper.getMessage("310717")}</th>
-	</tr>
-	
-	<tr>
-		<td>${i18nHelper.getMessage("320108")}</th>
-		<td>${i18nHelper.getMessage("310118")}</th>
-		<td>${i18nHelper.getMessage("310218")}</th>
-		<td>${i18nHelper.getMessage("310318")}</th>
-		<td>${i18nHelper.getMessage("310418")}</th>
-		<td>${i18nHelper.getMessage("310518")}</th>
-		<td>${i18nHelper.getMessage("310618")}</th>
-		<td>${i18nHelper.getMessage("310718")}</th>
-	</tr>
-	
-	<tr>
-		<td>${i18nHelper.getMessage("320109")}</th>
-		<td>${i18nHelper.getMessage("310119")}</th>
-		<td>${i18nHelper.getMessage("310219")}</th>
-		<td>${i18nHelper.getMessage("310319")}</th>
-		<td>${i18nHelper.getMessage("310419")}</th>
-		<td>${i18nHelper.getMessage("310519")}</th>
-		<td>${i18nHelper.getMessage("310619")}</th>
-		<td>${i18nHelper.getMessage("310719")}</th>
-	</tr>
-	
-	<tr>
-		<td>${i18nHelper.getMessage("320110")}</th>
-		<td>${i18nHelper.getMessage("310120")}</th>
-		<td>${i18nHelper.getMessage("310220")}</th>
-		<td>${i18nHelper.getMessage("310320")}</th>
-		<td>${i18nHelper.getMessage("310420")}</th>
-		<td>${i18nHelper.getMessage("310520")}</th>
-		<td>${i18nHelper.getMessage("310620")}</th>
-		<td>${i18nHelper.getMessage("310720")}</th>
-	</tr>
-			<tr>
-		<td>${i18nHelper.getMessage("320111")}</th>
-		<td>${i18nHelper.getMessage("310122")}</th>
-		<td>${i18nHelper.getMessage("310222")}</th>
-		<td>${i18nHelper.getMessage("310322")}</th>
-		<td>${i18nHelper.getMessage("310422")}</th>
-		<td>${i18nHelper.getMessage("310522")}</th>
-		<td>${i18nHelper.getMessage("310622")}</th>
-		<td>${i18nHelper.getMessage("310722")}</th>
-	</tr>
-</table>`;
-  new import_obsidian22.Setting(containerEl).setName(i18nHelper.getMessage("122002")).setDesc(extraVariablesTable);
-  const userInfoVariables = new DocumentFragment();
-  userInfoVariables.createDiv().innerHTML = `
-${i18nHelper.getMessage("160225")}
-<br>
-<strong>myTags</strong> \u2192 ${i18nHelper.getMessage("160226")}<br>
-<strong>myRating</strong> \u2192 ${i18nHelper.getMessage("160227")}<br>
-<strong>myRatingStar</strong> \u2192 ${i18nHelper.getMessage("160231")}<br>
-<strong>myState</strong> \u2192 ${i18nHelper.getMessage("160228")}<br>
-<strong>myComment</strong> \u2192 ${i18nHelper.getMessage("160229")}<br>
-<strong>myCollectionDate</strong> \u2192 ${i18nHelper.getMessage("160230")}<br>
-
-
-`;
-  new import_obsidian22.Setting(containerEl).setName(i18nHelper.getMessage("122010")).setDesc(userInfoVariables);
+var import_obsidian23 = __toModule(require("obsidian"));
+var BASIC_VARIABLES = [
+  { name: "id", descriptionKeySuffix: "01" },
+  { name: "title", descriptionKeySuffix: "02" },
+  { name: "type", descriptionKeySuffix: "03" },
+  { name: "score", descriptionKeySuffix: "04" },
+  { name: "scoreStar", sharedDescriptionKey: "410200" },
+  { name: "image", descriptionKeySuffix: "05" },
+  { name: "imageData.url", descriptionKeySuffix: "21" },
+  { name: "url", descriptionKeySuffix: "06" },
+  { name: "desc", descriptionKeySuffix: "07" },
+  { name: "publisher", descriptionKeySuffix: "08" },
+  { name: "datePublished", descriptionKeySuffix: "09" },
+  { name: "yearPublished", descriptionKeySuffix: "30" },
+  { name: "genre", descriptionKeySuffix: "10" },
+  { name: "currentDate", sharedDescriptionKey: "330101" },
+  { name: "currentTime", sharedDescriptionKey: "330102" }
+];
+var EXTRA_VARIABLE_SUFFIXES = ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "22"];
+var USER_VARIABLES = [
+  { name: "myTags", descriptionKey: "160226" },
+  { name: "myRating", descriptionKey: "160227" },
+  { name: "myRatingStar", descriptionKey: "160231" },
+  { name: "myState", descriptionKey: "160228" },
+  { name: "myComment", descriptionKey: "160229" },
+  { name: "myCollectionDate", descriptionKey: "160230" },
+  { name: "imageName", descriptionKey: "imageNameDesc" },
+  { name: "popularComments", descriptionKey: "popularCommentsDesc" }
+];
+function constructTemplateVariablesUI(containerEl, _manager) {
+  createVariableSection(containerEl, i18nHelper.getMessage("122001"), BASIC_VARIABLES, "name", i18nHelper.getMessage("122003"), i18nHelper.getMessage("122004"));
+  const extraVariables = EXTRA_VARIABLE_SUFFIXES.map((suffix, index2) => ({
+    name: i18nHelper.getMessage(`3201${String(index2 + 1).padStart(2, "0")}`),
+    descriptionKeySuffix: suffix
+  }));
+  createVariableSection(containerEl, i18nHelper.getMessage("122002"), extraVariables, "description", void 0, i18nHelper.getMessage("122005"));
+  createUserVariableSection(containerEl);
+}
+function createVariableSection(containerEl, title, variables, copyMode, summary, help) {
+  const section = containerEl.createDiv("obsidian_douban_variable_card");
+  section.createEl("h3", { cls: "obsidian_douban_variable_title", text: title });
+  if (summary) {
+    section.createEl("p", { cls: "obsidian_douban_variable_summary", text: summary });
+  }
+  if (help) {
+    section.createEl("p", { cls: "obsidian_douban_variable_help", text: help });
+  }
+  createVariableTable(section, variables, copyMode);
+}
+function createVariableTable(containerEl, variables, copyMode) {
+  const scrollContainer = containerEl.createDiv("obsidian_douban_variable_table_scroll");
+  const table = scrollContainer.createEl("table", { cls: "obsidian_douban_variable_table" });
+  const header = table.createEl("thead").createEl("tr");
+  for (let index2 = 1; index2 <= 7; index2++) {
+    header.createEl("th", {
+      attr: { scope: "col" },
+      text: i18nHelper.getMessage(`30010${index2}`)
+    });
+  }
+  const body = table.createEl("tbody");
+  for (const variable of variables) {
+    const row = body.createEl("tr");
+    const nameCell = row.createEl("th", { attr: { scope: "row" } });
+    if (copyMode === "name") {
+      nameCell.createSpan({ cls: "obsidian_douban_variable_name", text: variable.name });
+      makeVariableCopyable(nameCell, variable.name);
+    } else {
+      nameCell.setText(variable.name);
+    }
+    for (const description of getVariableDescriptions(variable)) {
+      if (copyMode === "description") {
+        createExtraVariableCell(row, description);
+      } else {
+        row.createEl("td", { text: description });
+      }
+    }
+  }
+}
+function createExtraVariableCell(row, description) {
+  const cell = row.createEl("td");
+  const match = description.match(/^([A-Za-z][A-Za-z0-9_.]*)([:：])(.*)$/);
+  if (!match) {
+    cell.setText(description);
+    return;
+  }
+  const [, variableName, separator, label] = match;
+  cell.createSpan({ cls: "obsidian_douban_variable_name", text: variableName });
+  cell.appendText(`${separator}${label}`);
+  makeVariableCopyable(cell, variableName);
+}
+function getVariableDescriptions(variable) {
+  if (variable.sharedDescriptionKey) {
+    return Array(6).fill(i18nHelper.getMessage(variable.sharedDescriptionKey));
+  }
+  return Array.from({ length: 6 }, (_, index2) => i18nHelper.getMessage(`310${index2 + 1}${variable.descriptionKeySuffix}`));
+}
+function createUserVariableSection(containerEl) {
+  const section = containerEl.createDiv("obsidian_douban_variable_card");
+  section.createEl("h3", {
+    cls: "obsidian_douban_variable_title",
+    text: i18nHelper.getMessage("122010")
+  });
+  section.createEl("p", {
+    cls: "obsidian_douban_variable_help",
+    text: i18nHelper.getMessage("160225")
+  });
+  const list = section.createDiv("obsidian_douban_user_variable_list");
+  for (const variable of USER_VARIABLES) {
+    const item = list.createDiv("obsidian_douban_user_variable_item");
+    item.createSpan({ cls: "obsidian_douban_variable_name", text: variable.name });
+    item.createEl("span", { text: i18nHelper.getMessage(variable.descriptionKey) });
+    makeVariableCopyable(item, variable.name);
+  }
+}
+function makeVariableCopyable(containerEl, variableName) {
+  const templateVariable = `{{${variableName}}}`;
+  containerEl.addClass("obsidian_douban_variable_copy_target");
+  containerEl.setAttrs({
+    tabindex: "0",
+    role: "button",
+    title: `${i18nHelper.getMessage("122011")} ${templateVariable}`,
+    "aria-label": `${i18nHelper.getMessage("122011")} ${templateVariable}`
+  });
+  const copyVariable = () => __async(this, null, function* () {
+    try {
+      yield navigator.clipboard.writeText(templateVariable);
+      new import_obsidian23.Notice(`${i18nHelper.getMessage("122012")} ${templateVariable}`);
+    } catch (error) {
+      new import_obsidian23.Notice(i18nHelper.getMessage("122013"));
+    }
+  });
+  containerEl.addEventListener("click", copyVariable);
+  containerEl.addEventListener("keydown", (event) => __async(this, null, function* () {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      yield copyVariable();
+    }
+  }));
 }
 
 // src/org/wanxp/douban/setting/CustomPropertySettingsHelper.ts
-var import_obsidian23 = __toModule(require("obsidian"));
+var import_obsidian24 = __toModule(require("obsidian"));
 function constructCustomPropertySettingsUI(containerEl, manager) {
-  containerEl.createEl("p", { text: i18nHelper.getMessage("1242") });
+  const overview = containerEl.createDiv("obsidian_douban_section_card");
+  overview.createEl("p", {
+    cls: "obsidian_douban_custom_property_intro",
+    text: i18nHelper.getMessage("1242")
+  });
   const customProperties = manager.plugin.settings.customProperties;
-  new import_obsidian23.Setting(containerEl).setDesc(i18nHelper.getMessage("1241")).addButton((button) => {
+  new import_obsidian24.Setting(overview).setClass("obsidian_douban_custom_property_header").setDesc(i18nHelper.getMessage("1241")).addButton((button) => {
     button.setButtonText(i18nHelper.getMessage("124101"));
     button.setTooltip(i18nHelper.getMessage("124101"));
     button.setIcon("plus");
@@ -23407,9 +24151,10 @@ function constructCustomPropertyUI(containerEl, customProperties, manager) {
   }
 }
 function addFilterInput(data2, el, customProperties, manager, idx) {
-  const item = el.createEl("li");
-  item.createEl("span", { text: i18nHelper.getMessage("124102") });
-  const nameField = new import_obsidian23.TextComponent(el);
+  const item = el.createDiv("obsidian_douban_custom_property_item");
+  const nameControl = item.createDiv("obsidian_douban_custom_property_field");
+  nameControl.createEl("label", { text: i18nHelper.getMessage("124102") });
+  const nameField = new import_obsidian24.TextComponent(nameControl);
   nameField.setPlaceholder(i18nHelper.getMessage("124103")).setValue(data2.name).onChange((value) => __async(this, null, function* () {
     if (!value) {
       return;
@@ -23417,11 +24162,11 @@ function addFilterInput(data2, el, customProperties, manager, idx) {
     customProperties[idx].name = value;
     yield manager.plugin.saveSettings();
   }));
-  let nameEl = nameField.inputEl;
+  const nameEl = nameField.inputEl;
   nameEl.addClass("obsidian_douban_settings_input");
-  item.appendChild(nameEl);
-  item.createEl("span", { text: i18nHelper.getMessage("124104") });
-  const valueField = new import_obsidian23.TextComponent(el);
+  const valueControl = item.createDiv("obsidian_douban_custom_property_field");
+  valueControl.createEl("label", { text: i18nHelper.getMessage("124104") });
+  const valueField = new import_obsidian24.TextComponent(valueControl);
   valueField.setPlaceholder(i18nHelper.getMessage("124105")).setValue(data2.value).onChange((value) => __async(this, null, function* () {
     if (!value) {
       return;
@@ -23431,12 +24176,12 @@ function addFilterInput(data2, el, customProperties, manager, idx) {
   }));
   const valueEl = valueField.inputEl;
   valueEl.addClass("obsidian_douban_settings_input");
-  item.appendChild(valueEl);
-  const fieldsDropdown = new import_obsidian23.DropdownComponent(el);
+  const typeControl = item.createDiv("obsidian_douban_custom_property_field");
+  typeControl.createEl("label", { text: i18nHelper.getMessage("124106") });
+  const fieldsDropdown = new import_obsidian24.DropdownComponent(typeControl);
   for (const fieldSelect in SupportType) {
     fieldsDropdown.addOption(fieldSelect, i18nHelper.getMessage(fieldSelect));
   }
-  item.createEl("span", { text: i18nHelper.getMessage("124106") });
   let dataFieldValue = data2.field;
   if (typeof dataFieldValue === "string") {
     dataFieldValue = SupportTypeMap[dataFieldValue];
@@ -23447,8 +24192,8 @@ function addFilterInput(data2, el, customProperties, manager, idx) {
   }));
   const fieldSelectEl = fieldsDropdown.selectEl;
   fieldSelectEl.addClass("obsidian_douban_settings_input");
-  item.appendChild(fieldSelectEl);
-  const extractButton = new import_obsidian23.ButtonComponent(el);
+  const removeControl = item.createDiv("obsidian_douban_custom_property_remove");
+  const extractButton = new import_obsidian24.ButtonComponent(removeControl);
   extractButton.setIcon("minus-with-circle");
   extractButton.setTooltip(i18nHelper.getMessage("124107"));
   extractButton.onClick(() => __async(this, null, function* () {
@@ -23458,15 +24203,14 @@ function addFilterInput(data2, el, customProperties, manager, idx) {
   }));
   const extractButtonEl = extractButton.buttonEl;
   extractButtonEl.addClass("obsidian_douban_settings_button");
-  item.appendChild(extractButtonEl);
 }
 
 // src/org/wanxp/douban/setting/AdvancedSettingsHelper.ts
-var import_obsidian25 = __toModule(require("obsidian"));
+var import_obsidian26 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/component/ConfirmDialogModal.ts
-var import_obsidian24 = __toModule(require("obsidian"));
-var ConfirmDialogModal = class extends import_obsidian24.Modal {
+var import_obsidian25 = __toModule(require("obsidian"));
+var ConfirmDialogModal = class extends import_obsidian25.Modal {
   constructor(doubanPlugin, message, promise) {
     super(doubanPlugin.app);
     this.doubanPlugin = doubanPlugin;
@@ -23480,7 +24224,7 @@ var ConfirmDialogModal = class extends import_obsidian24.Modal {
     contentEl.createEl("p", { text: i18nHelper.getMessage("125033") });
     const controls = contentEl.createDiv("controls");
     controls.addClass("obsidian_douban_search_controls");
-    new import_obsidian24.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110152")).setCta().onClick(() => __async(this, null, function* () {
+    new import_obsidian25.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110152")).setCta().onClick(() => __async(this, null, function* () {
       if (this.message == i18nHelper.getMessage("125046")) {
         createFileSelectModal(this.doubanPlugin);
       } else {
@@ -23488,7 +24232,7 @@ var ConfirmDialogModal = class extends import_obsidian24.Modal {
       }
       this.close();
     })).setClass("obsidian_douban_search_button");
-    new import_obsidian24.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => {
+    new import_obsidian25.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => {
       this.close();
     }).setClass("obsidian_douban_cancel_button");
   }
@@ -23515,10 +24259,88 @@ function createFileSelectModal(doubanPlugin) {
   input.click();
 }
 
+// src/org/wanxp/utils/TimeUtil.ts
+var TimeUtil = class {
+  static estimateTime(needHandled, overSlowSize) {
+    if (needHandled <= 0) {
+      return 0;
+    }
+    let times = 0;
+    if (overSlowSize) {
+      if (needHandled <= BasicConst.SLOW_SIZE) {
+        times = ESTIMATE_TIME_PER_WITH_REQUEST * needHandled;
+      } else {
+        times = ESTIMATE_TIME_PER_WITH_REQUEST * BasicConst.SLOW_SIZE + ESTIMATE_TIME_PER_WITH_REQUEST_SLOW * Math.max(needHandled - BasicConst.SLOW_SIZE, 0);
+      }
+    } else {
+      times = ESTIMATE_TIME_PER_WITH_REQUEST * needHandled;
+    }
+    return times;
+  }
+  static estimateTimeMsg(needHandled, overSlowSize) {
+    const times = this.estimateTime(needHandled, overSlowSize);
+    if (times <= 0) {
+      return 0 + i18nHelper.getMessage("SECOND");
+    }
+    return this.formatDuring(times);
+  }
+  static formatDuring(mss) {
+    let show = false;
+    let message = "";
+    const days = Math.floor(mss / (1e3 * 60 * 60 * 24));
+    const hours = Math.floor(mss % (1e3 * 60 * 60 * 24) / (1e3 * 60 * 60));
+    const minutes = Math.floor(mss % (1e3 * 60 * 60) / (1e3 * 60));
+    const seconds = Math.floor(mss % (1e3 * 60) / 1e3);
+    if (days > 0) {
+      show = true;
+      message += days + i18nHelper.getMessage("DAY");
+    }
+    if (hours > 0 || show) {
+      show = true;
+      message += hours + i18nHelper.getMessage("HOUR");
+    }
+    if (minutes > 0 || show) {
+      show = true;
+      message += minutes + i18nHelper.getMessage("MINUTE");
+    }
+    if (seconds > 0 || show) {
+      message += seconds + i18nHelper.getMessage("SECOND");
+    }
+    return message;
+  }
+  static formatDate(date, format = "yyyy-MM-dd HH:mm:ss") {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    const second = date.getSeconds();
+    const formatMap = {
+      yyyy: year.toString(),
+      MM: month.toString().padStart(2, "0"),
+      dd: day.toString().padStart(2, "0"),
+      HH: hour.toString().padStart(2, "0"),
+      mm: minute.toString().padStart(2, "0"),
+      ss: second.toString().padStart(2, "0")
+    };
+    return format.replace(/yyyy|MM|dd|HH|mm|ss/g, (match) => formatMap[match]);
+  }
+  static getLastMonth() {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 1);
+    return date;
+  }
+};
+var sleepRange = (msMin, msMax) => {
+  const msTime = NumberUtil.getRandomNum(msMin, msMax);
+  return new Promise((resolve) => setTimeout(resolve, msTime));
+};
+
 // src/org/wanxp/douban/setting/AdvancedSettingsHelper.ts
 function constructAdvancedUI(containerEl, manager) {
-  containerEl.createEl("p", { text: i18nHelper.getMessage("1252") });
-  const advancedSettings = containerEl.createDiv("advanced-settings");
+  const overview = containerEl.createDiv("obsidian_douban_section_card obsidian_douban_section_overview");
+  overview.createEl("p", { text: i18nHelper.getMessage("1252") });
+  const advancedSettings = containerEl.createDiv("advanced-settings obsidian_douban_card_list");
   showAdvancedSettings(advancedSettings, manager);
 }
 function showAdvancedSettings(containerEl, manager) {
@@ -23526,7 +24348,7 @@ function showAdvancedSettings(containerEl, manager) {
   const promise = new Promise((resolve, reject) => {
     resolve(null);
   });
-  new import_obsidian25.Setting(containerEl).setName(i18nHelper.getMessage("125034")).setDesc(i18nHelper.getMessage("125035")).addButton((buttonComponent) => {
+  new import_obsidian26.Setting(containerEl).setName(i18nHelper.getMessage("125034")).setDesc(i18nHelper.getMessage("125035")).addButton((buttonComponent) => {
     buttonComponent.setIcon("folder").setButtonText(i18nHelper.getMessage("125047")).onClick((value) => __async(this, null, function* () {
       const settings = manager.getSettings();
       const settingsString = JSON.stringify(settings, null, 2);
@@ -23539,13 +24361,13 @@ function showAdvancedSettings(containerEl, manager) {
       URL.revokeObjectURL(url);
     }));
   });
-  new import_obsidian25.Setting(containerEl).setName(i18nHelper.getMessage("125036")).setDesc(i18nHelper.getMessage("125037")).addButton((buttonComponent) => {
+  new import_obsidian26.Setting(containerEl).setName(i18nHelper.getMessage("125036")).setDesc(i18nHelper.getMessage("125037")).addButton((buttonComponent) => {
     buttonComponent.setIcon("document").setButtonText(i18nHelper.getMessage("125039")).onClick((value) => __async(this, null, function* () {
       showConfirmDialog(i18nHelper.getMessage("125046"), promise.then(() => {
       }), manager);
     }));
   });
-  new import_obsidian25.Setting(containerEl).setName(i18nHelper.getMessage("125001")).setDesc(i18nHelper.getMessage("125002")).addToggle((toggleComponent) => {
+  new import_obsidian26.Setting(containerEl).setName(i18nHelper.getMessage("125001")).setDesc(i18nHelper.getMessage("125002")).addToggle((toggleComponent) => {
     toggleComponent.setValue(manager.plugin.settings.debugMode).onChange((value) => __async(this, null, function* () {
       manager.plugin.settings.debugMode = value;
       if (value) {
@@ -23556,14 +24378,14 @@ function showAdvancedSettings(containerEl, manager) {
       yield manager.plugin.saveSettings();
     }));
   });
-  new import_obsidian25.Setting(containerEl).setName(i18nHelper.getMessage("125011")).setDesc(i18nHelper.getMessage("125012")).addButton((buttonComponent) => {
+  new import_obsidian26.Setting(containerEl).setName(i18nHelper.getMessage("125011")).setDesc(i18nHelper.getMessage("125012")).addButton((buttonComponent) => {
     buttonComponent.setIcon("reset").setTooltip(i18nHelper.getMessage("125013")).onClick((value) => __async(this, null, function* () {
       showConfirmDialog(i18nHelper.getMessage("125012"), promise.then(() => {
         manager.resetSetting();
       }), manager);
     }));
   });
-  new import_obsidian25.Setting(containerEl).setName(i18nHelper.getMessage("125021")).setDesc(i18nHelper.getMessage("125022")).addButton((buttonComponent) => {
+  new import_obsidian26.Setting(containerEl).setName(i18nHelper.getMessage("125021")).setDesc(i18nHelper.getMessage("125022")).addButton((buttonComponent) => {
     buttonComponent.setIcon("reset").setTooltip(i18nHelper.getMessage("125022")).onClick((value) => __async(this, null, function* () {
       showConfirmDialog(i18nHelper.getMessage("125022"), promise.then(() => {
         manager.clearLoginInfo();
@@ -23571,7 +24393,7 @@ function showAdvancedSettings(containerEl, manager) {
       }), manager);
     }));
   });
-  new import_obsidian25.Setting(containerEl).setName(i18nHelper.getMessage("125031")).setDesc(i18nHelper.getMessage("125032")).addButton((buttonComponent) => {
+  new import_obsidian26.Setting(containerEl).setName(i18nHelper.getMessage("125031")).setDesc(i18nHelper.getMessage("125032")).addButton((buttonComponent) => {
     buttonComponent.setIcon("reset").setTooltip(i18nHelper.getMessage("125032")).onClick((value) => __async(this, null, function* () {
       showConfirmDialog(i18nHelper.getMessage("125032"), promise.then(() => {
         manager.clearSyncCache();
@@ -23588,95 +24410,185 @@ function showConfirmDialog(message, promise, manager) {
 }
 
 // src/org/wanxp/douban/setting/ArrayDisplayTypeSettingsHelper.ts
-var import_obsidian26 = __toModule(require("obsidian"));
+var import_obsidian28 = __toModule(require("obsidian"));
+
+// src/org/wanxp/douban/setting/ArrayLengthLimitSettingsHelper.ts
+var import_obsidian27 = __toModule(require("obsidian"));
+function constructArrayLengthLimitSettingsUI(containerEl, manager) {
+  const overview = containerEl.createDiv("obsidian_douban_section_card");
+  overview.createEl("h3", { cls: "obsidian_douban_array_section_title", text: i18nHelper.getMessage("1270") });
+  overview.createEl("p", { cls: "obsidian_douban_array_help", text: i18nHelper.getMessage("1271") });
+  overview.createEl("p", { cls: "obsidian_douban_array_help obsidian_douban_array_hint", text: i18nHelper.getMessage("1272") });
+  if (!manager.plugin.settings.arrayLengthLimits) {
+    manager.plugin.settings.arrayLengthLimits = [];
+  }
+  const limits = manager.plugin.settings.arrayLengthLimits;
+  new import_obsidian27.Setting(overview).setClass("obsidian_douban_array_section_header").setDesc(i18nHelper.getMessage("1273")).addButton((button) => {
+    button.setButtonText(i18nHelper.getMessage("124101"));
+    button.setTooltip(i18nHelper.getMessage("127401"));
+    button.setIcon("plus");
+    button.onClick(() => __async(this, null, function* () {
+      yield manager.addArrayLengthLimit();
+      renderItems(list, manager);
+    }));
+  });
+  const list = containerEl.createDiv("array-length-limit-list");
+  renderItems(list, manager);
+}
+function renderItems(containerEl, manager) {
+  containerEl.empty();
+  const limits = manager.plugin.settings.arrayLengthLimits || [];
+  for (let i = 0; i < limits.length; i++) {
+    buildItem(containerEl, manager, limits, i);
+  }
+}
+function buildItem(containerEl, manager, limits, idx) {
+  const data2 = limits[idx];
+  const item = containerEl.createDiv("obsidian_douban_array_limit_item");
+  const typeField = item.createDiv("obsidian_douban_array_limit_field");
+  typeField.createEl("label", { text: i18nHelper.getMessage("127402") });
+  const typeDropdown = new import_obsidian27.DropdownComponent(typeField);
+  for (const fieldSelect in SupportType) {
+    typeDropdown.addOption(fieldSelect, i18nHelper.getMessage(fieldSelect));
+  }
+  let dataTypeValue = data2.type;
+  if (typeof dataTypeValue === "string") {
+    dataTypeValue = SupportTypeMap[dataTypeValue] || SupportType.all;
+  }
+  typeDropdown.setValue(dataTypeValue || SupportType.all).onChange((value) => __async(this, null, function* () {
+    limits[idx].type = value;
+    yield manager.plugin.saveSettings();
+  }));
+  const typeEl = typeDropdown.selectEl;
+  typeEl.addClass("obsidian_douban_settings_input");
+  const nameField = item.createDiv("obsidian_douban_array_limit_field");
+  nameField.createEl("label", { text: i18nHelper.getMessage("127403") });
+  const fieldField = new import_obsidian27.TextComponent(nameField);
+  fieldField.setPlaceholder(i18nHelper.getMessage("127404")).setValue(data2.field || "").onChange((value) => __async(this, null, function* () {
+    limits[idx].field = (value || "").trim();
+    yield manager.plugin.saveSettings();
+  }));
+  const fieldEl = fieldField.inputEl;
+  fieldEl.addClass("obsidian_douban_settings_input");
+  const maxField = item.createDiv("obsidian_douban_array_limit_field");
+  maxField.createEl("label", { text: i18nHelper.getMessage("127405") });
+  const limitField = new import_obsidian27.TextComponent(maxField);
+  limitField.setPlaceholder(i18nHelper.getMessage("127406")).setValue(data2.limit != null ? String(data2.limit) : "").onChange((value) => __async(this, null, function* () {
+    const parsed = parseInt(value, 10);
+    if (Number.isNaN(parsed) || parsed < 0) {
+      return;
+    }
+    limits[idx].limit = parsed;
+    yield manager.plugin.saveSettings();
+  }));
+  const limitEl = limitField.inputEl;
+  limitEl.type = "number";
+  limitEl.min = "0";
+  limitEl.addClass("obsidian_douban_settings_input");
+  const removeControl = item.createDiv("obsidian_douban_array_limit_remove");
+  const removeBtn = new import_obsidian27.ButtonComponent(removeControl);
+  removeBtn.setIcon("minus-with-circle");
+  removeBtn.setTooltip(i18nHelper.getMessage("127407"));
+  removeBtn.onClick(() => __async(this, null, function* () {
+    yield manager.removeArrayLengthLimit(idx);
+    renderItems(containerEl, manager);
+  }));
+  const removeBtnEl = removeBtn.buttonEl;
+  removeBtnEl.addClass("obsidian_douban_settings_button");
+}
+
+// src/org/wanxp/douban/setting/ArrayDisplayTypeSettingsHelper.ts
 function arraySettingDisplayUI(containerEl, manager) {
-  arraySettingDisplay(containerEl.createDiv("array-settings"), manager, true);
+  const lengthLimitSection = containerEl.createDiv("obsidian_douban_array_section");
+  constructArrayLengthLimitSettingsUI(lengthLimitSection, manager);
+  const displaySection = containerEl.createDiv("obsidian_douban_array_section");
+  arraySettingDisplay(displaySection, manager, true);
 }
 function arraySettingDisplay(containerEl, manager, displayExtraListTypeFlag = true) {
   containerEl.empty();
-  const arraySet = new import_obsidian26.Setting(containerEl).setName(i18nHelper.getMessage("120601")).setDesc(i18nHelper.getMessage("120602")).addButton((button) => {
+  const overview = containerEl.createDiv("obsidian_douban_section_card");
+  new import_obsidian28.Setting(overview).setClass("obsidian_douban_array_section_header").setName(i18nHelper.getMessage("120601")).setDesc(i18nHelper.getMessage("120602")).addButton((button) => {
     button.setIcon("plus").setTooltip(i18nHelper.getMessage("120607")).onClick(() => __async(this, null, function* () {
       yield manager.addArraySetting();
       arraySettingDisplay(containerEl, manager, true);
     }));
   });
-  new import_obsidian26.Setting(containerEl);
   arraySettingDisplayItem(containerEl, manager, manager.getArraySetting(DEFAULT_SETTINGS_ARRAY_NAME));
   displayExtraListType(manager, containerEl);
 }
 function arraySettingDisplayItem(containerEl, manager, arraySetting) {
-  const arrSettingsUI = containerEl.createDiv("array-settings");
-  const arrShow = containerEl.createDiv("array-show");
+  const card = containerEl.createDiv("obsidian_douban_array_display_card");
+  const fields = card.createDiv("obsidian_douban_array_fields");
   const typeName = arraySetting.arrayName;
-  const arraySettingItems = new import_obsidian26.Setting(arrSettingsUI).setName(i18nHelper.getMessage("120604") + typeName).setDesc(i18nHelper.getMessage(`120605`) + (typeName == DEFAULT_SETTINGS_ARRAY_NAME ? "" : `(${typeName})`) + `}}`);
+  const arraySettingItems = new import_obsidian28.Setting(card).setClass("obsidian_douban_array_card_header").setName(i18nHelper.getMessage("120604") + typeName).setDesc(i18nHelper.getMessage(`120605`) + (typeName == DEFAULT_SETTINGS_ARRAY_NAME ? "" : `(${typeName})`) + `}}`);
   if (typeName != DEFAULT_SETTINGS_ARRAY_NAME) {
     arraySettingItems.addButton((button) => {
-      button.setIcon("trash").setTooltip(i18nHelper.getMessage("120606")).onClick(() => __async(this, null, function* () {
+      button.setIcon("minus-with-circle").setTooltip(i18nHelper.getMessage("120606")).onClick(() => __async(this, null, function* () {
         yield manager.removeArraySetting(arraySetting.arrayName);
         arraySettingDisplay(containerEl, manager, true);
       }));
     });
   }
-  arrSettingsUI.createEl("label", { text: i18nHelper.getMessage("124109") });
-  const arrayStart = new import_obsidian26.TextComponent(arrSettingsUI);
+  const arrayStartField = fields.createDiv("obsidian_douban_array_field");
+  arrayStartField.createEl("label", { text: i18nHelper.getMessage("124109") });
+  const arrayStart = new import_obsidian28.TextComponent(arrayStartField);
   arrayStart.setPlaceholder(DEFAULT_SETTINGS.arrayStart).setValue(arraySetting.arrayStart).onChange((value) => __async(this, null, function* () {
     arraySetting.arrayStart = value;
     yield manager.updateArraySetting(arraySetting);
-    showArrayExample(arrShow, manager, arraySetting);
+    showArrayExample(preview, manager, arraySetting);
   }));
   const arrayStartEl = arrayStart.inputEl;
   arrayStartEl.size = DEFAULT_SETTINGS_ARRAY_INPUT_SIZE;
   arrayStartEl.addClass("obsidian_douban_settings_input");
-  arrSettingsUI.appendChild(arrayStartEl).appendText("  ");
-  arrSettingsUI.createEl("label", { text: i18nHelper.getMessage("124110") });
-  const arrayElementStart = new import_obsidian26.TextComponent(arrSettingsUI);
+  const elementStartField = fields.createDiv("obsidian_douban_array_field");
+  elementStartField.createEl("label", { text: i18nHelper.getMessage("124110") });
+  const arrayElementStart = new import_obsidian28.TextComponent(elementStartField);
   arrayElementStart.setPlaceholder(DEFAULT_SETTINGS.arrayElementStart).setValue(arraySetting.arrayElementStart).onChange((value) => __async(this, null, function* () {
     arraySetting.arrayElementStart = value;
     yield manager.updateArraySetting(arraySetting);
-    showArrayExample(arrShow, manager, arraySetting);
+    showArrayExample(preview, manager, arraySetting);
   }));
   const arrayElementStartEl = arrayElementStart.inputEl;
   arrayElementStartEl.addClass("obsidian_douban_settings_input");
   arrayElementStartEl.size = DEFAULT_SETTINGS_ARRAY_INPUT_SIZE;
-  arrSettingsUI.appendChild(arrayElementStartEl).appendText("  ");
-  arrSettingsUI.createEl("label", { text: i18nHelper.getMessage("124111") });
-  const arraySpiltV2 = new import_obsidian26.TextComponent(arrSettingsUI);
+  const separatorField = fields.createDiv("obsidian_douban_array_field");
+  separatorField.createEl("label", { text: i18nHelper.getMessage("124111") });
+  const arraySpiltV2 = new import_obsidian28.TextComponent(separatorField);
   arraySpiltV2.setPlaceholder(DEFAULT_SETTINGS.arraySpiltV2).setValue(arraySetting.arraySpiltV2).onChange((value) => __async(this, null, function* () {
     arraySetting.arraySpiltV2 = value;
     yield manager.updateArraySetting(arraySetting);
-    showArrayExample(arrShow, manager, arraySetting);
+    showArrayExample(preview, manager, arraySetting);
   }));
   const arraySpiltV2El = arraySpiltV2.inputEl;
   arraySpiltV2El.addClass("obsidian_douban_settings_input");
   arraySpiltV2El.size = 2;
-  arrSettingsUI.appendChild(arraySpiltV2El).appendText("  ");
-  arrSettingsUI.createEl("label", { text: i18nHelper.getMessage("124112") });
-  const arrayElementEnd = new import_obsidian26.TextComponent(arrSettingsUI);
+  const elementEndField = fields.createDiv("obsidian_douban_array_field");
+  elementEndField.createEl("label", { text: i18nHelper.getMessage("124112") });
+  const arrayElementEnd = new import_obsidian28.TextComponent(elementEndField);
   arrayElementEnd.setPlaceholder(DEFAULT_SETTINGS.arrayElementEnd).setValue(arraySetting.arrayElementEnd).onChange((value) => __async(this, null, function* () {
     arraySetting.arrayElementEnd = value;
     yield manager.updateArraySetting(arraySetting);
-    showArrayExample(arrShow, manager, arraySetting);
+    showArrayExample(preview, manager, arraySetting);
   }));
   const arrayElementEndEl = arrayElementEnd.inputEl;
   arrayElementEndEl.addClass("obsidian_douban_settings_input");
   arrayElementEndEl.size = DEFAULT_SETTINGS_ARRAY_INPUT_SIZE;
-  arrSettingsUI.appendChild(arrayElementEndEl).appendText("  ");
-  arrSettingsUI.createEl("label", { text: i18nHelper.getMessage("124113") });
-  const arrayEnd = new import_obsidian26.TextComponent(arrSettingsUI);
+  const arrayEndField = fields.createDiv("obsidian_douban_array_field");
+  arrayEndField.createEl("label", { text: i18nHelper.getMessage("124113") });
+  const arrayEnd = new import_obsidian28.TextComponent(arrayEndField);
   arrayEnd.setPlaceholder(DEFAULT_SETTINGS.arrayEnd).setValue(arraySetting.arrayEnd).onChange((value) => __async(this, null, function* () {
     arraySetting.arrayEnd = value;
     yield manager.updateArraySetting(arraySetting);
-    showArrayExample(arrShow, manager, arraySetting);
+    showArrayExample(preview, manager, arraySetting);
   }));
   const arrayEndEl = arrayEnd.inputEl;
   arrayEndEl.addClass("obsidian_douban_settings_input");
   arrayEndEl.size = DEFAULT_SETTINGS_ARRAY_INPUT_SIZE;
-  arrSettingsUI.appendChild(arrayEndEl).appendText("  ");
-  showArrayExample(arrShow, manager, arraySetting);
+  const preview = card.createDiv("array-show");
+  showArrayExample(preview, manager, arraySetting);
 }
 function displayExtraListType(manager, containerEl) {
   manager.settings.arraySettings.forEach((arraySetting) => {
-    new import_obsidian26.Setting(containerEl);
     arraySettingDisplayItem(containerEl, manager, arraySetting);
   });
 }
@@ -23684,15 +24596,17 @@ function showArrayExample(arrShow, manager, arraySetting) {
   arrShow.empty();
   const document2 = new DocumentFragment();
   document2.createDiv("array-show-title").innerHTML = `propertyName:${manager.handleArray(["value1", "value2", "value3"], arraySetting)}`;
-  new import_obsidian26.Setting(arrShow).setName(i18nHelper.getMessage("120603")).setDesc(document2);
+  new import_obsidian28.Setting(arrShow).setName(i18nHelper.getMessage("120603")).setDesc(document2);
 }
 
 // src/org/wanxp/douban/setting/LoginSettingsHelper.ts
-var import_obsidian27 = __toModule(require("obsidian"));
+var import_obsidian30 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/component/DoubanLoginModel.ts
 var DoubanLoginModel = class {
   constructor(containerEl, settingsManager) {
+    this.loginCheckInProgress = false;
+    this.loginCompleted = false;
     this.containerEl = containerEl;
     this.settingsManager = settingsManager;
     this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u521D\u59CB\u5316\u767B\u5F55\u754C\u9762`);
@@ -23702,21 +24616,37 @@ var DoubanLoginModel = class {
       parent: remote.getCurrentWindow(),
       width: 960,
       height: 540,
-      show: false
+      show: false,
+      webPreferences: {
+        partition: `obsidian-douban-login-${Date.now()}`
+      }
     });
     this.modal.once("ready-to-show", () => {
       this.modal.setTitle(i18nHelper.getMessage("100101"));
       this.modal.show();
     });
+    const session = this.modal.webContents.session;
+    const cookieChangedHandler = (_event, cookie, _cause, removed) => {
+      if (!removed && cookie && cookie.name === "dbcl2" && this.isDoubanHost(cookie.domain)) {
+        void this.tryCompleteLogin(session);
+      }
+    };
+    session.cookies.on("changed", cookieChangedHandler);
     this.modal.on("closed", () => {
+      session.cookies.removeListener("changed", cookieChangedHandler);
       this.showCloseMessage();
       constructDoubanTokenSettingsUI(this.containerEl, this.settingsManager);
     });
-    this.modal.webContents.on("did-fail-load", (event, errorCode) => {
-      this.settingsManager.debug("\u52A0\u8F7D\u5931\u8D25" + errorCode);
+    this.modal.webContents.setWindowOpenHandler(({ url }) => {
+      if (this.isDoubanUrl(url)) {
+        void this.modal.loadURL(url).catch((error) => {
+          this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u8DF3\u8F6C\u5931\u8D25:${error.message}`);
+        });
+      }
+      return { action: "deny" };
     });
-    this.modal.webContents.on("did-fail-load", (event) => {
-      this.settingsManager.debug("\u52A0\u8F7D\u6210\u529F");
+    this.modal.webContents.on("did-fail-load", (_event, errorCode, errorDescription) => {
+      this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u52A0\u8F7D\u5931\u8D25:${errorCode},${errorDescription}`);
     });
     this.modal.webContents.on("did-navigate", (_event, _url, httpResponseCode) => __async(this, null, function* () {
       if (httpResponseCode == 403) {
@@ -23726,30 +24656,56 @@ var DoubanLoginModel = class {
         this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762,\u52A0\u8F7D\u9875\u9762\u6210\u529F,HttpStatus:${httpResponseCode},URL:${_url}`);
       }
     }));
-    const session = this.modal.webContents.session;
-    const filter4 = {
-      urls: ["https://www.douban.com/"]
-    };
-    session.webRequest.onSendHeaders(filter4, (details) => __async(this, null, function* () {
-      this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u8BF7\u6C42\u5934\u68C0\u6D4B:${details.url}`);
-      const headers = details.requestHeaders;
-      if (headers) {
-        this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u8BF7\u6C42\u68C0\u6D4B\uFF0C\u83B7\u53D6\u5230Cookie`);
-        let user = yield settingsManager.plugin.userComponent.loginHeaders(headers);
-        if (user && user.login) {
-          this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u8C46\u74E3\u767B\u5F55\u6210\u529F, \u4FE1\u606F:id:${StringUtil.confuse(user.id)}:, \u7528\u6237\u540D:${StringUtil.confuse(user.name)}`);
-          session.clearStorageData(() => {
-            this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762 \u767B\u5F55\u524D\u672C\u5730\u6E05\u7406\u7F13\u5B58\u6210\u529F2`);
-          });
-          this.onClose();
+    this.modal.webContents.on("did-finish-load", () => {
+      void this.tryCompleteLogin(session);
+    });
+  }
+  isDoubanHost(host) {
+    const normalizedHost = (host || "").replace(/^\./, "").toLowerCase();
+    return normalizedHost === "douban.com" || normalizedHost.endsWith(".douban.com");
+  }
+  isDoubanUrl(url) {
+    try {
+      const parsedUrl = new URL(url);
+      return ["http:", "https:"].includes(parsedUrl.protocol) && this.isDoubanHost(parsedUrl.hostname);
+    } catch (_) {
+      return false;
+    }
+  }
+  tryCompleteLogin(session) {
+    return __async(this, null, function* () {
+      if (this.loginCompleted || this.loginCheckInProgress || !this.modal || this.modal.isDestroyed()) {
+        return;
+      }
+      this.loginCheckInProgress = true;
+      try {
+        const cookies = yield session.cookies.get({ url: "https://www.douban.com/" });
+        if (!cookies.some((cookie) => cookie.name === "dbcl2")) {
           return;
         }
-        this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u8C46\u74E3\u767B\u5F55\u5931\u8D25, headers\u672A\u80FD\u6210\u529F\u83B7\u53D6\u7528\u6237\u4FE1\u606F`);
+        const cookieHeader = cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
+        const user = yield this.settingsManager.plugin.userComponent.loginCookie(cookieHeader);
+        if (user && user.login) {
+          this.loginCompleted = true;
+          this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u8C46\u74E3\u767B\u5F55\u6210\u529F, \u4FE1\u606F:id:${StringUtil.confuse(user.id)}:, \u7528\u6237\u540D:${StringUtil.confuse(user.name)}`);
+          try {
+            yield session.clearStorageData({
+              origin: "https://www.douban.com",
+              storages: ["cookies"]
+            });
+          } catch (error) {
+            this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u6210\u529F\u540E\u6E05\u7406\u8C46\u74E3Cookie\u5931\u8D25:${error}`);
+          }
+          this.onClose();
+        } else {
+          this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u8C46\u74E3\u767B\u5F55\u5931\u8D25, Cookie\u672A\u80FD\u6210\u529F\u83B7\u53D6\u7528\u6237\u4FE1\u606F`);
+        }
+      } catch (error) {
+        this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u9A8C\u8BC1\u5931\u8D25:${error}`);
+      } finally {
+        this.loginCheckInProgress = false;
       }
-    }));
-  }
-  parseCookies(cookies) {
-    return cookies;
+    });
   }
   doLogin() {
     return __async(this, null, function* () {
@@ -23763,7 +24719,9 @@ var DoubanLoginModel = class {
   }
   onClose() {
     this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u5173\u95ED, \u81EA\u52A8\u9000\u51FA\u767B\u5F55\u754C\u9762`);
-    this.modal.close();
+    if (this.modal && !this.modal.isDestroyed()) {
+      this.modal.close();
+    }
   }
   onReload() {
     this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u91CD\u65B0\u52A0\u8F7D`);
@@ -23771,10 +24729,342 @@ var DoubanLoginModel = class {
   }
   showCloseMessage() {
     if (this.settingsManager.plugin.userComponent.isLogin()) {
-      this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u5173\u95ED, \u4F46\u672A\u68C0\u6D4B\u5230\u767B\u51FA, \u767B\u5F55\u5931\u8D25`);
-    } else {
       this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u5173\u95ED, \u767B\u5F55\u6210\u529F`);
+    } else {
+      this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u754C\u9762\u5173\u95ED, \u767B\u5F55\u5931\u8D25`);
     }
+  }
+};
+
+// src/org/wanxp/douban/component/DoubanQrLoginModal.ts
+var import_obsidian29 = __toModule(require("obsidian"));
+var QRCode = __toModule(require_browser2());
+var DOUBAN_LOGIN_PAGE = "https://accounts.douban.com/passport/login";
+var DOUBAN_QR_CODE_URL = "https://accounts.douban.com/j/mobile/login/qrlogin_code";
+var DOUBAN_QR_STATUS_URL = "https://accounts.douban.com/j/mobile/login/qrlogin_status";
+var QR_POLL_INTERVAL = 3e3;
+var QR_MAX_POLL_COUNT = 120;
+var DoubanQrLoginModal = class extends import_obsidian29.Modal {
+  constructor(app, settingsManager, onLoginSuccess) {
+    super(app);
+    this.cookies = new Map();
+    this.qrCode = null;
+    this.pollTimer = null;
+    this.pollCount = 0;
+    this.consecutivePollErrors = 0;
+    this.polling = false;
+    this.closed = false;
+    this.sessionId = 0;
+    this.debugWriteQueue = Promise.resolve();
+    this.settingsManager = settingsManager;
+    this.onLoginSuccess = onLoginSuccess;
+  }
+  onOpen() {
+    this.closed = false;
+    void this.writeDebug("modal opened", true);
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass("obsidian_douban_qr_login");
+    contentEl.createEl("h2", { text: i18nHelper.getMessage("100141") });
+    contentEl.createEl("p", { text: i18nHelper.getMessage("100142") });
+    const imageContainer = contentEl.createDiv("obsidian_douban_qr_image_container");
+    this.qrImageEl = imageContainer.createEl("img", {
+      attr: { alt: i18nHelper.getMessage("100141") }
+    });
+    this.qrImageEl.style.display = "none";
+    this.statusEl = contentEl.createDiv("obsidian_douban_qr_status");
+    const controls = contentEl.createDiv("obsidian_douban_qr_controls");
+    this.refreshButton = new import_obsidian29.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("100150")).onClick(() => void this.loadQrCode());
+    new import_obsidian29.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => this.close());
+    void this.loadQrCode();
+  }
+  onClose() {
+    this.closed = true;
+    this.sessionId++;
+    this.stopPolling();
+    this.contentEl.empty();
+  }
+  loadQrCode() {
+    return __async(this, null, function* () {
+      this.stopPolling();
+      const sessionId = ++this.sessionId;
+      this.cookies.clear();
+      this.qrCode = null;
+      this.pollCount = 0;
+      this.consecutivePollErrors = 0;
+      this.polling = false;
+      this.qrImageEl.style.display = "none";
+      this.refreshButton.setDisabled(true);
+      this.setStatus(i18nHelper.getMessage("100143"));
+      try {
+        const response = yield this.request(DOUBAN_QR_CODE_URL, "POST", sessionId);
+        const payload = response.json && response.json.payload;
+        if (!payload || !payload.code) {
+          throw new Error("Douban QR response is missing code");
+        }
+        void this.writeDebug("QR code metadata received");
+        this.qrCode = payload.code;
+        yield this.renderQrImage(payload.code, payload.img, sessionId);
+        if (this.closed || sessionId !== this.sessionId) {
+          return;
+        }
+        this.qrImageEl.style.display = "";
+        this.setStatus(i18nHelper.getMessage("100144"));
+        this.schedulePolling(sessionId);
+      } catch (error) {
+        if (sessionId !== this.sessionId || this.closed) {
+          return;
+        }
+        this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u79FB\u52A8\u7AEF\u4E8C\u7EF4\u7801\u52A0\u8F7D\u5931\u8D25:${error}`);
+        void this.writeDebug(`QR loading failed: ${this.safeError(error)}`);
+        this.setStatus(i18nHelper.getMessage("100149"), true);
+      } finally {
+        if (sessionId === this.sessionId && !this.closed) {
+          this.refreshButton.setDisabled(false);
+        }
+      }
+    });
+  }
+  renderQrImage(code, imageUrl, sessionId) {
+    return __async(this, null, function* () {
+      const qrContent = this.getQrContent(code, imageUrl);
+      this.qrImageEl.src = yield QRCode.toDataURL(qrContent, {
+        errorCorrectionLevel: "M",
+        margin: 2,
+        width: 280,
+        color: {
+          dark: "#000000",
+          light: "#ffffff"
+        }
+      });
+      if (sessionId !== this.sessionId || this.closed) {
+        throw new Error("Douban QR login session changed");
+      }
+      void this.writeDebug("QR image rendered locally");
+    });
+  }
+  getQrContent(code, imageUrl) {
+    if (imageUrl) {
+      try {
+        const pathname = new URL(imageUrl).pathname;
+        const prefix = "/dae/qrgen/v2/";
+        if (pathname.startsWith(prefix) && pathname.endsWith(".png")) {
+          return decodeURIComponent(pathname.substring(prefix.length, pathname.length - 4));
+        }
+      } catch (_) {
+      }
+    }
+    return `https://accounts.douban.com/passport/qrlogin?code=${encodeURIComponent(code)}`;
+  }
+  schedulePolling(sessionId) {
+    if (this.closed || !this.qrCode || sessionId !== this.sessionId) {
+      return;
+    }
+    this.pollTimer = setTimeout(() => void this.pollLoginStatus(sessionId), QR_POLL_INTERVAL);
+  }
+  pollLoginStatus(sessionId) {
+    return __async(this, null, function* () {
+      if (this.closed || !this.qrCode || this.polling || sessionId !== this.sessionId) {
+        return;
+      }
+      if (++this.pollCount > QR_MAX_POLL_COUNT) {
+        this.setStatus(i18nHelper.getMessage("100147"), true);
+        return;
+      }
+      this.polling = true;
+      let continuePolling = false;
+      try {
+        const response = yield this.request(`${DOUBAN_QR_STATUS_URL}?code=${encodeURIComponent(this.qrCode)}`, "GET", sessionId);
+        const responseJson = response.json;
+        if (!responseJson || responseJson.status !== "success") {
+          throw new Error(`Douban QR status response failed: ${(responseJson == null ? void 0 : responseJson.message) || "unknown response"}`);
+        }
+        this.consecutivePollErrors = 0;
+        const loginStatus = responseJson.payload && responseJson.payload.login_status;
+        void this.writeDebug(`poll #${this.pollCount}: login_status=${loginStatus || "missing"}`);
+        switch (loginStatus) {
+          case "pending":
+            this.setStatus(i18nHelper.getMessage("100144"));
+            continuePolling = true;
+            break;
+          case "scan":
+            this.setStatus(i18nHelper.getMessage("100145"));
+            continuePolling = true;
+            break;
+          case "login":
+            this.setStatus(i18nHelper.getMessage("100152"));
+            if (!(yield this.completeLogin(sessionId))) {
+              this.setStatus(i18nHelper.getMessage("100153"), true);
+            }
+            break;
+          case "invalid":
+            this.setStatus(i18nHelper.getMessage("100147"), true);
+            break;
+          case "cancel":
+            this.setStatus(i18nHelper.getMessage("100148"), true);
+            break;
+          default:
+            continuePolling = true;
+        }
+      } catch (error) {
+        if (sessionId !== this.sessionId || this.closed) {
+          return;
+        }
+        this.consecutivePollErrors++;
+        console.error("OB-Douban:\u4E8C\u7EF4\u7801\u767B\u5F55\u72B6\u6001\u67E5\u8BE2\u5931\u8D25", error);
+        this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:\u4E8C\u7EF4\u7801\u72B6\u6001\u67E5\u8BE2\u5931\u8D25:${error}`);
+        void this.writeDebug(`poll #${this.pollCount} failed: ${this.safeError(error)}`);
+        if (this.consecutivePollErrors >= 3) {
+          this.setStatus(i18nHelper.getMessage("100149"), true);
+        }
+        continuePolling = true;
+      } finally {
+        this.polling = false;
+        if (continuePolling && sessionId === this.sessionId) {
+          this.schedulePolling(sessionId);
+        }
+      }
+    });
+  }
+  completeLogin(sessionId) {
+    return __async(this, null, function* () {
+      if (sessionId !== this.sessionId || this.closed) {
+        return false;
+      }
+      const cookie = this.getCookieHeader();
+      void this.writeDebug(`completing login; cookie names=${Array.from(this.cookies.keys()).join(",") || "none"}`);
+      if (!this.cookies.has("dbcl2") || !cookie) {
+        console.error("OB-Douban:\u626B\u7801\u5DF2\u786E\u8BA4\uFF0C\u4F46\u72B6\u6001\u54CD\u5E94\u672A\u8FD4\u56DE dbcl2 Cookie");
+        return false;
+      }
+      let user;
+      try {
+        user = yield this.settingsManager.plugin.userComponent.loginCookie(cookie);
+      } catch (error) {
+        console.warn("OB-Douban:\u4E8C\u7EF4\u7801\u51ED\u8BC1\u5DF2\u83B7\u53D6\uFF0C\u7528\u6237\u8D44\u6599\u9A8C\u8BC1\u6682\u65F6\u5931\u8D25", error);
+        void this.writeDebug(`profile verification failed; QR credential retained: ${this.safeError(error)}`);
+      }
+      if (sessionId !== this.sessionId || this.closed) {
+        return false;
+      }
+      if (!user || !user.id || !user.login) {
+        void this.writeDebug("profile was not verified; accepting confirmed QR credential");
+        user = yield this.settingsManager.plugin.userComponent.acceptQrLoginCookie(cookie);
+      }
+      if (!user || !user.id || !user.login) {
+        return false;
+      }
+      this.setStatus(i18nHelper.getMessage("100146"));
+      void this.writeDebug(`login completed; profileVerified=${this.settingsManager.plugin.userComponent.isVerified()}`);
+      log.notice(i18nHelper.getMessage("100146"));
+      this.close();
+      this.onLoginSuccess();
+      return true;
+    });
+  }
+  request(_0) {
+    return __async(this, arguments, function* (url, method = "GET", sessionId = this.sessionId) {
+      const requestKind = this.getRequestKind(url);
+      void this.writeDebug(`${requestKind} request started; method=${method}`);
+      const headers = {
+        Accept: "application/json, text/plain, */*",
+        "Cache-Control": "no-cache",
+        Referer: DOUBAN_LOGIN_PAGE,
+        "X-Requested-With": "XMLHttpRequest"
+      };
+      const response = yield (0, import_obsidian29.requestUrl)({
+        url,
+        method,
+        headers,
+        body: method === "POST" ? "" : void 0,
+        contentType: method === "POST" ? "application/x-www-form-urlencoded" : void 0,
+        throw: false
+      });
+      if (sessionId !== this.sessionId || this.closed) {
+        throw new Error("Douban QR login session changed");
+      }
+      if (this.isDoubanUrl(url)) {
+        this.updateCookies(response.headers);
+      }
+      void this.writeDebug(`${requestKind} response; HTTP=${response.status}; headers=${Object.keys(response.headers || {}).sort().join(",")}`);
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`Douban request failed with HTTP ${response.status}`);
+      }
+      return response;
+    });
+  }
+  updateCookies(headers) {
+    const newBid = this.getHeaderValues(headers, "x-douban-newbid")[0];
+    if (newBid) {
+      this.cookies.set("bid", newBid);
+    }
+    const setCookieHeaders = this.getHeaderValues(headers, "set-cookie");
+    if (setCookieHeaders.length === 0) {
+      return;
+    }
+    setCookieHeaders.flatMap((header) => header.split(/\n|,(?=\s*[^;,=\s]+=)/)).forEach((cookieValue) => {
+      const match = cookieValue.match(/^\s*([^=;\s]+)=([^;]*)/);
+      if (match) {
+        this.cookies.set(match[1], match[2]);
+      }
+    });
+  }
+  getHeaderValues(headers, name) {
+    const key = Object.keys(headers || {}).find((header) => header.toLowerCase() === name.toLowerCase());
+    if (!key) {
+      return [];
+    }
+    const value = headers[key];
+    if (Array.isArray(value)) {
+      return value.filter((item) => item != null).map((item) => String(item));
+    }
+    return value == null ? [] : [String(value)];
+  }
+  getCookieHeader() {
+    return Array.from(this.cookies.entries()).map(([name, value]) => `${name}=${value}`).join("; ");
+  }
+  isDoubanUrl(url) {
+    try {
+      const hostname = new URL(url).hostname.replace(/^\./, "").toLowerCase();
+      return hostname === "douban.com" || hostname.endsWith(".douban.com");
+    } catch (_) {
+      return false;
+    }
+  }
+  getRequestKind(url) {
+    if (url.startsWith(DOUBAN_QR_CODE_URL)) {
+      return "qr-code";
+    }
+    if (url.startsWith(DOUBAN_QR_STATUS_URL)) {
+      return "qr-status";
+    }
+    return "qr-image";
+  }
+  safeError(error) {
+    const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    return message.replace(/([?&]code=)[^&\s]+/gi, "$1<redacted>").replace(/(dbcl2=)[^;\s]+/gi, "$1<redacted>");
+  }
+  writeDebug(message, reset = false) {
+    const debugPath = (0, import_obsidian29.normalizePath)(`${this.app.vault.configDir}/plugins/obsidian-douban/qr-login-debug.log`);
+    const line = `${new Date().toISOString()} ${message}
+`;
+    this.debugWriteQueue = this.debugWriteQueue.then(() => reset ? this.app.vault.adapter.write(debugPath, line) : this.app.vault.adapter.append(debugPath, line)).catch((error) => {
+      console.error("OB-Douban:\u5199\u5165\u4E8C\u7EF4\u7801\u8BCA\u65AD\u65E5\u5FD7\u5931\u8D25", error);
+    });
+    return this.debugWriteQueue;
+  }
+  stopPolling() {
+    if (this.pollTimer != null) {
+      clearTimeout(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+  setStatus(message, error = false) {
+    if (!this.statusEl || this.closed) {
+      return;
+    }
+    this.statusEl.setText(message);
+    this.statusEl.toggleClass("has_error", error);
   }
 };
 
@@ -23798,7 +25088,7 @@ function constructDoubanTokenSettingsUI(containerEl, manager) {
   containerEl.empty();
   let login = manager.plugin.userComponent.isLogin();
   manager.debug(`\u914D\u7F6E\u754C\u9762:\u5C55\u793A\u8C46\u74E3\u72B6\u6001:${login ? "\u5DF2\u767B\u5F55" : "\u672A\u767B\u5F55"}`);
-  if (import_obsidian27.Platform.isDesktopApp) {
+  if (import_obsidian30.Platform.isDesktopApp) {
     if (login) {
       constructHasLoginSettingsUI(containerEl, manager);
     } else {
@@ -23816,15 +25106,17 @@ function constructLoginSettingsUI(containerEl, manager) {
   manager.debug(`\u914D\u7F6E\u754C\u9762:\u672A\u767B\u5F55-\u5C55\u793A\u767B\u5F55\u6309\u94AE`);
   let loginSetting = containerEl.createDiv("login-button");
   let loginCookie = containerEl.createDiv("login-button-cookie");
-  new import_obsidian27.Setting(loginSetting).setName(i18nHelper.getMessage("100131")).addButton((button) => {
-    return button.setButtonText(i18nHelper.getMessage("100130")).onClick(() => __async(this, null, function* () {
-      button.setDisabled(true);
-      manager.debug(`\u914D\u7F6E\u754C\u9762:\u70B9\u51FB\u767B\u5F55\u6309\u94AE`);
-      const loginModel = new DoubanLoginModel(containerEl, manager);
-      yield loginModel.doLogin();
-    }));
-  });
-  const loginCookieSetting = new import_obsidian27.Setting(loginSetting).setName(i18nHelper.getMessage("100133"));
+  new import_obsidian30.Setting(loginSetting).setName(i18nHelper.getMessage("100131")).addButton((button) => button.setButtonText(i18nHelper.getMessage("100140")).setCta().onClick(() => {
+    new DoubanQrLoginModal(manager.app, manager, () => {
+      constructDoubanTokenSettingsUI(containerEl, manager);
+    }).open();
+  })).addButton((button) => button.setButtonText(i18nHelper.getMessage("100151")).onClick(() => __async(this, null, function* () {
+    button.setDisabled(true);
+    manager.debug(`\u914D\u7F6E\u754C\u9762:\u70B9\u51FB\u7F51\u9875\u767B\u5F55\u6309\u94AE`);
+    const loginModel = new DoubanLoginModel(containerEl, manager);
+    yield loginModel.doLogin();
+  })));
+  const loginCookieSetting = new import_obsidian30.Setting(loginSetting).setName(i18nHelper.getMessage("100133"));
   loginCookieSetting.addButton((button) => {
     loginCookieSetting.descEl.appendChild(createFragment((frag) => {
       frag.appendText(i18nHelper.getMessage("100134"));
@@ -23845,18 +25137,28 @@ function constructLoginSettingsUI(containerEl, manager) {
 }
 function constructLoginCookieSettingsUI(containerEl, parentContainerEl, manager) {
   manager.debug(`\u914D\u7F6E\u754C\u9762:\u767B\u5F55\u5F02\u5E38\u5904\u7406\u6309\u94AE-\u5C55\u793ACookie\u8F93\u5165\u6846`);
-  new import_obsidian27.Setting(containerEl).setName(i18nHelper.getMessage("100136")).setClass("obsidian_douban_settings_cookie_login").addTextArea((text3) => {
+  new import_obsidian30.Setting(containerEl).setName(i18nHelper.getMessage("100136")).setClass("obsidian_douban_settings_cookie_login").addTextArea((text3) => {
     text3.onChange((value) => manager.updateCookieTemp(value));
     return text3;
   }).addExtraButton((button) => {
     return button.setIcon("check").onClick(() => __async(this, null, function* () {
       manager.debug(`\u914D\u7F6E\u754C\u9762:\u786E\u8BA4\u8F93\u5165Cookie`);
-      const user = yield manager.plugin.userComponent.loginCookie(manager.getCookieTemp());
-      if (!user || !user.id) {
+      const cookie = (manager.getCookieTemp() || "").trim();
+      if (!cookie) {
         log.notice(i18nHelper.getMessage("100137"));
         return;
       }
-      constructDoubanTokenSettingsUI(parentContainerEl, manager);
+      try {
+        const user = yield manager.plugin.userComponent.loginCookie(cookie);
+        if (!user || !user.id) {
+          log.notice(i18nHelper.getMessage("100137"));
+          return;
+        }
+        constructDoubanTokenSettingsUI(parentContainerEl, manager);
+      } catch (e) {
+        manager.debug(`\u914D\u7F6E\u754C\u9762:Cookie\u767B\u5F55\u5931\u8D25:${e}`);
+        log.notice(i18nHelper.getMessage("100137"));
+      }
     }));
   }).addExtraButton((button) => {
     return button.setIcon("x").onClick(() => __async(this, null, function* () {
@@ -23868,44 +25170,86 @@ function constructLoginCookieSettingsUI(containerEl, parentContainerEl, manager)
 }
 function constructHasLoginSettingsUI(containerEl, manager) {
   const user = manager.plugin.userComponent.getUser();
-  let userDom = new DocumentFragment();
-  userDom.createDiv().innerHTML = `${i18nHelper.getMessage("100120")}<br>
-${i18nHelper.getMessage("100123")}: <a href="https://www.douban.com/people/${user.id}/">${user.id}</a><br>
-		${i18nHelper.getMessage("100124")}: ${user.name}<br>
-${i18nHelper.getMessage("100125")}`;
+  const userDom = createLoggedInUserDescription(user);
   manager.debug(`\u914D\u7F6E\u754C\u9762:\u5C55\u793A\u8C46\u74E3\u767B\u5F55\u4FE1\u606F:id:${StringUtil.confuse(user.id)}, \u7528\u6237\u540D:${StringUtil.confuse(user.name)}`);
-  new import_obsidian27.Setting(containerEl).setName(i18nHelper.getMessage("100126")).setDesc(userDom).addButton((button) => {
+  new import_obsidian30.Setting(containerEl).setName(i18nHelper.getMessage("100126")).setDesc(userDom).addButton((button) => {
     return button.setButtonText(i18nHelper.getMessage("100128")).setCta().onClick(() => __async(this, null, function* () {
       button.setDisabled(true);
       manager.debug(`\u914D\u7F6E\u754C\u9762:\u70B9\u51FB\u9000\u51FA\u767B\u5F55\u6309\u94AE\uFF0C\u51C6\u5907\u9000\u51FA\u767B\u5F55`);
-      manager.plugin.userComponent.logout();
+      yield manager.plugin.userComponent.logout();
       manager.debug(`\u914D\u7F6E\u754C\u9762:\u9000\u51FA\u767B\u5F55\u6210\u529F`);
       constructDoubanTokenSettingsUI(containerEl, manager);
     }));
   });
 }
 function showMobileLogin(containerEl, manager) {
-  new import_obsidian27.Setting(containerEl).setName(i18nHelper.getMessage("100126")).setDesc(i18nHelper.getMessage("100129"));
+  manager.debug(`\u914D\u7F6E\u754C\u9762:\u79FB\u52A8\u7AEF\u672A\u767B\u5F55-\u5C55\u793A\u4E8C\u7EF4\u7801\u548CCookie\u767B\u5F55\u6309\u94AE`);
+  const loginSetting = containerEl.createDiv("login-button");
+  const loginCookie = containerEl.createDiv("login-button-cookie");
+  const mobileLoginSetting = new import_obsidian30.Setting(loginSetting).setName(i18nHelper.getMessage("100131")).addButton((button) => button.setButtonText(i18nHelper.getMessage("100140")).setCta().onClick(() => {
+    new DoubanQrLoginModal(manager.app, manager, () => {
+      constructDoubanTokenSettingsUI(containerEl, manager);
+    }).open();
+  })).addButton((button) => button.setButtonText(i18nHelper.getMessage("100135")).onClick(() => {
+    button.setDisabled(true);
+    constructLoginCookieSettingsUI(loginCookie, containerEl, manager);
+  }));
+  mobileLoginSetting.descEl.appendChild(createFragment((frag) => {
+    frag.appendText(i18nHelper.getMessage("100129"));
+    frag.createEl("a", {
+      text: i18nHelper.getMessage("100139"),
+      href: "https://wanxp.github.io/obsidian-douban/20_howtouse_25_setting_login_douban_cookie.html"
+    }, (a) => a.setAttr("target", "_blank"));
+    frag.appendText(i18nHelper.getMessage("100138"));
+  }));
 }
 function showMobileLogout(containerEl, manager) {
   const user = manager.plugin.userComponent.getUser();
-  let userDom = new DocumentFragment();
-  userDom.createDiv().innerHTML = `${i18nHelper.getMessage("100120")}<br>
-${i18nHelper.getMessage("100123")}: <a href="https://www.douban.com/people/${user.id}/">${user.id}</a><br>
-		${i18nHelper.getMessage("100124")}: ${user.name}<br>
-${i18nHelper.getMessage("100125")}`;
-  new import_obsidian27.Setting(containerEl).setName(i18nHelper.getMessage("100126")).setDesc(userDom).addButton((button) => {
+  const userDom = createLoggedInUserDescription(user);
+  new import_obsidian30.Setting(containerEl).setName(i18nHelper.getMessage("100126")).setDesc(userDom).addButton((button) => {
     return button.setButtonText(i18nHelper.getMessage("100128")).setCta().onClick(() => __async(this, null, function* () {
       button.setDisabled(true);
-      manager.updateSetting("loginCookiesContent", "");
-      manager.updateSetting("loginHeadersContent", "");
+      yield manager.plugin.userComponent.logout();
       constructDoubanTokenSettingsUI(containerEl, manager);
     }));
   });
 }
+function createLoggedInUserDescription(user) {
+  const fragment = new DocumentFragment();
+  const userInfo = fragment.createDiv("obsidian_douban_login_user_info");
+  userInfo.createDiv({
+    cls: "obsidian_douban_login_status",
+    text: i18nHelper.getMessage("100120")
+  });
+  const idRow = userInfo.createDiv("obsidian_douban_login_detail");
+  idRow.createSpan({
+    cls: "obsidian_douban_login_label",
+    text: `${i18nHelper.getMessage("100123")}:`
+  });
+  idRow.createEl("a", {
+    cls: "obsidian_douban_login_value",
+    text: String(user.id || ""),
+    href: `https://www.douban.com/people/${encodeURIComponent(String(user.id || ""))}/`,
+    attr: { target: "_blank", rel: "noopener noreferrer" }
+  });
+  const nameRow = userInfo.createDiv("obsidian_douban_login_detail");
+  nameRow.createSpan({
+    cls: "obsidian_douban_login_label",
+    text: `${i18nHelper.getMessage("100124")}:`
+  });
+  nameRow.createSpan({
+    cls: "obsidian_douban_login_value",
+    text: String(user.name || "")
+  });
+  userInfo.createDiv({
+    cls: "obsidian_douban_login_note",
+    text: i18nHelper.getMessage("100125")
+  });
+  return fragment;
+}
 
 // src/org/wanxp/douban/setting/DoubanSettingTab.ts
-var DoubanSettingTab = class extends import_obsidian28.PluginSettingTab {
+var DoubanSettingTab = class extends import_obsidian31.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -23951,18 +25295,18 @@ var DoubanSettingTab = class extends import_obsidian28.PluginSettingTab {
 };
 
 // src/org/wanxp/douban/component/DoubanSyncModal.ts
-var import_obsidian31 = __toModule(require("obsidian"));
+var import_obsidian34 = __toModule(require("obsidian"));
 var import_timers = __toModule(require("timers"));
 
 // src/org/wanxp/douban/setting/model/FolderSuggest.ts
-var import_obsidian29 = __toModule(require("obsidian"));
+var import_obsidian32 = __toModule(require("obsidian"));
 var FolderSuggest = class extends TextInputSuggest {
   getSuggestions(inputStr) {
     const abstractFiles = this.app.vault.getAllLoadedFiles();
     const folders = [];
     const lowerCaseInputStr = inputStr.toLowerCase();
     abstractFiles.forEach((folder) => {
-      if (folder instanceof import_obsidian29.TFolder && folder.path.toLowerCase().contains(lowerCaseInputStr)) {
+      if (folder instanceof import_obsidian32.TFolder && folder.path.toLowerCase().contains(lowerCaseInputStr)) {
         folders.push(folder);
       }
     });
@@ -23979,14 +25323,14 @@ var FolderSuggest = class extends TextInputSuggest {
 };
 
 // src/org/wanxp/douban/setting/model/FileSuggest.ts
-var import_obsidian30 = __toModule(require("obsidian"));
+var import_obsidian33 = __toModule(require("obsidian"));
 var FileSuggest = class extends TextInputSuggest {
   getSuggestions(inputStr) {
     const abstractFiles = this.app.vault.getAllLoadedFiles();
     const files = [];
     const lowerCaseInputStr = inputStr.toLowerCase();
     abstractFiles.forEach((file) => {
-      if (file instanceof import_obsidian30.TFile && file.extension === "md" && file.path.toLowerCase().contains(lowerCaseInputStr)) {
+      if (file instanceof import_obsidian33.TFile && file.extension === "md" && file.path.toLowerCase().contains(lowerCaseInputStr)) {
         files.push(file);
       }
     });
@@ -24003,7 +25347,7 @@ var FileSuggest = class extends TextInputSuggest {
 };
 
 // src/org/wanxp/douban/component/DoubanSyncModal.ts
-var DoubanSyncModal = class extends import_obsidian31.Modal {
+var DoubanSyncModal = class extends import_obsidian34.Modal {
   constructor(app, plugin, context) {
     super(app);
     this.plugin = plugin;
@@ -24029,11 +25373,11 @@ var DoubanSyncModal = class extends import_obsidian31.Modal {
     const sliderDiv = contentEl.createEl("div");
     sliderDiv.addClass("obsidian_douban_sync_slider");
     const controls = contentEl.createDiv("controls");
-    const stopButton = new import_obsidian31.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110009")).onClick(() => __async(this, null, function* () {
+    const stopButton = new import_obsidian34.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110009")).onClick(() => __async(this, null, function* () {
       this.close();
       yield this.plugin.statusHolder.stopSync();
     }));
-    const backgroundButton = new import_obsidian31.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110010")).onClick(() => {
+    const backgroundButton = new import_obsidian34.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110010")).onClick(() => {
       this.close();
     });
     this.showProgress(sliderDiv, backgroundButton, stopButton);
@@ -24045,7 +25389,7 @@ var DoubanSyncModal = class extends import_obsidian31.Modal {
   }
   showProgress(sliderDiv, backgroundButton, stopButton) {
     sliderDiv.empty();
-    new import_obsidian31.Setting(sliderDiv);
+    new import_obsidian34.Setting(sliderDiv);
     let progress = sliderDiv.createDiv("progress");
     const { syncStatus } = this.plugin.statusHolder;
     if (!this.plugin.statusHolder.syncStarted) {
@@ -24107,10 +25451,10 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
     };
     this.showConfigPan(contentEl.createDiv("config"), syncConfig, false);
     const controls = contentEl.createDiv("controls");
-    const cancelButton = new import_obsidian31.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => {
+    const cancelButton = new import_obsidian34.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => {
       this.close();
     });
-    const syncButton = new import_obsidian31.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110007")).onClick(() => __async(this, null, function* () {
+    const syncButton = new import_obsidian34.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110007")).onClick(() => __async(this, null, function* () {
       if (!(yield this.plugin.checkLogin(this.context))) {
         return;
       }
@@ -24131,7 +25475,7 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
     context.syncActive = true;
   }
   showConfigPan(contentEl, config, disable) {
-    new import_obsidian31.Setting(contentEl);
+    new import_obsidian34.Setting(contentEl);
     this.showTypeDropdown(contentEl, config, disable);
     this.showCondition(contentEl, config, disable);
     this.showUpdateAllConfig(contentEl, config, disable);
@@ -24173,7 +25517,7 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
     }
   }
   showTypeDropdown(containerEl, config, disable) {
-    const settings = new import_obsidian31.Setting(containerEl);
+    const settings = new import_obsidian34.Setting(containerEl);
     const scopeSelections = containerEl.createDiv("scope-selection");
     settings.setName(i18nHelper.getMessage("110030")).addDropdown((dropdown) => {
       dropdown.addOptions(SyncTypeRecords).setValue(config.syncType).onChange((value) => {
@@ -24208,7 +25552,7 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
   }
   showScopeDropdown(containerEl, scopeSelections, config, disable) {
     containerEl.empty();
-    new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("110032")).addDropdown((dropdown) => {
+    new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("110032")).addDropdown((dropdown) => {
       dropdown.addOptions(scopeSelections);
       dropdown.setValue(config.scope).onChange((value) => __async(this, null, function* () {
         config.scope = value;
@@ -24216,14 +25560,14 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
     }).setDisabled(disable);
   }
   showOutiFleName(containerEl, config, disable) {
-    const dataFilePathSetting = new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("121601")).setDesc(i18nHelper.getMessage("121602")).addText((textField) => {
+    const dataFilePathSetting = new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("121601")).setDesc(i18nHelper.getMessage("121602")).addText((textField) => {
       textField.setPlaceholder(i18nHelper.getMessage("121602")).setValue(config.dataFileNamePath).onChange((value) => __async(this, null, function* () {
         config.dataFileNamePath = value;
       }));
     }).setDisabled(disable);
   }
   showOutputFolderSelections(containerEl, config, disable) {
-    new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("121501")).setDesc(i18nHelper.getMessage("121502")).addSearch((search) => __async(this, null, function* () {
+    new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("121501")).setDesc(i18nHelper.getMessage("121502")).addSearch((search) => __async(this, null, function* () {
       new FolderSuggest(this.app, search.inputEl);
       search.setValue(config.dataFilePath).setPlaceholder(i18nHelper.getMessage("121503")).onChange((value) => __async(this, null, function* () {
         config.dataFilePath = value;
@@ -24233,7 +25577,7 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
   showTemplateFileSelectionSetting(containerEl, config, disable) {
     containerEl.empty();
     const key = this.getKey(config.syncType);
-    let setting = new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("121101")).setDesc(i18nHelper.getMessage("121102")).addSearch((search) => __async(this, null, function* () {
+    let setting = new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("121101")).setDesc(i18nHelper.getMessage("121102")).addSearch((search) => __async(this, null, function* () {
       new FileSuggest(this.app, search.inputEl);
       search.setValue(config.templateFile).onChange((value) => __async(this, null, function* () {
         config.templateFile = value;
@@ -24254,14 +25598,14 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
     return supportType + "TemplateFile";
   }
   showForceUpdateConfig(containerEl, config, disable) {
-    new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("110031")).setDesc(i18nHelper.getMessage("500110")).addToggle((toggleComponent) => {
+    new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("110031")).setDesc(i18nHelper.getMessage("500110")).addToggle((toggleComponent) => {
       toggleComponent.setValue(config.force).onChange((value) => __async(this, null, function* () {
         config.force = value;
       }));
     }).setDisabled(disable);
   }
   showAttachmentsFileConfig(containerEl, config, disable) {
-    const settings = new import_obsidian31.Setting(containerEl);
+    const settings = new import_obsidian34.Setting(containerEl);
     let attachmentFileEl = containerEl.createDiv("attachment-file-path-selection");
     settings.setName(i18nHelper.getMessage("121430")).setDesc(i18nHelper.getMessage("121431")).addToggle((toggleComponent) => {
       toggleComponent.setValue(config.cacheImage).onChange((value) => __async(this, null, function* () {
@@ -24276,26 +25620,26 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
     if (!show) {
       return;
     }
-    new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("121432")).setDesc(i18nHelper.getMessage("121433")).addSearch((search) => __async(this, null, function* () {
+    new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("121432")).setDesc(i18nHelper.getMessage("121433")).addSearch((search) => __async(this, null, function* () {
       new FolderSuggest(this.plugin.app, search.inputEl);
       search.setValue(config.attachmentPath).setPlaceholder(i18nHelper.getMessage("121434")).onChange((value) => __async(this, null, function* () {
         config.attachmentPath = value;
       }));
     })).setDisabled(disable);
-    new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("121452")).setDesc(i18nHelper.getMessage("121453")).addSearch((search) => __async(this, null, function* () {
+    new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("121452")).setDesc(i18nHelper.getMessage("121453")).addSearch((search) => __async(this, null, function* () {
       new FolderSuggest(this.plugin.app, search.inputEl);
       search.setValue(config.attachmentFileName).setPlaceholder(i18nHelper.getMessage("121454")).onChange((value) => __async(this, null, function* () {
         config.attachmentFileName = value;
       }));
     })).setDisabled(disable);
-    new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("121435")).setDesc(i18nHelper.getMessage("121438")).addToggle((toggleComponent) => {
+    new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("121435")).setDesc(i18nHelper.getMessage("121438")).addToggle((toggleComponent) => {
       toggleComponent.setValue(config.cacheHighQuantityImage).onChange((value) => __async(this, null, function* () {
         config.cacheHighQuantityImage = value;
       }));
     }).setDisabled(disable);
   }
   showUpdateAllConfig(containerEl, config, disable) {
-    new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("110039")).setDesc(i18nHelper.getMessage("110040")).addToggle((toggleComponent) => {
+    new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("110039")).setDesc(i18nHelper.getMessage("110040")).addToggle((toggleComponent) => {
       toggleComponent.setTooltip(i18nHelper.getMessage("110040")).setValue(config.incrementalUpdate).onChange((value) => __async(this, null, function* () {
         config.incrementalUpdate = value;
       }));
@@ -24307,9 +25651,9 @@ ${syncStatus.getHandle() == 0 ? "..." : i18nHelper.getMessage("110042") + ":" + 
 };
 function showConditionItem(containerEl, manager, config, disable) {
   containerEl.empty();
-  const condition = new import_obsidian31.Setting(containerEl).setName(i18nHelper.getMessage("110070"));
+  const condition = new import_obsidian34.Setting(containerEl).setName(i18nHelper.getMessage("110070"));
   const conditionDesc = condition.descEl.createDiv("sync-douban-condition-desc");
-  new import_obsidian31.DropdownComponent(conditionDesc).addOptions(SyncConditionTypeRecords).setValue(config.syncConditionType).onChange((value) => {
+  new import_obsidian34.DropdownComponent(conditionDesc).addOptions(SyncConditionTypeRecords).setValue(config.syncConditionType).onChange((value) => {
     config.syncConditionType = value;
     showConditionItem(containerEl, manager, config, disable);
   }).setDisabled(disable);
@@ -24326,7 +25670,7 @@ function showCustomInputCount(containerEl, config, disable) {
   containerEl.createEl("span", { text: "   " });
   containerEl.createEl("span", { text: i18nHelper.getMessage("110077") });
   containerEl.createEl("span", { text: i18nHelper.getMessage("110078") });
-  const fromField = new import_obsidian31.TextComponent(containerEl);
+  const fromField = new import_obsidian34.TextComponent(containerEl);
   fromField.setPlaceholder(i18nHelper.getMessage("110080")).setValue(config.syncConditionCountFromValue + "").onChange((value) => __async(this, null, function* () {
     if (!value) {
       config.syncConditionCountFromValue = 1;
@@ -24342,13 +25686,13 @@ function showCustomInputCount(containerEl, config, disable) {
   fromEl.addClass("obsidian_douban_settings_input");
   fromEl.style.width = "20%";
   containerEl.appendChild(fromEl);
-  const lang2 = window.localStorage.getItem("language");
-  if (lang2 == "zh") {
+  const lang = window.localStorage.getItem("language");
+  if (lang == "zh") {
     containerEl.createEl("span", { text: i18nHelper.getMessage("110073") });
   }
   containerEl.createEl("span", { text: i18nHelper.getMessage("110079") });
   containerEl.createEl("span", { text: i18nHelper.getMessage("110078") });
-  const toField = new import_obsidian31.TextComponent(containerEl);
+  const toField = new import_obsidian34.TextComponent(containerEl);
   toField.setPlaceholder(i18nHelper.getMessage("110080")).setValue(config.syncConditionCountToValue + "").onChange((value) => __async(this, null, function* () {
     if (!value) {
       config.syncConditionCountToValue = 30;
@@ -24364,16 +25708,16 @@ function showCustomInputCount(containerEl, config, disable) {
   toEl.addClass("obsidian_douban_settings_input");
   toEl.style.width = "20%";
   containerEl.appendChild(toEl);
-  if (lang2 == "zh") {
+  if (lang == "zh") {
     containerEl.createEl("span", { text: i18nHelper.getMessage("110073") });
   }
   containerEl.createEl("span", { text: "  " });
-  const buttopn = new import_obsidian31.ButtonComponent(containerEl).setIcon("help").setTooltip(i18nHelper.getMessage("110095"));
+  const buttopn = new import_obsidian34.ButtonComponent(containerEl).setIcon("help").setTooltip(i18nHelper.getMessage("110095"));
   containerEl.appendChild(buttopn.buttonEl);
 }
 function showCustomInputTime(containerEl, config, disable) {
   containerEl.createEl("span", { text: i18nHelper.getMessage("110077") });
-  const fromDateField = new import_obsidian31.TextComponent(containerEl);
+  const fromDateField = new import_obsidian34.TextComponent(containerEl);
   const fromDateEl = fromDateField.inputEl;
   fromDateEl.type = "date";
   fromDateEl.value = config.syncConditionDateFromValue ? config.syncConditionDateFromValue.toISOString().substring(0, 10) : TimeUtil.getLastMonth().toISOString().substring(0, 10);
@@ -24390,7 +25734,7 @@ function showCustomInputTime(containerEl, config, disable) {
   fromDateEl.addClass("obsidian_douban_settings_input");
   containerEl.appendChild(fromDateEl);
   containerEl.createEl("span", { text: i18nHelper.getMessage("110079") });
-  const toDateField = new import_obsidian31.TextComponent(containerEl);
+  const toDateField = new import_obsidian34.TextComponent(containerEl);
   let toDateEl = toDateField.inputEl;
   toDateEl.type = "date";
   toDateEl.value = config.syncConditionDateToValue ? config.syncConditionDateToValue.toISOString().substring(0, 10) : new Date().toISOString().substring(0, 10);
@@ -24406,11 +25750,11 @@ function showCustomInputTime(containerEl, config, disable) {
   })).setDisabled(disable);
   toDateEl.addClass("obsidian_douban_settings_input");
   containerEl.appendChild(toDateEl);
-  new import_obsidian31.ButtonComponent(containerEl).setIcon("help").setTooltip(i18nHelper.getMessage("110095"));
+  new import_obsidian34.ButtonComponent(containerEl).setIcon("help").setTooltip(i18nHelper.getMessage("110095"));
 }
 
 // src/org/wanxp/file/FileHandler.ts
-var import_obsidian32 = __toModule(require("obsidian"));
+var import_obsidian35 = __toModule(require("obsidian"));
 var FileHandler = class {
   constructor(app) {
     this._app = app;
@@ -24422,12 +25766,12 @@ var FileHandler = class {
       const root2 = vault.getRoot().path;
       const directoryPath = FileUtil.join(dir);
       const directoryExists = yield adapter2.exists(directoryPath);
-      if (!import_obsidian32.Platform.isIosApp) {
+      if (!import_obsidian35.Platform.isIosApp) {
         if (!directoryExists) {
-          return adapter2.mkdir((0, import_obsidian32.normalizePath)(directoryPath));
+          return adapter2.mkdir((0, import_obsidian35.normalizePath)(directoryPath));
         }
       }
-      const subPaths = (0, import_obsidian32.normalizePath)(directoryPath).split("/").filter((part) => part.trim() !== "").map((_, index2, arr) => arr.slice(0, index2 + 1).join("/"));
+      const subPaths = (0, import_obsidian35.normalizePath)(directoryPath).split("/").filter((part) => part.trim() !== "").map((_, index2, arr) => arr.slice(0, index2 + 1).join("/"));
       for (const subPath of subPaths) {
         const directoryExists2 = yield adapter2.exists(FileUtil.join(root2, subPath));
         if (!directoryExists2) {
@@ -24515,7 +25859,7 @@ var FileHandler = class {
   getFileContent(filePath) {
     return __async(this, null, function* () {
       const { metadataCache, vault } = this._app;
-      const normalizedTemplatePath = (0, import_obsidian32.normalizePath)(filePath != null ? filePath : "");
+      const normalizedTemplatePath = (0, import_obsidian35.normalizePath)(filePath != null ? filePath : "");
       if (filePath === "/") {
         return Promise.resolve("");
       }
@@ -24549,7 +25893,7 @@ var FileHandler = class {
 };
 
 // src/org/wanxp/douban/model/GlobalStatusHolder.ts
-var import_obsidian33 = __toModule(require("obsidian"));
+var import_obsidian36 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/sync/model/SyncStatusHolder.ts
 var SyncStatusHolder = class {
@@ -24714,7 +26058,7 @@ var GlobalStatusHolder = class {
   startSync(syncConfigOut) {
     if (this.syncStarted) {
       const { syncConfig } = this.syncStatus;
-      new import_obsidian33.Notice(i18nHelper.getMessage("110008"), SyncTypeRecords[syncConfig.syncType], DoubanSubjectState[syncConfig.scope]);
+      new import_obsidian36.Notice(i18nHelper.getMessage("110008"), SyncTypeRecords[syncConfig.syncType], DoubanSubjectState[syncConfig.scope]);
       return false;
     }
     this.syncStatus = new SyncStatusHolder(syncConfigOut);
@@ -25074,6 +26418,7 @@ var SettingsManager = class {
   resetSetting() {
     this.settings.scoreSetting = DEFAULT_SETTINGS.scoreSetting;
     this.settings.arraySettings = DEFAULT_SETTINGS.arraySettings;
+    this.settings.arrayLengthLimits = [...DEFAULT_SETTINGS.arrayLengthLimits];
     this.settings.arrayStart = DEFAULT_SETTINGS.arrayStart;
     this.settings.arrayElementStart = DEFAULT_SETTINGS.arrayElementStart;
     this.settings.arraySpiltV2 = DEFAULT_SETTINGS.arraySpiltV2;
@@ -25086,6 +26431,7 @@ var SettingsManager = class {
     this.settings.noteTemplateFile = DEFAULT_SETTINGS.noteTemplateFile;
     this.settings.gameTemplateFile = DEFAULT_SETTINGS.gameTemplateFile;
     this.settings.teleplayTemplateFile = DEFAULT_SETTINGS.teleplayTemplateFile;
+    this.settings.theaterTemplateFile = DEFAULT_SETTINGS.theaterTemplateFile;
     this.settings.dateFormat = DEFAULT_SETTINGS.dateFormat;
     this.settings.timeFormat = DEFAULT_SETTINGS.timeFormat;
     this.settings.searchUrl = DEFAULT_SETTINGS.searchUrl;
@@ -25096,6 +26442,7 @@ var SettingsManager = class {
     this.settings.debugMode = DEFAULT_SETTINGS.debugMode;
     this.settings.cacheImage = DEFAULT_SETTINGS.cacheImage;
     this.settings.cacheHighQuantityImage = DEFAULT_SETTINGS.cacheHighQuantityImage;
+    this.settings.showAfterCreate = DEFAULT_SETTINGS.showAfterCreate;
   }
   clearLoginInfo() {
     this.settings.loginCookiesContent = DEFAULT_SETTINGS.loginHeadersContent;
@@ -25119,10 +26466,37 @@ var SettingsManager = class {
   getSettings() {
     return this.settings;
   }
+  addArrayLengthLimit() {
+    return __async(this, null, function* () {
+      if (!this.settings.arrayLengthLimits) {
+        this.settings.arrayLengthLimits = [];
+      }
+      const limit = {
+        type: SupportType.all,
+        field: "",
+        limit: 5
+      };
+      this.settings.arrayLengthLimits.push(limit);
+      yield this.plugin.saveSettings();
+      return limit;
+    });
+  }
+  removeArrayLengthLimit(index2) {
+    return __async(this, null, function* () {
+      if (!this.settings.arrayLengthLimits) {
+        return;
+      }
+      if (index2 < 0 || index2 >= this.settings.arrayLengthLimits.length) {
+        return;
+      }
+      this.settings.arrayLengthLimits.splice(index2, 1);
+      yield this.plugin.saveSettings();
+    });
+  }
 };
 
 // src/org/wanxp/douban/sync/handler/SyncHandler.ts
-var import_obsidian34 = __toModule(require("obsidian"));
+var import_obsidian37 = __toModule(require("obsidian"));
 
 // src/org/wanxp/douban/sync/handler/DoubanAbstractSyncHandler.ts
 function toDateList(dataList) {
@@ -25452,11 +26826,11 @@ var DoubanOtherSyncHandler = class extends DoubanAbstractSyncHandler {
 };
 
 // src/org/wanxp/constant/Douban.ts
-var doubanSubjectSyncListUrl = function(subjectType, userId, doType, start2) {
-  return `https://${subjectType}.douban.com/people/${userId}/${doType}?start=${start2}&sort=time&rating=all&filter=all&mode=list`;
+var doubanSubjectSyncListUrl = function(subjectType, userId, doType, start) {
+  return `https://${subjectType}.douban.com/people/${userId}/${doType}?start=${start}&sort=time&rating=all&filter=all&mode=list`;
 };
-var doubanGameSubjectSyncListUrl = function(subjectType, userId, doType, start2) {
-  return `https://douban.com/people/${userId}/games?start=${start2}&sort=time&rating=all&filter=all&mode=list${doType != "all" ? "&action=" + doType : ""}`;
+var doubanGameSubjectSyncListUrl = function(subjectType, userId, doType, start) {
+  return `https://douban.com/people/${userId}/games?start=${start}&sort=time&rating=all&filter=all&mode=list${doType != "all" ? "&action=" + doType : ""}`;
 };
 
 // src/org/wanxp/douban/sync/handler/list/DoubanAbstractListHandler.ts
@@ -25480,8 +26854,8 @@ var DoubanAbstractListHandler = class {
     return __async(this, null, function* () {
     });
   }
-  getUrl(context, start2) {
-    return doubanSubjectSyncListUrl(this.getSyncTypeDomain(), context.userComponent.getUserId(), this.getDoType(), start2);
+  getUrl(context, start) {
+    return doubanSubjectSyncListUrl(this.getSyncTypeDomain(), context.userComponent.getUserId(), this.getDoType(), start);
   }
   getSyncTypeDomain() {
     return SyncTypeUrlDomain.get(this.getSyncType());
@@ -25691,8 +27065,8 @@ var DoubanGameListHandler = class extends DoubanAbstractListHandler {
   getSyncType() {
     return SyncType.game;
   }
-  getUrl(context, start2) {
-    return doubanGameSubjectSyncListUrl(this.getSyncTypeDomain(), context.userComponent.getUserId(), this.getDoType(), start2);
+  getUrl(context, start) {
+    return doubanGameSubjectSyncListUrl(this.getSyncTypeDomain(), context.userComponent.getUserId(), this.getDoType(), start);
   }
   parseSubjectFromHtml(dataHtml, context) {
     const items = dataHtml(".common-item").get().map((i) => {
@@ -25855,7 +27229,7 @@ var SyncHandler = class {
         }
       }
       const result = i18nHelper.getMessage("110037", condition, summary, details);
-      const resultFileName = `${i18nHelper.getMessage("110038")}_${(0, import_obsidian34.moment)(new Date()).format("YYYYMMDDHHmmss")}`;
+      const resultFileName = `${i18nHelper.getMessage("110038")}_${(0, import_obsidian37.moment)(new Date()).format("YYYYMMDDHHmmss")}`;
       yield this.plugin.fileHandler.createNewNoteWithData(`${this.syncConfig.dataFilePath}/${resultFileName}`, result, true);
     });
   }
@@ -25899,13 +27273,15 @@ var UserComponent = class {
     return this.user && this.user.login;
   }
   logout() {
-    if (this.user) {
-      this.user.login = false;
-    }
-    this.user = null;
-    this.verified = false;
-    this.settingsManager.updateSetting("loginCookiesContent", "");
-    this.settingsManager.updateSetting("loginHeadersContent", "");
+    return __async(this, null, function* () {
+      if (this.user) {
+        this.user.login = false;
+      }
+      this.user = null;
+      this.verified = false;
+      yield this.settingsManager.updateSetting("loginCookiesContent", "");
+      yield this.settingsManager.updateSetting("loginHeadersContent", "");
+    });
   }
   assumeLoggedIn() {
     const headers = this.settingsManager.getSetting("loginHeadersContent");
@@ -25937,9 +27313,11 @@ var UserComponent = class {
         this.user = user;
         this.settingsManager.debug(`\u914D\u7F6E\u754C\u9762:loginCookie:\u8C46\u74E3headers\u4FE1\u606F\u6B63\u5E38\uFF0C${user && user.id ? "\u83B7\u53D6\u7528\u6237\u4FE1\u606F\u6210\u529Fid:" + StringUtil.confuse(user.id) + ",\u7528\u6237\u540D:" + StringUtil.confuse(user.name) : "\u83B7\u53D6\u7528\u6237\u4FE1\u606F\u5931\u8D25"}`);
       });
-      if (this.user) {
+      if (this.user && this.user.id && this.user.login) {
         this.verified = true;
-        this.settingsManager.updateSetting("loginHeadersContent", JSON.stringify(headers));
+        yield this.settingsManager.updateSetting("loginHeadersContent", JSON.stringify(headers));
+      } else {
+        this.verified = false;
       }
       return this.user;
     });
@@ -25952,12 +27330,31 @@ var UserComponent = class {
   loginCookie(cookie) {
     return __async(this, null, function* () {
       const headers = this.settingsManager.getHeadersByCookie(cookie);
-      return this.loginHeaders(headers).then((user) => {
-        if (this.user) {
-          this.settingsManager.updateSetting("loginCookiesContent", cookie);
-        }
-        return user;
-      });
+      const user = yield this.loginHeaders(headers);
+      if (user && user.id && user.login) {
+        yield this.settingsManager.updateSetting("loginCookiesContent", cookie);
+      }
+      return user;
+    });
+  }
+  acceptQrLoginCookie(cookie) {
+    return __async(this, null, function* () {
+      const match = String(cookie || "").match(/(?:^|;\s*)dbcl2=(?:"([^"]+)"|([^;]+))/i);
+      const credential = ((match == null ? void 0 : match[1]) || (match == null ? void 0 : match[2]) || "").trim();
+      const id = credential.split(":", 1)[0];
+      if (!id) {
+        return new User();
+      }
+      this.user = {
+        id,
+        name: id,
+        url: `https://www.douban.com/people/${id}/`,
+        login: true
+      };
+      this.verified = false;
+      yield this.settingsManager.updateSetting("loginHeadersContent", "");
+      yield this.settingsManager.updateSetting("loginCookiesContent", cookie);
+      return this.user;
     });
   }
   loadUserInfo(cookie) {
@@ -26006,14 +27403,85 @@ var UserComponent = class {
       });
       if (this.user && this.user.id) {
         this.verified = true;
+      } else {
+        this.verified = false;
       }
       return this.user;
     });
   }
 };
 
+// src/org/wanxp/douban/component/DoubanBatchImportModal.ts
+var import_obsidian38 = __toModule(require("obsidian"));
+var DoubanBatchImportModal = class extends import_obsidian38.Modal {
+  constructor(app, plugin, context) {
+    super(app);
+    this.plugin = plugin;
+    this.context = context;
+    this.value = "";
+    this.running = false;
+  }
+  onOpen() {
+    this.contentEl.createEl("h3", { text: i18nHelper.getMessage("batchImportTitle") });
+    this.contentEl.createEl("p", { text: i18nHelper.getMessage("batchImportDesc") });
+    const textarea = new import_obsidian38.TextAreaComponent(this.contentEl).setPlaceholder("https://movie.douban.com/subject/3742360/\nhttps://book.douban.com/subject/2567698/").onChange((value) => this.value = value);
+    textarea.inputEl.rows = 12;
+    textarea.inputEl.addClass("obsidian_douban_batch_urls");
+    const controls = this.contentEl.createDiv({ cls: "obsidian_douban_search_controls" });
+    new import_obsidian38.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110004")).setCta().onClick(() => __async(this, null, function* () {
+      if (this.running) {
+        return;
+      }
+      this.running = true;
+      const urls = this.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      yield this.plugin.batchImportUrls(urls, this.context);
+      this.close();
+    }));
+    new import_obsidian38.ButtonComponent(controls).setButtonText(i18nHelper.getMessage("110005")).onClick(() => this.close());
+  }
+  onClose() {
+    this.contentEl.empty();
+  }
+};
+
+// src/org/wanxp/utils/DoubanUrlUtil.ts
+var DoubanUrlUtil = class {
+  static parse(value) {
+    var _a5;
+    let url;
+    try {
+      url = new URL((value || "").trim());
+    } catch (_error) {
+      return null;
+    }
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      return null;
+    }
+    const host = url.hostname.toLowerCase();
+    const id = (_a5 = url.pathname.match(/\/(?:subject|game|drama)\/(\d{5,10})(?:\/|$)/)) == null ? void 0 : _a5[1];
+    if (!id || !host.endsWith("douban.com")) {
+      return null;
+    }
+    let type;
+    if (host === "book.douban.com") {
+      type = SupportType.book;
+    } else if (host === "music.douban.com") {
+      type = SupportType.music;
+    } else if (host === "movie.douban.com") {
+      type = SupportType.movie;
+    } else if (/\/location\/drama\//.test(url.pathname)) {
+      type = SupportType.theater;
+    } else if (/\/game\//.test(url.pathname)) {
+      type = SupportType.game;
+    } else {
+      return null;
+    }
+    return { id, type, url: url.toString() };
+  }
+};
+
 // src/org/wanxp/main.ts
-var DoubanPlugin = class extends import_obsidian35.Plugin {
+var DoubanPlugin = class extends import_obsidian39.Plugin {
   putToObsidian(context, extract3) {
     return __async(this, null, function* () {
       const syncStatus = context.syncStatusHolder && context.syncStatusHolder.syncStatus ? context.syncStatusHolder.syncStatus : null;
@@ -26143,6 +27611,44 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
       new DoubanSyncModal(this.app, this, context).open();
     });
   }
+  batchImportUrls(urls, context) {
+    return __async(this, null, function* () {
+      let success = 0;
+      const failures = [];
+      for (let index2 = 0; index2 < urls.length; index2++) {
+        const parsed = DoubanUrlUtil.parse(urls[index2]);
+        this.showStatus(i18nHelper.getMessage("batchImportProgress", index2 + 1, urls.length));
+        if (!parsed) {
+          failures.push(urls[index2]);
+          continue;
+        }
+        const item = {
+          id: parsed.id,
+          type: parsed.type,
+          title: parsed.id,
+          url: parsed.url
+        };
+        try {
+          const result = yield this.doubanExtractHandler.handle(item, __spreadProps(__spreadValues({}, context), {
+            listItem: parsed.type === SupportType.theater ? item : void 0,
+            showAfterCreate: false
+          }));
+          if (result && result.handledStatus === SubjectHandledStatus.saved) {
+            success++;
+          } else {
+            failures.push(parsed.url);
+          }
+        } catch (_error) {
+          failures.push(parsed.url);
+        }
+        if (index2 < urls.length - 1) {
+          yield new Promise((resolve) => setTimeout(resolve, BasicConst.CALL_DOUBAN_DELAY));
+        }
+      }
+      new import_obsidian39.Notice(i18nHelper.getMessage("batchImportSummary", success, failures.length, failures.join("\n")));
+      this.clearStatusBarDelay();
+    });
+  }
   onload() {
     return __async(this, null, function* () {
       console.log("----douban-plugins-load------");
@@ -26159,9 +27665,22 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
           settings: this.settings,
           userComponent: this.userComponent,
           netFileHandler: this.netFileHandler,
-          showAfterCreate: true,
+          showAfterCreate: this.settings.showAfterCreate,
           action: Action.SearchAndCrate
         }, this.settings.searchDefaultType)
+      });
+      this.addCommand({
+        id: "batch-import-douban-urls",
+        name: i18nHelper.getMessage("batchImportCommand"),
+        callback: () => new DoubanBatchImportModal(this.app, this, {
+          plugin: this,
+          mode: SearchHandleMode.FOR_CREATE,
+          settings: this.settings,
+          userComponent: this.userComponent,
+          netFileHandler: this.netFileHandler,
+          showAfterCreate: false,
+          action: Action.SearchAndCrate
+        }).open()
       });
       this.addCommand({
         id: "searcher-douban-and-input-current-file",
@@ -26211,7 +27730,7 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
           settings: this.settings,
           userComponent: this.userComponent,
           netFileHandler: this.netFileHandler,
-          showAfterCreate: true,
+          showAfterCreate: this.settings.showAfterCreate,
           action: Action.SearchAndCrate
         }, SupportType.movie)
       });
@@ -26224,7 +27743,7 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
           settings: this.settings,
           userComponent: this.userComponent,
           netFileHandler: this.netFileHandler,
-          showAfterCreate: true,
+          showAfterCreate: this.settings.showAfterCreate,
           action: Action.SearchAndCrate
         }, SupportType.book)
       });
@@ -26237,7 +27756,7 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
           settings: this.settings,
           userComponent: this.userComponent,
           netFileHandler: this.netFileHandler,
-          showAfterCreate: true,
+          showAfterCreate: this.settings.showAfterCreate,
           action: Action.SearchAndCrate
         }, SupportType.music)
       });
@@ -26250,7 +27769,7 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
           settings: this.settings,
           userComponent: this.userComponent,
           netFileHandler: this.netFileHandler,
-          showAfterCreate: true,
+          showAfterCreate: this.settings.showAfterCreate,
           action: Action.SearchAndCrate
         }, SupportType.game)
       });
@@ -26303,13 +27822,13 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
         if (!result) {
           return;
         }
-        new import_obsidian35.Notice(i18nHelper.getMessage("140301", SyncTypeRecords[syncConfig.syncType]));
+        new import_obsidian39.Notice(i18nHelper.getMessage("140301", SyncTypeRecords[syncConfig.syncType]));
         this.initSyncDefaultSettings(syncConfig);
         context.syncStatusHolder.initHandledData();
         this.showStatus(i18nHelper.getMessage("140203", SyncTypeRecords[syncConfig.syncType]));
         const syncHandler = new SyncHandler(this.app, this, syncConfig, context);
         yield syncHandler.sync();
-        new import_obsidian35.Notice(i18nHelper.getMessage("140302"));
+        new import_obsidian39.Notice(i18nHelper.getMessage("140302"));
       } catch (e) {
         log.error(i18nHelper.getMessage("140206", e.message), e);
       } finally {
@@ -26331,7 +27850,7 @@ var DoubanPlugin = class extends import_obsidian35.Plugin {
       }
       if (!uc.isLogin()) {
         this.settingsManager.debug("\u4E3B\u754C\u9762:\u540C\u6B65\u65F6\u7684\u767B\u5F55\u72B6\u6001\u68C0\u6D4B\u5B8C\u6210: \u5C1D\u8BD5\u83B7\u53D6\u7528\u6237\u4FE1\u606F\u5931\u8D25");
-        new import_obsidian35.Notice(i18nHelper.getMessage("140303"));
+        new import_obsidian39.Notice(i18nHelper.getMessage("140303"));
         return false;
       }
       return true;

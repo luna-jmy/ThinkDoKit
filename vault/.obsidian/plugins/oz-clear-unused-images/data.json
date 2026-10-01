@@ -1,7 +1,7 @@
 {
   "deleteOption": ".trash",
   "logsModal": true,
-  "excludedFolders": "900 Assets",
+  "excludedFolders": "900 Assets/910 Templates,\n900 Assets/920 Queries,\n900 Assets/930 Workflows,\n900 Assets/940 Prompts,\n900 Assets/950 Readme,\n900 Assets/960 Scripts,\nwiki,\n01_Books,\nEvernoteBackup20250422,\n00_Inbox,\nYOLO\n",
   "ribbonIcon": false,
-  "excludeSubfolders": false
+  "excludeSubfolders": true
 }

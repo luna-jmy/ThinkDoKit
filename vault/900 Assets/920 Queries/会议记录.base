@@ -1,0 +1,46 @@
+filters:
+  and:
+    - '!file.folder.contains("900 Assets")'
+    - type == "meeting"
+views:
+  - type: table
+    name: Table
+    order:
+      - file.name
+      - aliases
+      - 会议类型
+      - created
+      - scheduled
+      - tags
+      - 会议发起人
+      - 参会人员
+      - 会议地点
+      - remark
+      - area
+      - type
+    sort:
+      - property: area
+        direction: ASC
+      - property: created
+        direction: DESC
+      - property: file.name
+        direction: ASC
+      - property: aliases
+        direction: ASC
+      - property: scheduled
+        direction: DESC
+    columnSize:
+      file.name: 205
+      note.aliases: 114
+      note.scheduled: 154
+      note.参会人员: 169
+      note.area: 105
+      note.type: 98
+  - type: list
+    name: 视图
+    order:
+      - file.name
+      - aliases
+    sort:
+      - property: file.basename
+        direction: DESC

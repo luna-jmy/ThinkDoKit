@@ -1,0 +1,331 @@
+/* Mermaid for Blue Topaz Theme - 美观且清晰的配色方案 */
+body {
+    --mermaid-font-family: var(--font-interface), "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+/* 通用样式 */
+.mermaid .label {
+    font-family: var(--mermaid-font-family) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+/* Light Mode 样式 - 精致清新配色 */
+.theme-light .mermaid .node:not([class*="id"]) rect:not([style*="fill"]):not([style*="stroke"]),
+.theme-light .mermaid .node:not([class$="id"]) circle:not([style*="fill"]):not([style*="stroke"]),
+.theme-light .mermaid .node:not([class$="id"]) ellipse:not([style*="fill"]):not([style*="stroke"]),
+.theme-light .mermaid .node:not([class$="id"]) polygon:not([style*="fill"]):not([style*="stroke"]),
+.theme-light .mermaid .node:not([class$="id"]) path:not([style*="fill"]):not([style*="stroke"]) {
+    fill: linear-gradient(135deg, #f8fafc, #e2e8f0) !important;  /* 渐变背景 */
+    stroke: #3b82f6 !important;         /* 清爽蓝色边框 */
+    stroke-width: 1.5px !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)) !important;  /* 轻微阴影 */
+}
+
+.theme-light .mermaid .nodeLabel {
+    color: #1e293b !important;          /* 深色文字 */
+    font-weight: 600 !important;
+    text-shadow: none !important;
+}
+
+.theme-light .mermaid .edgePath .path,
+.theme-light .mermaid .flowchart-link {
+    stroke: #64748b !important;         /* 中性灰色连接线 */
+    stroke-width: 1.5px !important;
+}
+
+.theme-light .mermaid .marker {
+    fill: #64748b !important;
+    stroke: #64748b !important;
+}
+
+/* 甘特图特殊样式 - Light Mode */
+.theme-light .mermaid .section0,
+.theme-light .mermaid .section1,
+.theme-light .mermaid .section2,
+.theme-light .mermaid .section3 {
+    fill: #f1f5f9 !important;           /* 浅灰背景 */
+    stroke: #cbd5e1 !important;
+    stroke-width: 1px !important;
+}
+
+.theme-light .mermaid .sectionTitle0,
+.theme-light .mermaid .sectionTitle1,
+.theme-light .mermaid .sectionTitle2,
+.theme-light .mermaid .sectionTitle3 {
+    fill: #334155 !important;           /* 深色区段标题 */
+    font-weight: 700 !important;
+    font-size: 14px !important;
+}
+
+/* 终极核弹级覆盖 - Light Mode */
+html body.theme-light .mermaid text {
+    fill: #1e293b !important;           
+    color: #1e293b !important;          
+    font-weight: 700 !important;
+    text-shadow: none !important;       
+    -webkit-text-stroke: none !important;  
+}
+
+/* 甘特图任务文字特殊处理 */
+html body.theme-light .mermaid svg text {
+    fill: #1e293b !important;
+    color: #1e293b !important;
+}
+
+html body.theme-light .mermaid g[class*="task"] text,
+html body.theme-light .mermaid g[class*="active"] text,
+html body.theme-light .mermaid g[class*="done"] text,
+html body.theme-light .mermaid g[id*="task"] text {
+    fill: #1e293b !important;
+    color: #1e293b !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}
+
+/* 使用属性选择器强制覆盖 */
+html body.theme-light .mermaid text[fill],
+html body.theme-light .mermaid text[style*="fill"] {
+    fill: #1e293b !important;
+    color: #1e293b !important;
+}
+
+/* 特殊处理：区段标题 */
+html body.theme-light .mermaid .sectionTitle0,
+html body.theme-light .mermaid .sectionTitle1,
+html body.theme-light .mermaid .sectionTitle2,
+html body.theme-light .mermaid .sectionTitle3 {
+    fill: #334155 !important;
+    color: #334155 !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    text-shadow: none !important;
+}
+
+/* 时间轴标签 */
+html body.theme-light .mermaid .grid .tick text {
+    fill: #475569 !important;
+    color: #475569 !important;
+    font-weight: 500 !important;
+    text-shadow: none !important;
+}
+
+/* 里程碑文字例外：保持白色（因为红色背景） */
+html body.theme-light .mermaid .cScale0 text,
+html body.theme-light .mermaid .cScale1 text,
+html body.theme-light .mermaid .cScale2 text,
+html body.theme-light .mermaid .cScale3 text {
+    fill: #ffffff !important;           
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 终极方案：用JavaScript方式的CSS注入 */
+html body.theme-light .mermaid * {
+    --mermaid-text-color: #1e293b !important;
+}
+
+html body.theme-light .mermaid text {
+    fill: var(--mermaid-text-color, #1e293b) !important;
+    color: var(--mermaid-text-color, #1e293b) !important;
+}
+
+.theme-light .mermaid .task0,
+.theme-light .mermaid .task1,
+.theme-light .mermaid .task2,
+.theme-light .mermaid .task3 {
+    fill: #3b82f6 !important;           /* 蓝色任务条 */
+    stroke: #1e40af !important;
+    stroke-width: 1px !important;
+}
+
+.theme-light .mermaid .activeTask0,
+.theme-light .mermaid .activeTask1,
+.theme-light .mermaid .activeTask2,
+.theme-light .mermaid .activeTask3 {
+    fill: #10b981 !important;           /* 绿色活跃任务 */
+    stroke: #059669 !important;
+    stroke-width: 2px !important;
+}
+
+.theme-light .mermaid .doneTask0,
+.theme-light .mermaid .doneTask1,
+.theme-light .mermaid .doneTask2,
+.theme-light .mermaid .doneTask3 {
+    fill: #8b5cf6 !important;           /* 紫色完成任务 */
+    stroke: #7c3aed !important;
+    stroke-width: 1px !important;
+}
+
+/* Milestone 里程碑样式 - Light Mode */
+.theme-light .mermaid .cScale0,
+.theme-light .mermaid .cScale1,
+.theme-light .mermaid .cScale2,
+.theme-light .mermaid .cScale3 {
+    fill: #ef4444 !important;           /* 红色里程碑 */
+    stroke: #dc2626 !important;
+    stroke-width: 2px !important;
+}
+
+.theme-light .mermaid .cScale0 text,
+.theme-light .mermaid .cScale1 text,
+.theme-light .mermaid .cScale2 text,
+.theme-light .mermaid .cScale3 text {
+    fill: #ffffff !important;           /* 里程碑文字保持白色（红色背景下需要白字） */
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* 网格和轴标签 - Light Mode */
+.theme-light .mermaid .grid .tick {
+    stroke: #e2e8f0 !important;
+    stroke-width: 1px !important;
+}
+
+.theme-light .mermaid .grid .tick text {
+    fill: #475569 !important;
+    font-weight: 500 !important;
+}
+
+/* Dark Mode 样式 - 优雅深色配色 */
+.theme-dark .mermaid .node:not([class*="id"]) rect:not([style*="fill"]):not([style*="stroke"]),
+.theme-dark .mermaid .node:not([class$="id"]) circle:not([style*="fill"]):not([style*="stroke"]),
+.theme-dark .mermaid .node:not([class$="id"]) ellipse:not([style*="fill"]):not([style*="stroke"]),
+.theme-dark .mermaid .node:not([class$="id"]) polygon:not([style*="fill"]):not([style*="stroke"]),
+.theme-dark .mermaid .node:not([class$="id"]) path:not([style*="fill"]):not([style*="stroke"]) {
+    fill: linear-gradient(135deg, #1e293b, #334155) !important;  /* 渐变深色背景 */
+    stroke: #60a5fa !important;         /* 亮蓝色边框 */
+    stroke-width: 1.5px !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) !important;
+}
+
+.theme-dark .mermaid .nodeLabel {
+    color: #f1f5f9 !important;          /* 浅色文字 */
+    font-weight: 600 !important;
+    text-shadow: none !important;
+}
+
+.theme-dark .mermaid .edgePath .path,
+.theme-dark .mermaid .flowchart-link {
+    stroke: #94a3b8 !important;         /* 中性浅灰连接线 */
+    stroke-width: 1.5px !important;
+}
+
+.theme-dark .mermaid .marker {
+    fill: #94a3b8 !important;
+    stroke: #94a3b8 !important;
+}
+
+/* 甘特图特殊样式 - Dark Mode */
+.theme-dark .mermaid .section0,
+.theme-dark .mermaid .section1,
+.theme-dark .mermaid .section2,
+.theme-dark .mermaid .section3 {
+    fill: #374151 !important;           /* 深灰背景 */
+    stroke: #4b5563 !important;
+    stroke-width: 1px !important;
+}
+
+.theme-dark .mermaid .sectionTitle0,
+.theme-dark .mermaid .sectionTitle1,
+.theme-dark .mermaid .sectionTitle2,
+.theme-dark .mermaid .sectionTitle3 {
+    fill: #f3f4f6 !important;           /* 浅色区段标题 */
+    font-weight: 700 !important;
+    font-size: 14px !important;
+}
+
+.theme-dark .mermaid .taskText,
+.theme-dark .mermaid .taskTextOutsideRight,
+.theme-dark .mermaid .taskTextOutsideLeft {
+    fill: #ffffff !important;           /* 任务文字白色 */
+    font-weight: 600 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.theme-dark .mermaid .task0,
+.theme-dark .mermaid .task1,
+.theme-dark .mermaid .task2,
+.theme-dark .mermaid .task3 {
+    fill: #3b82f6 !important;           /* 蓝色任务条 */
+    stroke: #60a5fa !important;
+    stroke-width: 1px !important;
+}
+
+.theme-dark .mermaid .activeTask0,
+.theme-dark .mermaid .activeTask1,
+.theme-dark .mermaid .activeTask2,
+.theme-dark .mermaid .activeTask3 {
+    fill: #10b981 !important;           /* 绿色活跃任务 */
+    stroke: #34d399 !important;
+    stroke-width: 2px !important;
+}
+
+.theme-dark .mermaid .doneTask0,
+.theme-dark .mermaid .doneTask1,
+.theme-dark .mermaid .doneTask2,
+.theme-dark .mermaid .doneTask3 {
+    fill: #8b5cf6 !important;           /* 紫色完成任务 */
+    stroke: #a78bfa !important;
+    stroke-width: 1px !important;
+}
+
+/* Milestone 里程碑样式 - Dark Mode */
+.theme-dark .mermaid .cScale0,
+.theme-dark .mermaid .cScale1,
+.theme-dark .mermaid .cScale2,
+.theme-dark .mermaid .cScale3 {
+    fill: #f59e0b !important;           /* 橙色里程碑 */
+    stroke: #fbbf24 !important;
+    stroke-width: 2px !important;
+}
+
+.theme-dark .mermaid .cScale0 text,
+.theme-dark .mermaid .cScale1 text,
+.theme-dark .mermaid .cScale2 text,
+.theme-dark .mermaid .cScale3 text {
+    fill: #000000 !important;           /* 里程碑文字黑色 */
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}
+
+/* 网格和轴标签 - Dark Mode */
+.theme-dark .mermaid .grid .tick {
+    stroke: #4b5563 !important;
+    stroke-width: 1px !important;
+}
+
+.theme-dark .mermaid .grid .tick text {
+    fill: #9ca3af !important;
+    font-weight: 500 !important;
+}
+
+/* 关键修复：禁用Obsidian的默认滤镜 */
+.theme-dark .mermaid > svg {
+    filter: none !important;
+}
+
+/* 通用增强 */
+.mermaid svg {
+    border-radius: 8px !important;
+}
+
+.mermaid .nodeLabel strong {
+    color: currentColor !important;
+}
+
+/* 序列图和其他图表类型的优化 */
+.mermaid .actor {
+    stroke: var(--text-normal) !important;
+    fill: var(--background-primary) !important;
+}
+
+.mermaid .messageLine0,
+.mermaid .messageLine1 {
+    stroke: var(--text-normal) !important;
+}
+
+.mermaid .messageText {
+    fill: var(--text-normal) !important;
+}

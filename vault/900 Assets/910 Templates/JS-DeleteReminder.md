@@ -1,3 +1,7 @@
+---
+created: 2025-09-18
+---
+
 <%*
 // 获取当前笔记的内容
 let content = await tp.file.content;

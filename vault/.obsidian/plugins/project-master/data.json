@@ -1,0 +1,140 @@
+{
+  "version": 9,
+  "scanFolders": [
+    "100 Projects",
+    "200 Areas"
+  ],
+  "quickProjectMarker": "快速项目",
+  "excludedFolders": [
+    "templates",
+    ".obsidian"
+  ],
+  "chineseAliasCompat": true,
+  "dateFallback": "offset7",
+  "dateFallbackDays": 7,
+  "fieldMapping": {
+    "type": "type",
+    "status": "status",
+    "priority": "priority",
+    "startDate": "start_date",
+    "dueDate": "due_date",
+    "endDateFallback": "end_date",
+    "completionDate": "completion_date",
+    "progress": "progress",
+    "area": "area",
+    "objective": "objective",
+    "context": "context",
+    "remark": "remark",
+    "projectLeader": "project-leader",
+    "projectMembers": "project-members",
+    "longTerm": "long-term",
+    "mainProject": "main-project",
+    "projectId": "project-id",
+    "color": "color",
+    "identifyTag": "project"
+  },
+  "ganttBarColors": {
+    "active": "var(--color-purple)",
+    "completed": "var(--color-cyan)",
+    "critical": "var(--color-red)",
+    "fallback": "var(--text-muted)"
+  },
+  "cardFontScale": 110,
+  "sidebarWidth": 284,
+  "uiLanguage": "auto",
+  "statusAliases": {
+    "未开始/待启动": "inbox",
+    "起草/构思中": "draft",
+    "执行中": "active",
+    "暂停": "on-hold",
+    "完成": "completed",
+    "取消": "cancelled",
+    "归档": "archived"
+  },
+  "statusEmoji": {
+    "inbox": "📥",
+    "draft": "✏️",
+    "active": "🚀",
+    "on-hold": "⏸️",
+    "completed": "✅",
+    "cancelled": "❌",
+    "archived": "📦"
+  },
+  "statusOrder": [
+    "inbox",
+    "draft",
+    "active",
+    "on-hold",
+    "completed",
+    "cancelled",
+    "archived"
+  ],
+  "priorityEmoji": {
+    "1": "🔴",
+    "2": "🟠",
+    "3": "🟡",
+    "4": "🔵",
+    "5": "⚪"
+  },
+  "defaultGrouping": "objective",
+  "defaultSort": "due-asc",
+  "defaultZoom": "year",
+  "defaultYearFilter": "current",
+  "maxNotesPerProject": 10,
+  "materialsFolderName": "assets",
+  "newProjectTemplate": "900 Assets/910 Templates/TPL-Project.md",
+  "mermaidTitle": "项目进度甘特图",
+  "mermaidTodayMarker": true,
+  "mermaidExcludeWeekends": false,
+  "mermaidExcludeDates": "",
+  "mermaidIncludeDates": "",
+  "holidaySchedules": {
+    "2026": {
+      "holidays": "01-01~01-03, 02-15~02-23, 04-04~04-06, 05-01~05-05, 06-19~06-21, 09-25~09-27, 10-01~10-07",
+      "makeupWorkdays": "01-04, 02-14, 02-28, 05-09, 09-20, 10-10"
+    }
+  },
+  "ganttBarDuration": "workday",
+  "manualGroupOrder": {
+    "objective": [
+      "人才战略",
+      "持续改进",
+      "卓越团队",
+      "统合综效"
+    ]
+  },
+  "manualProjectOrder": {
+    "none::kind:all": [
+      "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/⭐ThinkDoKit知行盒子.md",
+      "100 Projects/长期个人项目/202602OpenClaw个人助理/OpenClaw个人助理.md",
+      "100 Projects/2026工作项目/202604标准化培训课程体系搭建/【2026KPI】标准化培训课程体系搭建.md",
+      "100 Projects/长期工作项目/201911CIMS内刊/⭐CIMS内刊（General）.md",
+      "100 Projects/长期工作项目/201801CIMS年会（General）/CIMS年会（General）.md",
+      "100 Projects/长期个人项目/202506 官网ThinkDoKit搭建及维护/⭐知行盒子指南网站搭建.md",
+      "100 Projects/2025个人项目/202507 自媒体-个人品牌/公众号品牌规划.md",
+      "100 Projects/2025个人项目/202507 自媒体-个人品牌/公众号写作.md",
+      "100 Projects/202604康代菁英计划/【2026KPI】康代菁英计划.md",
+      "100 Projects/2026工作项目/202604去年绩效自评及员工反馈内容分析/【2026KPI】2025年各部门绩效自评及员工反馈内容分析.md",
+      "100 Projects/2026工作项目/快速项目/🚩202605 CS&AP员工转泰国.md",
+      "100 Projects/2026工作项目/快速项目/2026羽乒比赛 Sports Competition.md",
+      "100 Projects/2026工作项目/快速项目/202609秋季Outing.md",
+      "100 Projects/2026工作项目/202611培训需求收集for2027.md",
+      "100 Projects/2026工作项目/202606员工大会/🚩2026员工大会 Employee Town Hall.md",
+      "100 Projects/2026工作项目/快速项目/【2026KPI】AVI系统性培训课程设计项目.md",
+      "100 Projects/2026工作项目/快速项目/202612暖冬月Happy Hour.md",
+      "100 Projects/2026工作项目/快速项目/2026 CEO Meeting Coordination.md",
+      "100 Projects/2026工作项目/202608胜任力评估系统搭建/202608胜任力评估系统搭建及上线.md",
+      "100 Projects/2026工作项目/202610年度绩效评估.md",
+      "100 Projects/2026工作项目/快速项目/202609年会筹备for2027.md",
+      "100 Projects/2026工作项目/202603中国文化介绍项目-CIMSOne/🚩CIMSOne：中国文化工作坊.md"
+    ],
+    "objective::持续改进": [
+      "100 Projects/2026工作项目/202608胜任力评估系统搭建/202608胜任力评估系统搭建及上线.md",
+      "100 Projects/快速项目/BPM招聘需求审批系统.md",
+      "100 Projects/快速项目/202611培训需求收集for2027.md"
+    ]
+  },
+  "mermaidSectionFallback": "默认项目",
+  "mermaidMarkerStart": "%% gantt-builder:start %%",
+  "mermaidMarkerEnd": "%% gantt-builder:end %%"
+}

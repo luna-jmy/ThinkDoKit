@@ -16,12 +16,13 @@
       "key": "S"
     }
   ],
-  "quickadd:choice:e859025f-b4f5-414b-90a2-e41cda3e6d3d": [
+  "quickadd:choice:86351055-d4c4-48bd-92ef-0358e0bc2320": [
     {
       "modifiers": [
-        "Alt"
+        "Alt",
+        "Mod"
       ],
-      "key": "1"
+      "key": "T"
     }
   ],
   "quickadd:choice:74470b26-dcad-4505-8ae8-67d4c4c30035": [
@@ -32,14 +33,6 @@
       "key": "2"
     }
   ],
-  "quickadd:choice:1ce42736-66cb-4a0c-8d0a-ed91097a46e9": [
-    {
-      "modifiers": [
-        "Alt"
-      ],
-      "key": "3"
-    }
-  ],
   "quickadd:choice:de720c59-42be-49de-a6f1-fcafe28a5cb8": [
     {
       "modifiers": [
@@ -48,13 +41,20 @@
       "key": "C"
     }
   ],
-  "quickadd:choice:86351055-d4c4-48bd-92ef-0358e0bc2320": [
+  "quickadd:choice:e859025f-b4f5-414b-90a2-e41cda3e6d3d": [
     {
       "modifiers": [
-        "Alt",
-        "Mod"
+        "Alt"
       ],
-      "key": "T"
+      "key": "1"
+    }
+  ],
+  "quickadd:choice:1ce42736-66cb-4a0c-8d0a-ed91097a46e9": [
+    {
+      "modifiers": [
+        "Alt"
+      ],
+      "key": "3"
     }
   ],
   "quickadd:choice:e52ad26d-77a5-4e3a-9c46-129d47b212a9": [
@@ -64,6 +64,128 @@
         "Mod"
       ],
       "key": "N"
+    }
+  ],
+  "quickadd:choice:9d8c0f20-2288-45c5-b63c-a5e96c1eb169": [
+    {
+      "modifiers": [
+        "Alt"
+      ],
+      "key": "4"
+    }
+  ],
+  "editor:set-heading-1": [
+    {
+      "modifiers": [
+        "Alt",
+        "Shift"
+      ],
+      "key": "1"
+    }
+  ],
+  "editor:set-heading-2": [
+    {
+      "modifiers": [
+        "Alt",
+        "Shift"
+      ],
+      "key": "2"
+    }
+  ],
+  "editor:set-heading-3": [
+    {
+      "modifiers": [
+        "Alt",
+        "Shift"
+      ],
+      "key": "3"
+    }
+  ],
+  "editor:set-heading-4": [
+    {
+      "modifiers": [
+        "Alt",
+        "Shift"
+      ],
+      "key": "4"
+    }
+  ],
+  "editor:set-heading-5": [
+    {
+      "modifiers": [
+        "Alt",
+        "Shift"
+      ],
+      "key": "5"
+    }
+  ],
+  "editor:set-heading-6": [
+    {
+      "modifiers": [
+        "Alt",
+        "Shift"
+      ],
+      "key": "6"
+    }
+  ],
+  "editor:set-heading": [
+    {
+      "modifiers": [
+        "Alt",
+        "Shift"
+      ],
+      "key": "0"
+    }
+  ],
+  "editor:set-heading-0": [
+    {
+      "modifiers": [
+        "Alt",
+        "Shift"
+      ],
+      "key": "C"
+    }
+  ],
+  "quickadd:choice:f825db4e-8ce2-40d2-a256-ef7d9130453b": [
+    {
+      "modifiers": [
+        "Alt"
+      ],
+      "key": "4"
+    }
+  ],
+  "quickadd:choice:31c2aeb0-0e97-41ab-8259-090e0539cf1e": [
+    {
+      "modifiers": [
+        "Alt"
+      ],
+      "key": "6"
+    }
+  ],
+  "quickadd:choice:fcef1828-a87d-45a6-99a2-c55253d042f2": [
+    {
+      "modifiers": [
+        "Alt"
+      ],
+      "key": "5"
+    }
+  ],
+  "footnotes:open": [
+    {
+      "modifiers": [
+        "Alt",
+        "Mod"
+      ],
+      "key": "F"
+    }
+  ],
+  "editor:insert-footnote": [
+    {
+      "modifiers": [
+        "Alt",
+        "Mod"
+      ],
+      "key": "I"
     }
   ]
 }

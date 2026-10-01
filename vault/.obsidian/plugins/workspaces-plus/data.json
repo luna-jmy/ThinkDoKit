@@ -1,15 +1,23 @@
 {
   "showInstructions": true,
   "showDeletePrompt": true,
+  "showWorkspaceDescriptions": false,
+  "showWorkspaceIconInSwitcher": false,
+  "showWorkspaceIconInStatusBar": false,
+  "workspaceBadges": "hotkey",
   "saveOnSwitch": false,
   "saveOnChange": false,
   "workspaceSettings": false,
   "systemDarkMode": false,
   "globalSettings": {},
-  "activeWorkspaceDesktop": "homepage",
+  "activeWorkspaceDesktop": "Home",
   "activeWorkspaceMobile": "",
   "reloadLivePreview": false,
   "workspaceSwitcherRibbon": false,
   "modeSwitcherRibbon": false,
-  "replaceNativeRibbon": true
+  "replaceNativeRibbon": true,
+  "trackOpenFiles": true,
+  "preserveRibbon": false,
+  "preserveSidebarLayout": false,
+  "restoreLayoutOnStartup": false
 }

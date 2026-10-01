@@ -1,0 +1,167 @@
+/* ========== GTD Dashboard 四象限布局 ========== */
+
+/* 基础四象限网格 */
+.gtd-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    min-height: 600px;
+    margin: 20px 0;
+}
+
+/* 象限卡片基础样式 */
+.quadrant {
+    border: 3px solid #ddd;
+    padding: 20px;
+    border-radius: 12px;
+    overflow-y: auto;
+    display: block;
+}
+
+/* 标题样式 */
+.quadrant h3 {
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid currentColor;
+    font-size: 1.3em;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* ========== 四个象限的颜色 ========== */
+
+.collect {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+}
+
+.collect h3 {
+    color: #059669;
+}
+
+.processed {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+.processed h3 {
+    color: #2563eb;
+}
+
+.inprogress {
+    background-color: rgba(251, 191, 36, 0.1);
+    border-color: #fbbf24;
+}
+
+.inprogress h3 {
+    color: #d97706;
+}
+
+.completed {
+    background-color: rgba(168, 85, 247, 0.1);
+    border-color: #a855f7;
+}
+
+.completed h3 {
+    color: #9333ea;
+}
+
+/* ========== 任务列表样式 ========== */
+
+.quadrant ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 10px 0;
+}
+
+.quadrant li,
+.quadrant .task-list-item {
+    display: block;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.quadrant input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* ========== 阅读视图特定样式 ========== */
+
+.markdown-preview-view .gtd-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+/* ========== 编辑视图（Live Preview）特定样式 ========== */
+
+/* 编辑模式四象限网格 */
+.markdown-source-view.mod-cm6 .cm-embed-block .gtd-dashboard {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 1fr 1fr !important;
+    gap: 16px !important;
+    min-height: 600px !important;
+}
+
+/* 编辑模式象限卡片 */
+.markdown-source-view.mod-cm6 .cm-embed-block .quadrant {
+    border: 3px solid #ddd;
+    padding: 20px;
+    border-radius: 12px;
+    overflow-y: auto;
+    display: block !important;
+}
+
+/* 编辑模式列表项强制换行 */
+.markdown-source-view.mod-cm6 .quadrant .task-list-item,
+.markdown-source-view.mod-cm6 .quadrant li {
+    display: block !important;
+    margin-bottom: 10px !important;
+    padding: 8px 12px !important;
+    background: rgba(255, 255, 255, 0.4) !important;
+    border-radius: 6px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    line-height: 1.6 !important;
+    overflow-wrap: break-word !important;
+}
+
+/* 编辑模式列表容器 */
+.markdown-source-view.mod-cm6 .quadrant ul {
+    list-style: none !important;
+    padding-left: 0 !important;
+    margin: 10px 0 !important;
+    display: block !important;
+}
+
+/* 编辑模式标题 */
+.markdown-source-view.mod-cm6 .quadrant h3 {
+    display: block !important;
+    margin: 0 0 15px 0 !important;
+    padding-bottom: 10px !important;
+    border-bottom: 2px solid currentColor !important;
+    text-align: center !important;
+}
+
+/* 编辑模式 checkbox */
+.markdown-source-view.mod-cm6 .quadrant input[type="checkbox"] {
+    margin-right: 8px !important;
+    vertical-align: middle !important;
+}
+
+/* 确保 HTML 嵌入块正确显示 */
+.markdown-source-view.mod-cm6 .cm-html-embed {
+    display: block !important;
+}
+
+.markdown-source-view.mod-cm6 .cm-embed-block {
+    display: block !important;
+}

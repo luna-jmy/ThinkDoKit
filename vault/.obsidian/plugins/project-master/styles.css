@@ -1,0 +1,1712 @@
+/* ============================================================================
+ * Project Master — 插件样式
+ *
+ * 硬约束（agent.md §2.1/§2.2 一票否决）：
+ * - 所有选择器都限制在 `pm-` 前缀类名下，不出现 `button`、`input`、`body`、
+ *   `.markdown-preview-view`、`.cm-editor` 这类全局选择器；
+ * - 不使用 `!important`，不盲目抬 z-index（仅 sticky 表头用 2）；
+ * - 不做全局 reset，颜色/间距/圆角一律取自 Obsidian 主题变量，明暗主题自动适配；
+ * - 不复用用户的 `project-card` / `fullwidth` 等既有类名，避免与其 CSS 片段打架。
+ *
+ * 与 gantt-view.ts 的数值契约（改动时必须两边一起改，否则条与行会错位）：
+ *   行高 30px / 分节头 26px / 表头 44px(=22+22) / 条上下内缩 5px
+ * ========================================================================== */
+
+/* ───────────────────────────── 骨架 ───────────────────────────── */
+
+.pm-dashboard-root {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--size-4-2);
+	color: var(--text-normal);
+	background: var(--background-primary);
+	overflow: hidden;
+}
+
+.pm-body {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
+	gap: var(--size-4-2);
+}
+
+/*
+ * 侧栏宽度可拖（用户口径 2026-09-21）。
+ *
+ * 默认 34%；拖过分隔条后由视图写 `--pm-side-width`（px）覆盖。走**变量**而不是内联
+ * flex/width 是有原因的：面板模式下侧栏要吃满整页，内联样式会把那条规则按死。
+ *
+ * `min-width` 与 split-resizer 的拖动下限同值（240px），`max-width` 与
+ * dashboard-view 的 SIDEBAR_MAX_RATIO 同值——一个管首屏布局、一个管拖动。
+ */
+.pm-side {
+	flex: 0 0 var(--pm-side-width, 34%);
+	max-width: 60%;
+	min-width: 240px;
+	overflow: auto;
+	/* 面板滚到底时不要把滚动接力给整页（否则会出现「整页顶出去」的错觉） */
+	overscroll-behavior: contain;
+	padding-right: var(--size-4-1);
+	border-right: 1px solid var(--background-modifier-border);
+}
+
+/*
+ * 分栏拖动条：细，但不难看。
+ *
+ * 6px 是「好看」与「好点」的折中：再细指针抓不住。命中区靠自身宽度而不是伪元素——
+ * 面板本身不密，不需要把热区藏成 2px 视觉 + 12px 触点那一套。
+ */
+.pm-side-resizer {
+	flex: 0 0 auto;
+	align-self: stretch;
+	width: 6px;
+	cursor: col-resize;
+	border-radius: var(--radius-s);
+	background-color: transparent;
+	transition: background-color 120ms ease;
+}
+
+.pm-side-resizer:hover,
+.pm-side-resizer.is-dragging,
+.pm-side-resizer:focus-visible {
+	background-color: var(--interactive-accent);
+}
+
+/* 拖动中禁掉选中，否则一路把卡片文字刷蓝（类由 split-resizer 加在 body 上） */
+body.pm-resizing {
+	user-select: none;
+	cursor: col-resize;
+}
+
+/*
+ * 主区：Tab 栏 + 两块同级内容（甘特图 / Mermaid 预览，同一时刻只显示一块）。
+ * 谁在前台谁就拿满剩余高度——这正是切 Tab 的目的：不必再和另一块分高度。
+ */
+.pm-main {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
+
+/*
+ * 甘特区的定高：用 flex 撑满而不是 height: 100%。
+ * 百分比高度要求父元素有「明确高度」，在多层 flex 里这个前提随时可能被打破，
+ * 一旦退化成 auto，时间轴就不再滚动而是把整个面板顶出边界——这正是之前越界的原因。
+ */
+.pm-gantt-host {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.pm-body--collapsed .pm-side,
+/* 侧栏收起时分隔条也没意义（留着会变成贴边的一条竖线） */
+.pm-body--collapsed .pm-side-resizer {
+	display: none;
+}
+
+/*
+ * 面板模式（工具栏「面板模式」，用户口径 2026-09-20）：
+ * 面板内容以卡片形式铺满整页，主区让位，甘特专属的工具栏控件一起收起来。
+ *
+ * 只换布局、不重渲染——筛选/折叠/滚动位置全留在原 DOM 里，退出即原样回归。
+ * 规则刻意排在 `.pm-body--collapsed` **之后**：两者同开时以面板模式为准
+ * （侧栏收起着再进面板模式，总不能让用户对着空白页），退出后侧栏仍然是收起的。
+ */
+.pm-panel-mode .pm-side {
+	display: block;
+	flex: 1 1 auto;
+	max-width: none;
+	min-width: 0;
+	padding-right: 0;
+	border-right: none;
+}
+
+.pm-panel-mode .pm-main {
+	display: none;
+}
+
+/* 面板模式下面板铺满整页，没有分栏可拖 */
+.pm-panel-mode .pm-side-resizer {
+	display: none;
+}
+
+/* 只对甘特视图有意义的控件：时间粒度 / 恢复缩放 / 全部展开收起 / 侧栏显隐 */
+.pm-panel-mode .pm-toolbar__gantt-only {
+	display: none;
+}
+
+/* 分组自带卡片外观（边框/圆角/底色），这里把纵向列表换成自适应网格 */
+.pm-panel-mode .pm-group-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+	/* 卡片高度统一（注意不能再写 align-items: start，否则卡片不撑满行高）；
+	   内容超出时在卡片内部滚动查看（用户口径 2026-09-20） */
+	grid-auto-rows: clamp(260px, 44vh, 460px);
+	gap: var(--size-4-2);
+}
+
+/*
+ * 「不分组」的扁平列表用更小的格子（用户口径 2026-09-21）。
+ *
+ * 两种列表共用上面的 340px 是错的：分组模式的一格是**一整组**（里面可能好几个项目），
+ * 不分组模式的一格就是**一张项目卡片**——同样 340px 会在宽屏上一行只放两三张、
+ * 右边空一大片。
+ *
+ * 必须排在 `.pm-panel-mode .pm-group-list` **之后**：两条规则特异性相同（都是两个类），
+ * 靠先后顺序覆盖，写到前面就不会生效。
+ * （原先这里还有一条挂在 `.pm-card-grid` 上的同名规则，那个类全项目零引用、
+ *   永远不会作用到任何节点——「改了没生效」最容易踩的就是这种坑，已删除。）
+ */
+.pm-panel-mode .pm-group-list--flat {
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	/* 卡片也矮一点：格子窄了还留 260px 的固定行高，每张卡片会显得又窄又空 */
+	grid-auto-rows: clamp(200px, 34vh, 400px);
+}
+
+.pm-panel-mode .pm-group {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.pm-panel-mode .pm-group__body {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+/*
+ * 「不分组」模式的扁平列表（用户口径 2026-09-21）：卡片直接是网格/列表的一格，
+ * 外面没有分组壳，所以滚动要由卡片自己承担（与 `.pm-group__body` 同口径）——
+ * 面板模式的网格行高是固定的，不写这条的话内容会溢出到下一行去。
+ */
+.pm-panel-mode .pm-group-list > .pm-card {
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+/* 卡片拖动排序（仅面板模式有手柄）：拖动中的卡片半透明，拖动期间禁止选中文字 */
+.pm-group-panel.is-reordering {
+	cursor: grabbing;
+	user-select: none;
+}
+
+/*
+ * 拖动中的幽灵：卡片被挂到 body 下（fixed 以视口为参照）跟随指针，
+ * 给一层阴影表示「已经拎起来了」。它不在面板容器内，所以不能靠 .pm-group-panel 作用域。
+ */
+.pm-drag-ghost {
+	opacity: 0.9;
+	box-shadow: var(--shadow-s, 0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+/* 拖动时撑住原位的占位符：虚线框示意「松手会落到这里」 */
+.pm-drag-placeholder {
+	border: 1px dashed var(--background-modifier-border-hover, var(--background-modifier-border));
+	border-radius: var(--radius-m);
+	background: var(--background-modifier-hover);
+}
+
+/*
+ * 「不会出现在甘特图上」的卡片（长期 / 缺日期，用户口径 2026-09-21）：
+ * 换一层底色与普通卡片区分，原因悬停可见。
+ *
+ * 为什么是 color-mix 而不是换一个主题变量：dark 主题里 --background-secondary 与
+ * 卡片原本的 --background-primary-alt 几乎同层，换过去等于没换（用户实测 dark 下无区分）。
+ * 而 --text-muted 与底色在**任何主题**下都有差距，往卡片底色里掺一点它，
+ * 浅色 / 深色都能得到一层可感知的「降调」底色。
+ */
+.pm-card.pm-card--off-gantt {
+	/*
+	 * 选择器必须写到两个类：只写 .pm-card--off-gantt 时与 .pm-card 优先级打平，
+	 * 而这条规则在文件里排在 .pm-card 之前 → 永远被覆盖，深浅主题都没有色差。
+	 * 第一行是兜底：不支持 color-mix 的环境退回主题变量（至少不会整体失效）。
+	 */
+	background: var(--background-secondary);
+	background: color-mix(in srgb, var(--text-muted) 15%, var(--background-primary-alt));
+}
+
+/* 组内项目框不再自画边框：外层分组卡片已经是框了，避免卡中卡 */
+.pm-panel-mode .pm-group .pm-card {
+	padding: 0;
+	border: none;
+	background: transparent;
+}
+
+/* ───────────────────────────── 工具栏 ───────────────────────────── */
+
+.pm-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding-bottom: var(--size-4-2);
+}
+
+.pm-toolbar__title {
+	margin: 0;
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-semibold);
+	color: var(--text-normal);
+}
+
+.pm-toolbar__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-3);
+	margin-left: auto;
+}
+
+.pm-toolbar__select {
+	max-width: 10em;
+}
+
+.pm-btn {
+	padding: var(--size-2-2) var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+/*
+ * 「面板模式」开关（用户口径 2026-09-21）：工具栏里最关键的视图切换，
+ * 用强调色与普通按钮区分。未开启 = 强调色描边；开启 = 强调色填充，
+ * 一眼就知道当前在哪个模式。
+ */
+.pm-btn.pm-btn--panel-toggle {
+	border-color: var(--interactive-accent);
+	color: var(--interactive-accent);
+}
+
+.pm-btn.pm-btn--panel-toggle.is-on {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.pm-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.pm-btn:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
+}
+
+.pm-filter-group--summary .pm-filter-count {
+	font-variant-numeric: tabular-nums;
+	color: var(--text-muted);
+}
+
+.pm-btn--ghost {
+	background: transparent;
+	border-color: var(--background-modifier-border);
+	color: var(--text-muted);
+}
+
+.pm-btn--ghost:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+/* ───────────── 主区 Tab 栏（甘特图 / Mermaid 预览：同级的两块） ─────────────
+ *
+ * 位置在主区**内部**：上面的筛选栏与左侧面板是两块共用的，不被 Tab 卷进去。
+ * 这样既拿到了「切过去看另一块」的省空间效果，两块又确实是同一层级。
+ */
+
+.pm-tabbar {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-1);
+	flex: 0 0 auto;
+	margin-bottom: var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pm-tab {
+	padding: var(--size-2-2) var(--size-4-2);
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+}
+
+.pm-tab:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+.pm-tab.is-active {
+	color: var(--text-normal);
+	border-bottom-color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+}
+
+.pm-tab:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
+}
+
+/* 常驻状态：不切到预览页也知道它描述的是哪一份数据 */
+.pm-tabbar__status {
+	margin-left: auto;
+	padding: 0 var(--size-2-2);
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+/* ───────────────────────────── Mermaid 面板 ───────────────────────────── */
+
+/* Tab 面板容器：只管显隐与占位（内部排版交给 .pm-mermaid） */
+.pm-mermaid-host {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	/* 面板自带滚动兜底，挤不下时也不会把主区撑破 */
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+.pm-mermaid {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+}
+
+/* 一行控件：开关按钮 + 日期输入 + 说明 + 导出（不占预览的高度） */
+.pm-mermaid__bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-2);
+	flex: 0 0 auto;
+}
+
+.pm-mermaid__field {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-1);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-mermaid__input {
+	width: 15em;
+	max-width: 100%;
+	font-size: var(--font-ui-smaller);
+}
+
+/* 说明文案收成图标 + tooltip：常驻一行会白占预览的高度 */
+.pm-mermaid__hint {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	cursor: help;
+}
+
+/* ── 编辑弹窗里的"已有值"点选标签（多值字段用，用户口径 2026-09-21） ── */
+
+.pm-value-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-2);
+	/* 往上贴紧它所属的输入行：它是 setting 之后的独立一块，别把它顶得太远 */
+	margin: calc(-1 * var(--size-2-2)) 0 var(--size-4-2) 0;
+}
+
+.pm-value-chip {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding: 0 var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: transparent;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+.pm-value-chip:hover {
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
+}
+
+/* 已选中的值：点一下是移除，所以选中态要明确 */
+.pm-value-chip.is-active {
+	border-color: var(--interactive-accent);
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+/* 备注文本域：撑满宽度、够写几行、可手动拉高 */
+.pm-modal__remark {
+	width: 100%;
+	min-height: 4.5em;
+	resize: vertical;
+}
+
+/* 出口按钮靠右成组（导出代码 / 写入笔记 / 导出 SVG / 导出 JPG；窄了就换行，见 __bar 的 wrap） */
+.pm-mermaid__actions {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin-left: auto;
+}
+
+/* 预览占满剩余高度，自身滚动 */
+.pm-mermaid__preview {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+	padding: var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-primary);
+}
+
+.pm-mermaid__preview-empty,
+.pm-mermaid__preview-error {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-mermaid__preview-error {
+	color: var(--text-error);
+}
+
+/*
+ * mermaid 自己只画 rect 不给颜色（drawExcludeDays 只设 class="exclude-range"，
+ * 颜色交给主题 CSS），默认主题下淡到几乎看不见——于是「排除周末」按下去像没生效。
+ * 这里在**插件自己的预览容器内**补一个可见底色；作用域限定在 .pm-mermaid__preview，
+ * 不会影响笔记正文里的其它 mermaid 图。
+ */
+.pm-mermaid__preview .exclude-range {
+	fill: var(--background-modifier-hover);
+}
+
+/* ───────────────────────────── 拖动排序 ───────────────────────────── */
+
+.pm-drag-handle {
+	flex: 0 0 auto;
+	color: var(--text-faint);
+	cursor: grab;
+	user-select: none;
+	/* 触屏上必须吃掉手势，否则一按就开始滚动页面，拖不动 */
+	touch-action: none;
+	line-height: 1;
+}
+
+.pm-drag-handle:hover {
+	color: var(--text-normal);
+}
+
+
+
+/* 项目颜色小圆点（与甘特条同色，让「哪个项目是什么颜色」在面板上也看得见）。
+   实际颜色由 JS 写成内联 background-color，这里只留底色兜底——理由同任务条。 */
+.pm-color-dot {
+	flex: 0 0 auto;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--pm-dot-color, var(--text-faint));
+	box-shadow: inset 0 0 0 1px var(--background-modifier-border);
+}
+
+/* ───────────────────────────── 筛选栏 ───────────────────────────── */
+
+.pm-filter-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+	margin-bottom: var(--size-4-2);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
+}
+
+.pm-filter-group {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-3);
+}
+
+.pm-filter-group--summary {
+	margin-left: auto;
+}
+
+.pm-filter-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+/*
+ * 表单控件（下拉 / 输入框）的配色口径：
+ * - 底色用 `--background-modifier-form-field`——这是 Obsidian 专门给表单控件留的那一层，
+ *   深浅两套主题都自带正确层次。原先写 `--background-primary`，深色下它与筛选栏的
+ *   `--background-secondary` 几乎同色，控件会像「没上色」一样糊进背景。
+ * - 只写 `background-color`，不要用 `background` 简写：`<select>` 的下拉箭头是主题给的
+ *   background-image，简写会连 position/size 一起重置，箭头就凭空消失。
+ * - 右侧留白单独给足：箭头和日期控件的日历图标都画在右侧，整体改写 padding 会把它们
+ *   压到文字上（用 padding-* 长写，避免覆盖主题为箭头预留的那段）。
+ */
+.pm-filter-select,
+.pm-filter-input {
+	padding-top: var(--size-2-2);
+	padding-bottom: var(--size-2-2);
+	padding-left: var(--size-2-3);
+	padding-right: 1.8em;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-modifier-form-field);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+}
+
+/*
+ * 下拉框显式关闭原生外观。
+ *
+ * 不写的后果：Windows 深色模式下原生 `<select>` 会给选中文字叠一层「蚀刻/重影」，
+ * 而同一条规则里的搜索框（纯 DOM 绘制）完全正常——两者走的是不同绘制路径，
+ * 所以这不是配色问题，改颜色也修不掉。`appearance: none` 让浏览器自绘
+ * （Obsidian 的 `.dropdown` 本来就是这么做的）；下拉箭头由主题的 background-image
+ * 提供，不受影响。
+ */
+.pm-filter-select {
+	appearance: none;
+	-webkit-appearance: none;
+}
+
+.pm-filter-input--date {
+	min-width: 9em;
+}
+
+.pm-date-range {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+}
+
+/* 年度快捷筛选：两个「开始 / 结束」下拉并排，标签在控件左侧 */
+.pm-year-picker {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-1);
+}
+
+.pm-year-picker__label {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
+}
+
+.pm-filter-group--year .pm-filter-select {
+	min-width: 7.5em;
+}
+
+.pm-date-sep {
+	color: var(--text-faint);
+}
+
+.pm-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-2);
+}
+
+.pm-chips--area {
+	max-width: 100%;
+}
+
+/*
+ * chips 用 Obsidian 的「按钮面」变量（`--interactive-normal`），不用 `--background-primary`：
+ * 深色主题下 primary 与筛选栏的 secondary 几乎同色，未选中的 chips 会糊成一团、看不出边界，
+ * 而 `--interactive-normal` 是主题为「可点控件」专门调过的那一层，深浅两套都能和背景拉开。
+ */
+.pm-chip {
+	padding: 2px var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-l);
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.pm-chip:hover {
+	background-color: var(--interactive-hover);
+}
+
+/* 选中 = 强调色。`--text-on-accent` 由主题按深浅自动取反，所以不需要单独写 dark 规则 */
+.pm-chip.is-active {
+	background-color: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.pm-chip:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
+}
+
+.pm-filter-count--empty {
+	color: var(--text-error);
+}
+
+.pm-filter-clear {
+	padding: 2px var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: transparent;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+.pm-filter-clear:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+/* 作用域限定在插件根容器下：`is-hidden` 是宿主也在用的通用类名，不能全局改写 */
+.pm-dashboard-root .is-hidden {
+	display: none;
+}
+
+/* ───────────────────────────── 数据问题提示 ───────────────────────────── */
+
+.pm-issues {
+	padding: var(--size-2-3) var(--size-4-2);
+	margin-bottom: var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-left: 3px solid var(--color-orange);
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-issues__title {
+	color: var(--text-warning, var(--text-normal));
+	font-weight: var(--font-semibold);
+	margin-bottom: var(--size-2-2);
+}
+
+.pm-issues__list {
+	margin: 0;
+	padding-left: var(--size-4-3);
+}
+
+.pm-issues__item {
+	color: var(--text-muted);
+}
+
+.pm-issues__detail {
+	margin-left: var(--size-2-2);
+	color: var(--text-faint);
+}
+
+/* ───────────────────────────── 统计行 ───────────────────────────── */
+
+.pm-stats {
+	padding-top: var(--size-2-2);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-stats__hint {
+	margin-left: var(--size-2-2);
+	color: var(--text-faint);
+}
+
+.pm-empty {
+	padding: var(--size-4-4);
+	text-align: center;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* ───────────────────────────── 分组面板 ───────────────────────────── */
+
+.pm-group-panel__section + .pm-group-panel__section {
+	margin-top: var(--size-4-3);
+}
+
+.pm-group-panel__divider {
+	margin: var(--size-4-3) 0;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+/*
+ * 面板卡片文字的缩放（用户口径 2026-09-20）。
+ *
+ * 做法：设置里存百分比（100 = 跟随主题），视图把它以倍率写进根容器上的
+ * `--pm-card-font-scale`（如 1.15），下面所有卡片区文字都写成
+ * `calc(倍率 * 主题字号)`。
+ *
+ * 为什么是乘法而不是直接给一个 px：卡片里的字有三级（标题 / 正文 / 注释），
+ * 各取主题的不同字号变量；统一给 px 会把层级压成一样大，乘法则整体缩放、比例不变。
+ * 变量缺省值写 1，所以「没设置」时与改动前逐像素一致。
+ */
+.pm-section-title {
+	margin: 0 0 var(--size-4-2) 0;
+	padding-bottom: var(--size-2-2);
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-medium));
+	font-weight: var(--font-semibold);
+	color: var(--text-normal);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pm-card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+	padding: var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-primary-alt);
+}
+
+.pm-card--quick {
+	border-left: 3px solid var(--interactive-accent);
+}
+
+.pm-card {
+	/* 联动高亮（悬停对方面板时）：描边而不改背景，避免与 hover 抢视觉 */
+	transition: box-shadow 0.12s ease;
+}
+
+.pm-card.is-linked {
+	box-shadow: 0 0 0 2px var(--text-accent);
+}
+
+.pm-card__head {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--size-2-2);
+}
+
+.pm-card__count {
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-smaller));
+	color: var(--text-muted);
+	margin-bottom: var(--size-2-1);
+}
+
+/* ── 分组容器（面板的第一层：分组 → 项目，与甘特「分节 → 任务条」一一对应） ── */
+
+.pm-group-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+}
+
+.pm-group {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
+	overflow: hidden;
+}
+
+.pm-group.is-linked {
+	box-shadow: 0 0 0 2px var(--text-accent);
+}
+
+.pm-group__head {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	width: 100%;
+	padding: var(--size-2-3) var(--size-4-2);
+	border: none;
+	border-radius: 0;
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-small));
+	font-weight: var(--font-semibold);
+	text-align: left;
+	cursor: pointer;
+}
+
+.pm-group__head:hover {
+	background: var(--background-modifier-hover);
+}
+
+.pm-group__head:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
+}
+
+/* 与甘特分节头共用的折叠箭头 */
+.pm-chevron {
+	flex: 0 0 auto;
+	width: 1em;
+	color: var(--text-faint);
+}
+
+.pm-group__title {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pm-group__title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.pm-group__title a:hover {
+	color: var(--text-accent);
+	text-decoration: underline;
+}
+
+.pm-group__badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-1);
+	flex-shrink: 0;
+}
+
+.pm-group__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+}
+
+.pm-group.is-collapsed {
+	background: var(--background-primary-alt);
+}
+
+/* 组内分桶：带资料（框框）/ 不带资料（列表）/ 快速项目（列表） */
+.pm-group__bucket {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+}
+
+/*
+ * 三种类型的小标题（带资料的项目 / 不带资料的项目 / 快速项目）。
+ * 用户口径 2026-09-20：它是个**小标题**，之前用 faint 色 + smaller 字号淡到几乎看不见。
+ * 右侧延伸一条细线，读起来像分区标题而不是一行注释。
+ */
+.pm-group__bucket-label {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-small));
+	font-weight: var(--font-semibold);
+	color: var(--text-muted);
+}
+
+.pm-group__bucket-label::after {
+	content: "";
+	flex: 1 1 auto;
+	height: 1px;
+	background: var(--background-modifier-border);
+}
+
+/* ── 紧凑项目行（不带资料 / 快速项目） ── */
+
+.pm-project-list {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.pm-project-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: 2px var(--size-2-2);
+	border-radius: var(--radius-s);
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-smaller));
+}
+
+.pm-project-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+/* 联动高亮（悬停甘特任务条） */
+.pm-project-row.is-linked {
+	background: var(--background-modifier-hover);
+	box-shadow: inset 2px 0 0 var(--text-accent);
+}
+
+.pm-project-row__quick {
+	flex: 0 0 auto;
+}
+
+.pm-project-row__name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-normal);
+	text-decoration: none;
+}
+
+.pm-project-row__name:hover {
+	color: var(--text-accent);
+	text-decoration: underline;
+}
+
+.pm-project-row__meta {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-1);
+	flex-shrink: 0;
+	color: var(--text-muted);
+}
+
+.pm-project-row__date {
+	font-variant-numeric: tabular-nums;
+}
+
+.pm-card__title {
+	flex: 1;
+	min-width: 0;
+	margin: 0;
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-small));
+	font-weight: var(--font-semibold);
+	overflow-wrap: anywhere;
+}
+
+.pm-card__title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.pm-card__title a:hover {
+	color: var(--text-accent);
+	text-decoration: underline;
+}
+
+.pm-card__badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-1);
+	flex-shrink: 0;
+}
+
+.pm-badge {
+	padding: 1px var(--size-2-2);
+	border-radius: var(--radius-s);
+	background: var(--background-modifier-border);
+	color: var(--text-normal);
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-smaller));
+	white-space: nowrap;
+}
+
+/* 注意 Obsidian 的 `--color-*-rgb` 是「逗号分隔的三元组」（如 `233, 49, 71`），
+   所以必须写成 rgba(var(...), alpha)，不能写现代语法的 `rgb(R G B / A)` 混搭——
+   混搭会让整条声明被浏览器丢弃，徽章就变成透明的。 */
+.pm-badge--warning {
+	background: rgba(var(--color-orange-rgb, 255, 150, 0), 0.2);
+	color: var(--text-normal);
+}
+
+.pm-badge--active {
+	background: rgba(var(--color-green-rgb, 0, 200, 83), 0.2);
+}
+
+.pm-badge--completed {
+	background: rgba(var(--color-cyan-rgb, 0, 191, 165), 0.2);
+}
+
+.pm-badge--cancelled {
+	background: rgba(var(--color-red-rgb, 233, 49, 71), 0.2);
+}
+
+.pm-badge--on-hold {
+	background: rgba(var(--color-orange-rgb, 255, 150, 0), 0.2);
+}
+
+.pm-progress {
+	width: 100%;
+	height: 8px;
+	border-radius: var(--radius-s);
+	background: var(--background-modifier-border);
+	overflow: hidden;
+}
+
+.pm-progress__fill {
+	width: var(--pm-progress, 0%);
+	height: 100%;
+	background: var(--interactive-accent);
+}
+
+.pm-card__list {
+	margin: 0;
+	padding-left: var(--size-4-3);
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-smaller));
+}
+
+.pm-card__list-item {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	color: var(--text-muted);
+}
+
+.pm-card__list-item a {
+	color: var(--text-muted);
+	text-decoration: none;
+	overflow-wrap: anywhere;
+}
+
+.pm-card__list-item a:hover {
+	color: var(--text-accent);
+	text-decoration: underline;
+}
+
+.pm-card__notes-empty {
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-smaller));
+	color: var(--text-faint);
+}
+
+/*
+ * 资料清单超出预览条数的部分：**照常渲染、默认隐藏**，点「展开全部」就地切换。
+ * 这样展开是瞬时的，也不会因为重取数据而丢掉面板的滚动位置。
+ */
+.pm-card__notes .is-overflow {
+	display: none;
+}
+
+.pm-card__notes.is-expanded .is-overflow {
+	display: list-item;
+}
+
+.pm-card__expand {
+	margin-top: var(--size-2-1);
+	padding: 0 var(--size-2-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: transparent;
+	color: var(--text-muted);
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-smaller));
+	cursor: pointer;
+}
+
+.pm-card__expand:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+.pm-card__date {
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-smaller));
+	color: var(--text-muted);
+}
+
+/*
+ * 面板里的「编辑」按钮（卡片右上角 / 紧凑行行尾）。
+ * 外观与甘特侧栏那个 `.pm-gantt__edit-btn` 一致，字号跟着卡片一起缩放。
+ * 它是编辑长期项目的唯一界面入口——那类项目按设计不上甘特图。
+ */
+.pm-edit-btn {
+	flex-shrink: 0;
+	padding: 0 var(--size-2-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: transparent;
+	color: var(--text-faint);
+	font-size: calc(var(--pm-card-font-scale, 1) * var(--font-ui-smaller));
+	cursor: pointer;
+}
+
+.pm-edit-btn:hover {
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
+}
+
+/* ───────────────────────────── 甘特图 ───────────────────────────── */
+
+.pm-gantt {
+	position: relative;
+	display: flex;
+	/*
+	 * 方向必须显式写死。宿主容器（.pm-gantt-host）是 column：
+	 * 只要两者落在同一个元素上，这里没写的 flex-direction 就会沿用宿主的 column，
+	 * 侧栏于是被挤到时间轴**上方**（曾经真实发生过），所以宁可多写一行。
+	 */
+	flex-direction: row;
+	width: 100%;
+	flex: 1 1 auto;
+	min-height: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-primary);
+	overflow: hidden;
+}
+
+/* 拖动排序期间：抓手下手要稳，且别拖出一片文字选中 */
+.pm-gantt--reordering {
+	cursor: grabbing;
+	user-select: none;
+}
+
+/* 拖动中的行/分节（作用域限在甘特内：`is-dragging` 是通用类名，不改写别人的） */
+.pm-gantt .pm-dragging {
+	opacity: 0.6;
+	background: var(--background-modifier-hover);
+}
+
+.pm-gantt__sidebar {
+	flex: 0 0 30%;
+	max-width: 320px;
+	min-width: 150px;
+	overflow: hidden;
+	border-right: 1px solid var(--background-modifier-border);
+	background: var(--background-primary-alt);
+}
+
+/* 必须与 gantt-view.ts 的 HEADER_HEIGHT 一致（22 + 22） */
+.pm-gantt__sidebar-head {
+	display: flex;
+	align-items: center;
+	box-sizing: border-box;
+	height: 44px;
+	padding: 0 var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-gantt__sidebar-body {
+	transform: translateY(var(--pm-sidebar-offset, 0px));
+}
+
+/* 必须与 gantt-view.ts 的 SECTION_HEIGHT 一致 */
+.pm-gantt__sidebar-section {
+	box-sizing: border-box;
+	width: 100%;
+	height: 26px;
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: 0 var(--size-4-2);
+	border: none;
+	border-radius: 0;
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	text-align: left;
+	cursor: pointer;
+}
+
+.pm-gantt__sidebar-section:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.pm-gantt__sidebar-section:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
+}
+
+.pm-gantt__sidebar-section.is-collapsed {
+	color: var(--text-faint);
+}
+
+.pm-gantt__sidebar-section-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* 必须与 gantt-view.ts 的 ROW_HEIGHT 一致 */
+.pm-gantt__sidebar-row {
+	box-sizing: border-box;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: 0 var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border-hover, transparent);
+}
+
+.pm-gantt__sidebar-row--highlight {
+	background: var(--text-selection);
+}
+
+/* 双向悬停联动：与 --highlight（定时闪烁、表示「我在这」）区分开，
+   这里是「你指的那个在这」，跟着指针走 */
+.pm-gantt__sidebar-row.is-linked {
+	background: var(--background-modifier-hover);
+	box-shadow: inset 2px 0 0 var(--text-accent);
+}
+
+.pm-gantt__sidebar-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-gantt__sidebar-name a {
+	color: var(--text-normal);
+	text-decoration: none;
+}
+
+.pm-gantt__sidebar-name a:hover {
+	color: var(--text-accent);
+	text-decoration: underline;
+}
+
+.pm-gantt__sidebar-meta {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-1);
+	flex-shrink: 0;
+}
+
+.pm-gantt__fallback-hint {
+	padding: 0 var(--size-2-1);
+	border-radius: var(--radius-s);
+	background: rgba(var(--color-orange-rgb, 255, 150, 0), 0.2);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-gantt__edit-btn {
+	padding: 0 var(--size-2-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: transparent;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+.pm-gantt__edit-btn:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+/* 承担纵向 + 横向滚动；表头 sticky 在其中生效 */
+.pm-gantt__timeline {
+	flex: 1;
+	min-width: 0;
+	overflow: auto;
+	/* 滚到头也不要把滚动接力给整页（Ctrl+滚轮 由插件处理，普通滚轮留在这里） */
+	overscroll-behavior: contain;
+}
+
+.pm-gantt__canvas {
+	position: relative;
+	width: var(--pm-canvas-width, 100%);
+}
+
+.pm-gantt__header {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: var(--background-primary);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pm-gantt__header-row {
+	display: flex;
+	box-sizing: border-box;
+	height: 22px;
+}
+
+.pm-gantt__header-row--upper {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+}
+
+.pm-gantt__header-row--lower {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-gantt__header-cell {
+	box-sizing: border-box;
+	flex: 0 0 auto;
+	width: var(--pm-cell-width, 40px);
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+	border-left: 1px solid var(--background-modifier-border);
+}
+
+.pm-gantt__header-label {
+	padding-left: var(--size-2-1);
+	white-space: nowrap;
+}
+
+.pm-gantt__svg {
+	display: block;
+}
+
+/*
+ * bar 上的天数（用户要求 2026-09-20）。
+ *
+ * 条内配色是「主题色的条 + on-accent 文字」——但条色可能是黄/青这类亮色，
+ * 白字会糊掉，所以加一圈半透明深色描边（paint-order 让描边落在文字后面），
+ * 这样任意条色下都读得出来。放不下的情况由 --outside 走条外次要色。
+ */
+.pm-gantt__bar-duration {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	fill: var(--text-on-accent);
+	stroke: rgba(0, 0, 0, 0.28);
+	stroke-width: 2px;
+	stroke-linejoin: round;
+	paint-order: stroke;
+	dominant-baseline: middle;
+	/* 文字不该抢走任务条的悬停/拖拽命中 */
+	pointer-events: none;
+}
+
+.pm-gantt__bar-duration--outside {
+	fill: var(--text-muted);
+	stroke: none;
+}
+
+/*
+ * 非工作日列（周末 / 节假日）。
+ * 必须画在网格与任务条之下（DOM 顺序靠前），并且不吃指针事件——
+ * 它只是背景提示，不该抢走任务条的悬停/拖拽。
+ */
+.pm-gantt__off-day {
+	fill: var(--background-modifier-hover);
+	pointer-events: none;
+}
+
+/*
+ * 空态提示：时间轴可以很宽（横向滚动），所以用 sticky left 把它钉在可视区左侧，
+ * 否则用户往右拖两下就再也看不到「为什么什么都没有」的说明。
+ */
+.pm-gantt__empty {
+	position: sticky;
+	left: 0;
+	width: fit-content;
+	max-width: min(100%, 420px);
+	margin: var(--size-4-2);
+	padding: var(--size-4-2);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.pm-gantt__grid-line {
+	stroke: var(--background-modifier-border);
+	stroke-width: 1;
+}
+
+.pm-gantt__today {
+	stroke: var(--color-red);
+	stroke-width: 1;
+	stroke-dasharray: 4 3;
+}
+
+/*
+ * 任务条配色（用户口径 2026-09-20）。
+ *
+ * 颜色值来自设置「视图偏好 → 甘特条配色」，由 gantt-view 直接写成内联 `fill`
+ * （内联单层写法；不走 CSS 变量中转，理由见 renderRowShapes 的注释）。
+ * 这里不再按 7 个状态各写一种颜色：那套配色颜色多到没有信息量，
+ * 而 Mermaid 那边也只有 `active` / `done` / `crit` 三种标记会改变任务外观。
+ */
+.pm-gantt__bar {
+	/* 保底底色：正常路径上每一条都会拿到内联色，这里只防「某行没算出颜色」 */
+	fill: var(--text-muted);
+	cursor: pointer;
+}
+
+.pm-gantt__bar:hover {
+	filter: brightness(1.15);
+}
+
+.pm-gantt__bar:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
+}
+
+/*
+ * 关键任务的外圈描边：单独一个矩形，不去动任务条自己的 fill/stroke。
+ *
+ * 为什么不直接给任务条描边：任务条的 `stroke` 已经被两个既有语义占着了
+ * ——「日期是推导出来的」虚线橙边、以及悬停联动的强调色描边。
+ * 一个属性叠不上三层，所以「重要」用外圈表达，三者互不遮挡。
+ * `fill: none` 不能省：SVG 的 fill 默认是黑色，不写就会画成一条黑棒。
+ */
+.pm-gantt__bar-critical {
+	fill: none;
+	pointer-events: none;
+	stroke-width: 2;
+}
+
+/* 日期是推导出来的：虚线橙边优先于「关键任务」的外圈——数据要先修，比重要更急 */
+.pm-gantt__bar[data-fallback="true"] {
+	stroke: var(--color-orange);
+	stroke-width: 1;
+	stroke-dasharray: 4 3;
+}
+
+.pm-gantt__bar--highlight {
+	stroke: var(--text-accent);
+	stroke-width: 2;
+}
+
+/* 放在最后：联动描边要压过 data-fallback 的虚线描边 */
+.pm-gantt__bar.is-linked {
+	stroke: var(--text-accent);
+	stroke-width: 2;
+}
+
+/*
+ * 进度覆盖层（`progress` 字段）：压在任务条左段，宽度 = progress%。
+ *
+ * 颜色刻意用**中性的主题明暗面**（`--text-normal` 半透明），不用任何状态色。
+ * 以前这里写的是绿色，而绿色正好是「已完成」的语义色，于是：
+ * - 在绿条上完全看不见（绿压绿）；
+ * - 在蓝条 / 青条上又像是「换了一种状态」——用户口径 2026-09-20 连着两次问
+ *   「为什么是两截」「为什么颜色对不上」。
+ * 现在深浅两套主题下它都只表现为「条色的明暗变化」，与状态色互不干扰。
+ */
+.pm-gantt__bar-progress {
+	fill: var(--text-normal);
+	opacity: 0.4;
+}
+
+.pm-gantt__handle {
+	fill: var(--background-modifier-border-hover, var(--text-faint));
+	opacity: 0;
+	cursor: ew-resize;
+}
+
+.pm-gantt:hover .pm-gantt__handle {
+	opacity: 0.7;
+}
+
+.pm-gantt__tooltip {
+	position: absolute;
+	left: var(--pm-tip-x, 0);
+	top: var(--pm-tip-y, 0);
+	z-index: 3;
+	padding: var(--size-2-2) var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary-alt);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	font-variant-numeric: tabular-nums;
+	pointer-events: none;
+	white-space: nowrap;
+}
+
+.pm-gantt--dragging {
+	cursor: ew-resize;
+	user-select: none;
+}
+
+/* 拖拽中：进度覆盖层与手柄仍停在原坐标，会看着像「条断了」；
+   它们不是被拖的对象，直接藏起来，只留纯色任务条跟随指针。
+   选择器写成三节（.pm-gantt.pm-gantt--dragging …）是为了与上面
+   `.pm-gantt:hover .pm-gantt__handle` 同权重并靠后者胜出，否则悬停时会把手柄又显出来。 */
+.pm-gantt.pm-gantt--dragging .pm-gantt__bar-progress,
+.pm-gantt.pm-gantt--dragging .pm-gantt__handle {
+	opacity: 0;
+}
+
+/* ───────────────────────────── Modal ───────────────────────────── */
+
+.pm-modal__hint {
+	margin: var(--size-2-2) 0 var(--size-4-2) 0;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	overflow-wrap: anywhere;
+}
+
+.pm-modal__hint--color {
+	margin: 0 0 var(--size-4-2) 0;
+}
+
+.pm-modal__hint--warning {
+	color: var(--text-warning, var(--text-error));
+}
+
+.pm-modal__error {
+	color: var(--text-error);
+	font-size: var(--font-ui-smaller);
+	min-height: 1.2em;
+	margin-bottom: var(--size-2-2);
+}
+
+.pm-modal__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: var(--size-2-3);
+	margin-top: var(--size-4-2);
+}
+
+.pm-modal__json {
+	width: 100%;
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+}
+
+/* 甘特条颜色的预设色块（用户口径 2026-09-20：不要一律去调 RGB） */
+.pm-color-presets {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin: calc(-1 * var(--size-2-2)) 0 var(--size-2-2);
+	padding-left: var(--size-4-2);
+}
+
+/*
+ * 色块的实际颜色由 JS 写成**内联 background-color**（值可能是 `var(--color-red)`）。
+ * 之前是往 `--pm-swatch-color` 里写、再由这里 `background: var(--pm-swatch-color)` 取用，
+ * 那种「变量套变量」解析不出颜色，8 个色块全成了空心方框。这里只留底色兜底。
+ */
+.pm-color-swatch {
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--pm-swatch-color, transparent);
+	cursor: pointer;
+}
+
+.pm-color-swatch:hover {
+	border-color: var(--text-muted);
+}
+
+.pm-color-swatch:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
+}
+
+.pm-color-swatch.is-active {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+/* 「不指定」不是一个颜色：用斜纹表示留空（按状态取默认色） */
+.pm-color-swatch--default {
+	background: repeating-linear-gradient(
+		45deg,
+		transparent 0 4px,
+		var(--background-modifier-border) 4px 6px
+	);
+}
+
+/*
+ * 右键菜单里的颜色项：色块 + 名称。
+ * Menu 没有自定义 DOM 的公开 API，所以色块是通过 `setTitle(DocumentFragment)`
+ * 塞进去的（见 gantt-view 的 colorMenuLabel）；这里只管它长什么样。
+ */
+.pm-menu-swatch {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	margin-right: var(--size-2-1);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 3px;
+	background: var(--pm-swatch-color, transparent);
+	vertical-align: -1px;
+}
+
+/* 二次确认态：只加自己的类，不去改宿主的 .mod-warning */
+.pm-modal__actions .pm-confirm {
+	background: var(--color-red);
+	color: var(--text-on-accent);
+	border-color: var(--color-red);
+}
+
+/* ───────────────────────────── 设置页 ───────────────────────────── */
+
+.pm-settings__json {
+	width: 100%;
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+}
+
+/* tab 工具条：横排、可换行，选中态用强调色下划线（与 Obsidian 原生观感一致） */
+.pm-settings__tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-1);
+	margin-bottom: var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pm-settings__tab {
+	padding: var(--size-2-2) var(--size-4-2);
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: var(--radius-s) var(--radius-s) 0 0;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+}
+
+.pm-settings__tab:hover {
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
+}
+
+.pm-settings__tab.is-active {
+	color: var(--text-normal);
+	border-bottom-color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+}
+
+.pm-settings__tab:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
+}
+
+/* 页首说明：原来挂在分节标题上的那句话挪到这里 */
+.pm-settings__lead {
+	margin-bottom: var(--size-4-2);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.5;
+}

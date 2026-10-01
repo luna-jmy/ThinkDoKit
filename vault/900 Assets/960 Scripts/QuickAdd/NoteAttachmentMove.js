@@ -1,0 +1,206 @@
+module.exports = async (params) => {
+  const { app, quickAddApi } = params;
+  const { vault, metadataCache } = app;
+
+  // 从 app.workspace 获取 Notice 构造函数
+  const Notice = app.plugins.plugins.quickadd?.api?.Notice || 
+                 window.Notice || 
+                 class Notice { constructor(msg) { console.log(msg); } };
+
+  // 1. 使用 inputPrompt 获取路径字符串
+  const inputPath = await quickAddApi.inputPrompt(
+    "请输入要处理的文件夹相对路径", 
+    "例如: 400 Archive/420 日志归档/2024"
+  );
+  
+  if (!inputPath) {
+    new Notice("未输入路径，操作已取消。");
+    return;
+  }
+
+  // 2. 规范化路径：统一使用正斜杠, 并移除末尾的斜杠
+  const normalizePath = (path) => {
+    let p = path.replace(/\\/g, '/');
+    if (p.endsWith('/')) {
+      p = p.slice(0, -1);
+    }
+    return p;
+  };
+
+  const folderPath = normalizePath(inputPath);
+  console.log("输入的文件夹路径:", folderPath);
+
+  // 3. 验证路径是否存在且为一个文件夹
+  const folderObject = vault.getAbstractFileByPath(folderPath);
+
+  if (!folderObject) {
+    new Notice(`错误: 路径 "${folderPath}" 在库中不存在。`);
+    return;
+  }
+
+  // 检查是否为文件夹（通过检查是否有 children 属性）
+  if (!folderObject.children) {
+    new Notice(`错误: "${folderPath}" 不是一个文件夹。`);
+    return;
+  }
+  
+  // 获取文件夹中的所有笔记文件
+  const files = vault.getMarkdownFiles().filter(file => 
+    normalizePath(file.parent.path) === folderPath
+  );
+
+  console.log("找到的笔记文件数量:", files.length);
+  
+  if (files.length === 0) {
+    new Notice("所选文件夹中没有笔记文件。");
+    return;
+  }
+  
+  // 在选定的文件夹下创建Attachment文件夹
+  const attachmentFolderName = "Attachment";
+  const attachmentFolderPath = `${folderPath}/${attachmentFolderName}`;
+  let attachmentFolder = vault.getAbstractFileByPath(attachmentFolderPath);
+  
+  console.log("附件文件夹路径:", attachmentFolderPath);
+  
+  // 如果文件夹不存在，则创建
+  if (!attachmentFolder) {
+    try {
+      await vault.createFolder(attachmentFolderPath);
+      attachmentFolder = vault.getAbstractFileByPath(attachmentFolderPath);
+      console.log("成功创建附件文件夹");
+    } catch (error) {
+      console.error("创建附件文件夹失败:", error);
+      new Notice(`创建附件文件夹失败: ${error.message}`);
+      return;
+    }
+  } else if (!attachmentFolder.children) {
+    new Notice(`错误: "${attachmentFolderPath}" 已存在，但不是文件夹`);
+    return;
+  }
+  
+  // 获取Obsidian设置的附件文件夹路径
+  const attachmentFolderConfig = vault.getConfig("attachmentFolderPath");
+  console.log("Obsidian附件配置:", attachmentFolderConfig);
+  
+  // 收集所有需要移动的附件
+  const attachmentsToMove = [];
+  const processedPaths = new Set(); // 用于去重
+  
+  // 附件文件扩展名集合
+  const attachmentExtensions = new Set([
+    "png", "jpg", "jpeg", "gif", "webp", "svg", "pdf", 
+    "mp3", "wav", "m4a", "ogg",
+    "mp4", "mov", "avi", "webm",
+    "zip", "rar", "7z", "tar", "gz"
+  ]);
+  
+  // 遍历所有笔记文件，找出其中的附件链接
+  for (const file of files) {
+    console.log(`正在处理文件: ${file.path}`);
+    const cache = metadataCache.getFileCache(file);
+    const links = cache?.links || [];
+    const embeds = cache?.embeds || [];
+    
+    // 合并links和embeds以处理所有类型的链接
+    const allLinks = [...links, ...embeds];
+
+    for (const linkObj of allLinks) {
+      const link = linkObj.link;
+      // 检查链接是否是附件类型
+      const extension = link.split('.').pop()?.toLowerCase();
+      if (extension && attachmentExtensions.has(extension)) {
+        
+        // 使用metadataCache.getFirstLinkpathDest来解析链接路径
+        const linkedFile = metadataCache.getFirstLinkpathDest(link, file.path);
+
+        if (linkedFile && linkedFile.extension) {
+          // 使用 Set 去重，避免重复处理同一个附件
+          if (!processedPaths.has(linkedFile.path)) {
+            processedPaths.add(linkedFile.path);
+            attachmentsToMove.push({
+              from: linkedFile,
+              originalLinkText: link,
+              noteFiles: [file],
+            });
+            console.log(`找到附件: ${linkedFile.path} (来自笔记: ${file.path})`);
+          } else {
+            // 如果附件已经在列表中，添加笔记到引用列表
+            const existing = attachmentsToMove.find(item => item.from.path === linkedFile.path);
+            if (existing && !existing.noteFiles.includes(file)) {
+              existing.noteFiles.push(file);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  console.log(`总共需要移动 ${attachmentsToMove.length} 个附件。`);
+  
+  if (attachmentsToMove.length === 0) {
+    new Notice("在这些笔记中没有找到需要移动的附件。");
+    return;
+  }
+  
+  // 移动附件并更新笔记中的链接
+  let successCount = 0;
+  for (const { from, originalLinkText, noteFiles } of attachmentsToMove) {
+    
+    // 处理可能的文件名冲突
+    let newAttachmentName = from.name;
+    let counter = 1;
+    while (vault.getAbstractFileByPath(`${attachmentFolderPath}/${newAttachmentName}`)) {
+      const nameParts = from.name.split('.');
+      const ext = nameParts.length > 1 ? nameParts.pop() : '';
+      const baseName = nameParts.join('.');
+      newAttachmentName = `${baseName}_${counter}.${ext}`;
+      counter++;
+    }
+    
+    const newAttachmentPath = `${attachmentFolderPath}/${newAttachmentName}`;
+    const newLinkText = `${attachmentFolderName}/${newAttachmentName}`;
+    
+    try {
+      console.log(`正在移动附件: ${from.path} -> ${newAttachmentPath}`);
+      
+      // 先更新所有笔记中的链接，再移动文件
+      for (const noteFile of noteFiles) {
+        let content = await vault.read(noteFile);
+        
+        // 构建更精确的正则表达式来匹配链接
+        // 匹配 [[link]] 或 [[link|alias]] 或 ![[link]] 或 ![[link|alias]]
+        const escapedLink = escapeRegExp(originalLinkText);
+        const linkRegex = new RegExp(
+          `(!?\\[\\[)${escapedLink}(\\|[^\\]]+)?(\\]\\])`,
+          'g'
+        );
+        
+        const newContent = content.replace(linkRegex, (match, prefix, alias, suffix) => {
+          return `${prefix}${newLinkText}${alias || ''}${suffix}`;
+        });
+
+        if (newContent !== content) {
+          await vault.modify(noteFile, newContent);
+          console.log(`更新笔记: ${noteFile.path}`);
+        }
+      }
+      
+      // 移动附件文件
+      await vault.rename(from, newAttachmentPath);
+      
+      successCount++;
+      console.log(`成功移动并更新链接: ${from.name}`);
+    } catch (error) {
+      console.error(`处理附件 ${from.name} 失败:`, error);
+      new Notice(`处理附件 ${from.name} 失败: ${error.message}`);
+    }
+  }
+  
+  new Notice(`操作完成！成功移动了 ${successCount} 个附件到 ${attachmentFolderPath}`);
+};
+
+// 辅助函数：转义正则表达式中的特殊字符
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}

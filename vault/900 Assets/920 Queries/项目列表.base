@@ -1,0 +1,93 @@
+filters:
+  and:
+    - type == "project"
+views:
+  - type: table
+    name: 2026工作项目
+    filters:
+      and:
+        - due_date <= this.due_date
+        - area == this.area
+        - (this.status == "hide" && status != "completed" && status != "cancelled") || (this.status != "hide" && (status == "completed" || status == "cancelled"))
+        - start_date >= this.start_date
+    order:
+      - area
+      - objective
+      - file.name
+      - priority
+      - status
+      - remark
+      - start_date
+      - due_date
+      - completion_date
+      - progress
+      - project-leader
+      - project-members
+    sort:
+      - property: start_date
+        direction: ASC
+      - property: objective
+        direction: DESC
+      - property: status
+        direction: ASC
+      - property: project-id
+        direction: ASC
+      - property: area
+        direction: ASC
+      - property: due_date
+        direction: ASC
+      - property: time-frame
+        direction: DESC
+    columnSize:
+      note.area: 83
+      note.objective: 79
+      file.name: 184
+      note.priority: 45
+      note.status: 91
+      note.remark: 135
+      note.progress: 67
+      note.project-leader: 82
+  - type: table
+    name: ActiveWorkProjects
+    filters:
+      and:
+        - and:
+            - area == "CIMS工作"
+            - status != "archive"
+    order:
+      - objective
+      - area
+      - file.name
+      - priority
+      - status
+      - progress
+      - start_date
+      - due_date
+      - completion_date
+      - remark
+      - budget_per_person
+      - budget_total
+    sort:
+      - property: budget_total
+        direction: DESC
+      - property: start_date
+        direction: DESC
+      - property: objective
+        direction: ASC
+      - property: status
+        direction: ASC
+      - property: due_date
+        direction: DESC
+      - property: completion_date
+        direction: DESC
+    columnSize:
+      note.objective: 106
+      note.area: 125
+      file.name: 261
+      note.priority: 45
+      note.status: 85
+      note.progress: 67
+      note.completion_date: 115
+      note.remark: 158
+      note.budget_per_person: 101
+      note.budget_total: -55

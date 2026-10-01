@@ -1,3 +1,7 @@
+---
+created: 2025-09-18
+---
+
 <%*
 // 获取 journal-date 属性值
 const journalDate = tp.frontmatter["journal-date"];

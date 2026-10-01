@@ -3,6 +3,15 @@
   z-index: var(--layer-menu);
 }
 
+/* Workaround for themes that style the modal container instead of .modal-bg */
+.workspaces-plus-transparent-bg-important {
+  background-color: transparent !important;
+}
+
+.workspaces-plus-transparent-bg {
+  background-color: transparent;
+}
+
 :where(.workspaces-plus-modal, .workspaces-plus-mode-modal).quick-switch {
   width: unset;
 }
@@ -37,18 +46,9 @@
   border-radius: 0.2em;
 }
 
-.workspace-results .rename-workspace {
-  display: inline-block;
-  position: absolute;
-  right: 2em;
-  margin-top: 0.5em;
-  fill: var(--text-muted);
-  opacity: 0;
-}
-
 .workspace-results .workspace-description {
   font-size: 0.8em;
-  padding: 0px 6rem 0.6rem 2rem;
+  padding: 0px 7rem 0.6rem 1rem;
   color: var(--text-muted);
   line-height: 1;
   width: 100%;
@@ -56,42 +56,61 @@
   /* max-width: 40em; */
 }
 
-.workspace-results .delete-workspace {
-  display: inline-block;
-  position: absolute;
-  right: 0.7em;
-  margin-top: 0.5em;
-  fill: var(--text-muted);
-  opacity: 0;
+/* Icon is off by default (see the "Show workspace icon in quick switcher" setting) -- only widen
+   the left inset to make room for it when it's actually showing. */
+.has-workspace-icons .workspace-results .workspace-description {
+  padding-left: 2.5rem;
 }
 
-.workspace-results .platform {
-  display: inline-block;
+/* Holds the active-workspace checkmark and the hotkey/number badge together as one Linear-style
+   cluster (checkmark, then badge), right-aligned and vertically centered on the row regardless of
+   the row's height -- e.g. a row with a description below the name is taller, but this still sits
+   centered on the row rather than pinned to the top or falling into flow after the description. */
+.workspace-results .workspace-row-end {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
   position: absolute;
-  right: 3.3em;
-  margin-top: 0.4em;
+  right: 1em;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.workspace-row-end .active-workspace {
+  display: inline-flex;
   fill: var(--text-muted);
+}
+
+/* Sits where the old hover-revealed rename/delete/platform icons used to -- unlike those, it's
+   informational (like Obsidian's own command-palette hotkey hints) so it stays visible without a
+   hover, and it never has to compete with them for the same space. */
+.workspace-row-end .workspace-badge {
+  display: inline-block;
+  padding: 0.05em 0.5em;
+  font-size: 0.75em;
+  line-height: 1.4;
+  text-align: center;
   color: var(--text-muted);
-  opacity: 0;
+  background-color: var(--background-modifier-hover);
+  border-radius: 0.3em;
+  white-space: nowrap;
 }
 
-.active-workspace {
-  display: inline-block;
+/* The workspace's own icon, on the opposite side of the row from the row-end cluster above --
+   top/transform (not margin-top) centers it on the row regardless of row height, same reasoning
+   as the row-end cluster. */
+.workspace-results .workspace-icon {
+  display: inline-flex;
   position: absolute;
-  left: 0.5em;
-  margin-top: 0.5em;
-  fill: var(--text-muted);
-  z-index: 2;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--icon-color, var(--text-muted));
 }
 
-.rename-workspace,
-.delete-workspace {
-  cursor: pointer;
-}
-
-.rename-workspace:hover,
-.delete-workspace:hover {
-  fill: var(--text-accent-hover);
+.workspace-results .workspace-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .workspace-results {
@@ -99,27 +118,27 @@
   position: relative;
 }
 
-.prompt-results:not(.renaming) .workspace-item.is-selected ~ .rename-workspace,
-.prompt-results:not(.renaming) .workspace-item.is-selected ~ .delete-workspace,
-.prompt-results:not(.renaming) .workspace-item.is-selected ~ .platform {
-  opacity: 1;
-}
-
-body.is-mobile .prompt-results:not(.renaming) .workspace-item ~ .rename-workspace,
-body.is-mobile .prompt-results:not(.renaming) .workspace-item ~ .delete-workspace,
-body.is-mobile .prompt-results:not(.renaming) .workspace-item ~ .platform {
-  opacity: 1;
+/* Mobile: no hover, so give the row itself a real touch target. Rename/delete are keyboard-only
+   now (ctrl ↵ / shift ⌫) or via this plugin's settings tab, so there's no icon row to make room
+   for here beyond the badge, which already has its own comfortable padding. */
+body.is-mobile .workspace-item {
+  padding-top: 11px;
+  padding-bottom: 11px;
 }
 
 .workspace-item {
   display: inline-block;
   width: 100%;
-  padding: 5px 6rem 5px 2rem;
+  padding: 5px 7rem 5px 1rem;
   font-size: 16px;
   position: relative;
   cursor: pointer;
   white-space: normal;
   border: 1px solid transparent;
+}
+
+.has-workspace-icons .workspace-item {
+  padding-left: 2.5rem;
 }
 
 .workspaces-plus-color-scheme-icon > svg {
@@ -196,4 +215,17 @@ body.is-mobile .side-dock-actions div[aria-label="Manage modes"] svg {
   flex: 1 1 auto;
   flex-grow: 0;
   margin-right: 20px;
+}
+
+.workspace-icon-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.workspace-icon-preview {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.6em;
+  color: var(--icon-color, var(--text-muted));
 }

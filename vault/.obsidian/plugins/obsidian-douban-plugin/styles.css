@@ -40,42 +40,153 @@
 }
 
 .obsidian_douban_settings_button {
-	margin: auto;
-	vertical-align: bottom;
+    margin: auto;
+    vertical-align: bottom;
 
+}
+
+.obsidian_douban_qr_login {
+	text-align: center;
+}
+
+.obsidian_douban_qr_image_container {
+	min-height: 220px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.obsidian_douban_qr_image_container img {
+	width: min(300px, 70vw);
+	max-width: 100%;
+	padding: 10px;
+	background: white;
+	border-radius: 8px;
+}
+
+.obsidian_douban_qr_status {
+	min-height: 24px;
+	margin: 12px 0;
+}
+
+.obsidian_douban_qr_status.has_error {
+	color: var(--text-error);
+}
+
+.obsidian_douban_login_status {
+	display: inline-flex;
+	align-items: center;
+	margin-bottom: 8px;
+	padding: 3px 9px;
+	color: var(--text-success, #2f9e44);
+	background: rgba(74, 180, 105, 0.16);
+	border: 1px solid rgba(74, 180, 105, 0.3);
+	border-radius: 999px;
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+}
+
+.obsidian_douban_login_detail {
+	display: flex;
+	gap: 6px;
+	align-items: baseline;
+	margin: 4px 0;
+	line-height: 1.5;
+}
+
+.obsidian_douban_login_label {
+	color: var(--text-muted);
+}
+
+.obsidian_douban_login_value {
+	color: var(--text-accent);
+	font-weight: var(--font-semibold);
+	overflow-wrap: anywhere;
+}
+
+a.obsidian_douban_login_value:hover {
+	color: var(--text-accent-hover);
+	text-decoration: underline;
+}
+
+.obsidian_douban_login_note {
+	margin-top: 8px;
+	color: var(--text-muted);
+	line-height: 1.5;
+}
+
+.obsidian_douban_qr_controls {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
 }
 
 .obsidian_douban_search_input {
 	margin-left: 5px;
 }
 
+.obsidian_douban_search_fields {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
 .obsidian_douban_search_input_type {
 	margin-left: 5px;
-	float: right;
+	flex: 0 0 auto;
 }
 
 .obsidian_douban_search_input_content {
-    margin-left: 5px;
-    width: 80%;
-	float: left;
-
+	margin-left: 5px;
+	flex: 1 1 16rem;
+	min-width: 0;
 }
 
 .obsidian_douban_search_controls {
 	margin-top: 20px;
 	margin-right: 5px;
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.obsidian_douban_batch_urls {
+	box-sizing: border-box;
+	width: 100%;
+	resize: vertical;
 }
 
 .obsidian_douban_search_button {
-	margin-top: 20px;
-	margin-right: 5px;
-	float:right;
+	margin: 0;
 }
 
 .obsidian_douban_cancel_button {
-	margin-top: 20px;
-	margin-right: 5px;
-	float: right;
+	margin: 0;
+}
+
+.obsidian_douban_search_input_content + .obsidian_douban_search_input_type,
+.obsidian_douban_search_input_content {
+	box-sizing: border-box;
+}
+
+.obsidian_douban_search_input_content .search-input-container,
+.obsidian_douban_search_input_content input {
+	width: 100%;
+}
+
+.obsidian_douban_search_input_content,
+.obsidian_douban_search_input_type {
+	align-self: center;
+}
+
+.obsidian_douban_search_input_content:first-child {
+	display: flex;
+}
+
+.obsidian_douban_search_input_content:first-child,
+.obsidian_douban_search_input_type:first-child {
+	margin-top: 0;
 }
 
 .obsidian_douban_status_button {
@@ -91,6 +202,407 @@
 .obsidian_douban_settings_input.has-error {
 	color: #fb464c;
 	border-color: #fb464c;
+}
+
+.obsidian_douban_section_card {
+	box-sizing: border-box;
+	padding: 16px 18px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 10px;
+}
+
+.obsidian_douban_section_overview {
+	margin-bottom: 14px;
+}
+
+.obsidian_douban_section_overview > p {
+	margin: 0;
+	color: var(--text-muted);
+	line-height: 1.6;
+}
+
+.obsidian_douban_card_list {
+	display: grid;
+	gap: 10px;
+}
+
+.obsidian_douban_section_card.setting-item {
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.obsidian_douban_embedded_setting.setting-item {
+	margin-top: 10px;
+	padding: 10px 0 0;
+	background: transparent;
+	border-top: 1px solid var(--background-modifier-border);
+	border-radius: 0;
+}
+
+.advanced-settings > .setting-item {
+	box-sizing: border-box;
+	padding: 16px 18px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 10px;
+}
+
+.obsidian_douban_array_section {
+	margin-bottom: 28px;
+}
+
+.obsidian_douban_array_section + .obsidian_douban_array_section {
+	padding-top: 0;
+	border-top: 0;
+}
+
+.obsidian_douban_array_section_title {
+	margin: 0 0 10px;
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-medium);
+	line-height: 1.4;
+}
+
+.obsidian_douban_array_help {
+	margin: 6px 0;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	line-height: 1.6;
+}
+
+.obsidian_douban_array_hint {
+	font-size: var(--font-ui-small);
+}
+
+.obsidian_douban_array_section_header.setting-item {
+	margin-top: 10px;
+	padding: 12px 0 0;
+	background: transparent;
+	border-top: 1px solid var(--background-modifier-border);
+	border-radius: 0;
+}
+
+.obsidian_douban_array_display_card {
+	margin-top: 14px;
+	padding: 16px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 10px;
+}
+
+.obsidian_douban_array_card_header.setting-item {
+	padding: 0 0 14px;
+	background: transparent;
+	border-top: 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+	border-radius: 0;
+}
+
+.obsidian_douban_array_fields {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(90px, 1fr));
+	gap: 12px;
+	margin-top: 14px;
+}
+
+.obsidian_douban_array_field label,
+.obsidian_douban_array_limit_field label {
+	display: block;
+	margin-bottom: 6px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-medium);
+}
+
+.obsidian_douban_array_field input,
+.obsidian_douban_array_limit_field input,
+.obsidian_douban_array_limit_field select {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+}
+
+.array-show {
+	margin-top: 14px;
+	padding: 12px 14px;
+	background: var(--background-primary);
+	border-radius: 8px;
+}
+
+.array-show .setting-item {
+	padding: 0;
+	background: transparent;
+	border-top: 0;
+	border-radius: 0;
+}
+
+.array-show-title {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.array-length-limit-list {
+	display: grid;
+	gap: 10px;
+}
+
+.obsidian_douban_array_limit_item {
+	display: grid;
+	grid-template-columns: minmax(120px, 0.8fr) minmax(180px, 1.5fr) minmax(100px, 0.6fr) auto;
+	gap: 12px;
+	align-items: end;
+	padding: 14px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+}
+
+.obsidian_douban_array_limit_remove {
+	display: flex;
+	align-items: center;
+	height: var(--input-height);
+}
+
+@media (max-width: 800px) {
+	.obsidian_douban_array_fields {
+		grid-template-columns: repeat(2, minmax(120px, 1fr));
+	}
+
+	.obsidian_douban_array_limit_item {
+		grid-template-columns: repeat(2, minmax(140px, 1fr));
+	}
+
+	.obsidian_douban_array_limit_remove {
+		align-items: flex-end;
+	}
+}
+
+@media (max-width: 520px) {
+	.obsidian_douban_array_fields,
+	.obsidian_douban_array_limit_item {
+		grid-template-columns: 1fr;
+	}
+}
+
+.obsidian_douban_custom_property_intro {
+	margin: 0 0 12px;
+	color: var(--text-muted);
+	line-height: 1.6;
+}
+
+.obsidian_douban_custom_property_header.setting-item {
+	padding: 12px 0;
+	background: transparent;
+	border-top: 0;
+	border-radius: 0;
+}
+
+.custom-property-list {
+	display: grid;
+	gap: 10px;
+	margin-top: 12px;
+}
+
+.obsidian_douban_custom_property_item {
+	display: grid;
+	grid-template-columns: minmax(180px, 1fr) minmax(240px, 1.4fr) minmax(130px, 0.7fr) auto;
+	gap: 12px;
+	align-items: end;
+	padding: 14px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+}
+
+.obsidian_douban_custom_property_field label {
+	display: block;
+	margin-bottom: 6px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-medium);
+}
+
+.obsidian_douban_custom_property_field input,
+.obsidian_douban_custom_property_field select {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+}
+
+.obsidian_douban_custom_property_remove {
+	display: flex;
+	align-items: center;
+	height: var(--input-height);
+}
+
+@media (max-width: 800px) {
+	.obsidian_douban_custom_property_item {
+		grid-template-columns: repeat(2, minmax(140px, 1fr));
+	}
+}
+
+@media (max-width: 520px) {
+	.obsidian_douban_custom_property_item {
+		grid-template-columns: 1fr;
+	}
+}
+
+.obsidian_douban_variable_summary {
+	margin: 0 0 8px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	line-height: 1.6;
+}
+
+.obsidian_douban_variable_card {
+	margin-bottom: 18px;
+	padding: 18px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 10px;
+}
+
+.obsidian_douban_variable_title {
+	margin: 0 0 6px;
+	font-size: var(--font-ui-medium);
+}
+
+.obsidian_douban_variable_help {
+	margin: 0 0 14px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	line-height: 1.6;
+}
+
+.obsidian_douban_variable_table_scroll {
+	max-height: min(60vh, 620px);
+	overflow: auto;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	scrollbar-gutter: stable;
+}
+
+.obsidian_douban_variable_table {
+	width: 100%;
+	min-width: 780px;
+	margin: 0;
+	border: 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: var(--font-ui-small);
+	line-height: 1.45;
+}
+
+.obsidian_douban_variable_table th,
+.obsidian_douban_variable_table td {
+	min-width: 100px;
+	padding: 9px 12px;
+	text-align: left;
+	vertical-align: top;
+	border: 0;
+	border-right: 1px solid var(--background-modifier-border);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.obsidian_douban_variable_table th:last-child,
+.obsidian_douban_variable_table td:last-child {
+	border-right: 0;
+}
+
+.obsidian_douban_variable_table tbody tr:last-child th,
+.obsidian_douban_variable_table tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.obsidian_douban_variable_table thead th {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: var(--background-modifier-form-field);
+	color: var(--text-normal);
+	font-weight: var(--font-semibold);
+	white-space: nowrap;
+}
+
+.obsidian_douban_variable_table tbody tr:nth-child(even) td,
+.obsidian_douban_variable_table tbody tr:nth-child(even) th {
+	background: var(--background-primary-alt);
+}
+
+.obsidian_douban_variable_table tbody tr:hover td,
+.obsidian_douban_variable_table tbody tr:hover th {
+	background: var(--background-modifier-hover);
+}
+
+.obsidian_douban_variable_table thead th:first-child,
+.obsidian_douban_variable_table tbody th {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	min-width: 150px;
+	background: var(--background-secondary);
+}
+
+.obsidian_douban_variable_table thead th:first-child {
+	z-index: 3;
+	background: var(--background-modifier-form-field);
+}
+
+.obsidian_douban_variable_name {
+	color: var(--text-accent);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-medium);
+	white-space: nowrap;
+}
+
+.obsidian_douban_variable_copy_target {
+	cursor: pointer;
+}
+
+.obsidian_douban_variable_copy_target:hover .obsidian_douban_variable_name {
+	color: var(--text-accent-hover);
+}
+
+.obsidian_douban_variable_copy_target:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -3px;
+}
+
+.obsidian_douban_user_variable_list {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(240px, 1fr));
+	gap: 8px;
+}
+
+.obsidian_douban_user_variable_item {
+	display: grid;
+	grid-template-columns: minmax(130px, auto) 1fr;
+	gap: 12px;
+	align-items: start;
+	padding: 10px 12px;
+	background: var(--background-primary);
+	border-radius: 6px;
+}
+
+.obsidian_douban_user_variable_item > span:not(.obsidian_douban_variable_name) {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	line-height: 1.45;
+}
+
+.obsidian_douban_user_variable_item > .obsidian_douban_variable_name {
+	color: var(--text-accent);
+}
+
+@media (max-width: 700px) {
+	.obsidian_douban_variable_card {
+		padding: 14px;
+	}
+
+	.obsidian_douban_user_variable_list {
+		grid-template-columns: 1fr;
+	}
 }
 
 
@@ -123,14 +635,21 @@
 .obsidian_douban_settings_tab_container {
   display: flex;
   flex-direction: column;
+	min-width: 0;
 }
 
 .obsidian_douban_settings_tab_headers {
   display: flex;
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
   /*border-bottom: 1px solid #ccc;*/
 }
 
 .obsidian_douban_settings_tab_header {
+	flex: 0 0 auto;
   padding: 10px;
   cursor: pointer;
   /*border: 1px solid #ccc;*/
@@ -143,11 +662,13 @@
 .obsidian_douban_settings_tab_contents {
   display: flex;
   flex-direction: column;
+	min-width: 0;
 }
 
 .obsidian_douban_settings_tab_content {
   display: none;
   padding: 10px;
+	min-width: 0;
   /*border: 1px solid #ccc;*/
 }
 
@@ -172,9 +693,89 @@
 
 
 .setting-item-control.obsidian_douban_template_file_select > div.search-input-container {
+	flex: 1 1 180px;
+	min-width: 0;
 	width: 100%;
 }
 
+@media (max-width: 800px) {
+	.obsidian_douban_template_list > .setting-item {
+		align-items: stretch;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
 
+	.obsidian_douban_template_list > .setting-item > .setting-item-info,
+	.obsidian_douban_template_list > .setting-item > .setting-item-control {
+		flex: 1 1 100%;
+		width: 100%;
+	}
 
+	.obsidian_douban_template_list > .setting-item > .setting-item-control {
+		justify-content: flex-start;
+	}
+}
 
+@media (max-width: 600px) {
+	.obsidian_douban_settings_tab_header {
+		padding: 9px 10px;
+	}
+
+	.obsidian_douban_settings_tab_content,
+	.obsidian_douban_settings_tab_content.active {
+		padding: 8px;
+		border-radius: 0 0 8px 8px;
+	}
+
+	.obsidian_douban_section_card,
+	.advanced-settings > .setting-item,
+	.obsidian_douban_array_display_card,
+	.obsidian_douban_variable_card {
+		padding: 12px;
+	}
+
+	.obsidian_douban_settings_tab_content .setting-item {
+		align-items: stretch;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.obsidian_douban_settings_tab_content .setting-item-info,
+	.obsidian_douban_settings_tab_content .setting-item-control {
+		min-width: 0;
+	}
+
+	.obsidian_douban_settings_tab_content .setting-item-description {
+		overflow-wrap: anywhere;
+	}
+
+	.obsidian_douban_settings_tab_content .setting-item-control {
+		flex: 1 1 100%;
+		justify-content: flex-start;
+		width: 100%;
+	}
+
+	.obsidian_douban_settings_tab_content .setting-item-control input[type='text'],
+	.obsidian_douban_settings_tab_content .setting-item-control input[type='search'],
+	.obsidian_douban_settings_tab_content .setting-item-control .search-input-container {
+		min-width: 0;
+		max-width: 100%;
+	}
+
+	.obsidian_douban_qr_controls,
+	.obsidian_douban_search_controls {
+		flex-wrap: wrap;
+	}
+}
+
+@media (max-width: 420px) {
+	.obsidian_douban_settings_tab_content,
+	.obsidian_douban_settings_tab_content.active {
+		padding: 6px;
+	}
+
+	.obsidian_douban_custom_property_remove,
+	.obsidian_douban_array_limit_remove {
+		justify-content: flex-end;
+	}
+}

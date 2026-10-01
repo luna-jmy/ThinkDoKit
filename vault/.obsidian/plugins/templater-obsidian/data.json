@@ -5,18 +5,14 @@
   "templates_pairs": [],
   "trigger_on_file_creation_mode": "folder",
   "auto_jump_to_cursor": false,
+  "jump_to_cursor_after_file_name": false,
   "shell_path": "",
-  "user_scripts_folder": "900 Assets/910 Templates",
+  "user_scripts_folder": "",
   "folder_templates": [],
   "file_templates": [],
   "syntax_highlighting": true,
   "syntax_highlighting_mobile": false,
-  "enabled_templates_hotkeys": [
-    "900 Assets/910 Templates/JS-get_journal_last&pre_month.md",
-    "900 Assets/910 Templates/JS-ResearchNoteMove.md",
-    "900 Assets/910 Templates/JS-DeleteReminder.md",
-    "900 Assets/910 Templates/JS-WeeklyArchive.md"
-  ],
+  "enabled_templates_hotkeys": [],
   "startup_templates": [],
   "intellisense_render": "1",
   "ignore_folders_on_creation": []

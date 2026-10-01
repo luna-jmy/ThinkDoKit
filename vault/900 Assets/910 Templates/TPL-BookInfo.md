@@ -2,9 +2,9 @@
 豆瓣id: "{{id}}"
 书名: "{{title}}"
 副标题: "{{subTitle}}"
-原作名: "{{originalTitle}}"
+原作名: "{ originalTitle }"
 丛书: "{{series}}"
-类型: "{{type}}"
+type: "{{type}}"
 author: "{{author}}"
 豆瓣评分: "{{score}}"
 出版时间: "{{datePublished}}"
@@ -18,15 +18,16 @@ ISBN: "{{isbn}}"
 装帧: "{{binding}}"
 封面: "{{imageData.url}}"
 created: "{{currentDate}}"
-阅读状态: <% tp.system.suggester(["在读","已读","想读","待读"],["在读","已读","想读","待读"],false,"请选择阅读状态") %>
+阅读状态: <% tp.system.suggester(["在读","已读","想读","未读完"],["在读","已读","想读","未读完"],false,"请选择阅读状态") %>
 我的评级: <% tp.system.suggester(["⭐","⭐⭐","⭐⭐⭐","⭐⭐⭐⭐","⭐⭐⭐⭐⭐"],["⭐","⭐⭐","⭐⭐⭐","⭐⭐⭐⭐","⭐⭐⭐⭐⭐"],false,"请给书籍打分") %>
-备注: 
-开始时间: 
-读完时间: 
+remark:
+开始时间:
+读完时间:
 本地封面图: "{{image}}"
 短评: <% tp.system.prompt("请输入书籍短评。稍后输入直接跳过/关闭即可") %>
-tags: 
-obsidianUIMode: preview
+tags:
+  - bookinfo
+是否有纸质书:
 ---
 
 > [!bookinfo]+ **《{{title}}》** 

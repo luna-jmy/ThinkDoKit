@@ -2,22 +2,22 @@
   "version": 4,
   "homepages": {
     "Main Homepage": {
-      "value": "900 Assets/ThinkDoKit 更新日志",
-      "kind": "File",
-      "openOnStartup": true,
-      "openMode": "Replace all open notes",
+      "value": "Home",
+      "kind": "Workspace",
+      "openOnStartup": false,
+      "openMode": "Keep open notes",
       "manualOpenMode": "Keep open notes",
-      "view": "Default view",
+      "view": "Reading view",
       "revertView": true,
       "openWhenEmpty": false,
       "refreshDataview": false,
       "autoCreate": false,
       "autoScroll": false,
-      "pin": false,
+      "pin": true,
       "commands": [],
       "alwaysApply": false,
       "hideReleaseNotes": false
     }
   },
-  "separateMobile": false
+  "separateMobile": true
 }

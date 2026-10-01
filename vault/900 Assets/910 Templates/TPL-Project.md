@@ -4,8 +4,8 @@ project-id: "{{date:YYYYMM}}"
 area:
 type: project
 objective:
-status: <% tp.system.suggester(["未开始/待启动","起草/构思中","执行中","暂停","完成","取消","归档"],["inbox","draft","active","on-hold","completed","cancelled","archived"], "请选择项目状态") %>
-priority: <% tp.system.suggester(["最高","高","中","低","最低"],["1","2","3","4","5"],false,"请选择任务优先级") %>
+status:
+priority:
 start_date:
 due_date:
 completion_date:
@@ -15,6 +15,9 @@ tags:
   - project
 project-leader:
 project-members:
+long-term: false
+main-project: true
+remark:
 ---
 
 # 🚧 项目: <% tp.file.title %>
@@ -24,19 +27,19 @@ project-members:
 
 ***
 
-## 项目分解
->*将复杂项目分解成可执行的小项目。*
+## 项目计划
+`button-GanttBuilder`
 
-### 子项目/任务1
+%% gantt-builder:start %%
 
+%% gantt-builder:end %%
 
-### 子项目/任务2
+## 项目任务
+%% gantt-builder-data-start %%
 
+%% gantt-builder-data-end %%
 
-### 子项目/任务3
-
-
-`button-generateGantt`
+---
 
 ## 项目资料与笔记 (Resources & Notes)
 >*记录项目相关的思考、讨论、会议记录链接、收集的资料、头脑风暴等非任务性的内容。*
@@ -62,9 +65,7 @@ project-members:
 >- [关键调整::]
 
 ```dataviewjs
-await dv.view("900 Assets/960 Scripts/dataview_inline_fields_table", {mode: "current"})
+await dv.view("900 Assets/960 Scripts/Dataviewjs/dataview_inline_fields_table", {mode: "current"})
 ```
 
 ---
-
-

@@ -1,0 +1,21 @@
+{
+  "defaultVoiceURI": "",
+  "chineseVoiceURI": "Microsoft Kangkang - Chinese (Simplified, PRC)",
+  "englishVoiceURI": "Microsoft Mark - English (United States)",
+  "rate": 1,
+  "pitch": 1,
+  "volume": 1,
+  "chunkSize": 650,
+  "cleanup": {
+    "skipFrontmatter": true,
+    "skipCodeBlocks": true,
+    "skipHtmlBlocks": true,
+    "skipEmbeds": true,
+    "skipImages": true,
+    "skipTables": true
+  },
+  "tencentSecretId": "",
+  "tencentSecretKey": "",
+  "tencentVoiceType": "1001",
+  "controlPosition": "sidebar"
+}

@@ -1,0 +1,237 @@
+{
+  "language": "auto",
+  "journals": {
+    "daily": {
+      "dir": "500 Journal/",
+      "templateNote": "",
+      "filenameFormat": "YYYY-MM-DD",
+      "sections": [
+        {
+          "id": "checkin",
+          "heading": "### 每日打卡",
+          "type": "checkin",
+          "fields": [
+            {
+              "key": "💊medicine",
+              "label": "吃药"
+            },
+            {
+              "key": "🧠flashcard",
+              "label": "卡片复习"
+            },
+            {
+              "key": "🧘‍♂️meditation",
+              "label": "冥想"
+            },
+            {
+              "key": "🍽️fasting",
+              "label": "轻断食"
+            }
+          ]
+        },
+        {
+          "id": "data",
+          "heading": "### 数据记录",
+          "type": "data",
+          "fields": [
+            {
+              "key": "weight⚖️",
+              "label": "体重",
+              "unit": "kg"
+            },
+            {
+              "key": "exercise🕓",
+              "label": "运动",
+              "unit": "分钟"
+            },
+            {
+              "key": "reading🕓",
+              "label": "阅读",
+              "unit": "分钟"
+            },
+            {
+              "key": "saving💰",
+              "label": "存入",
+              "unit": "元"
+            },
+            {
+              "key": "spent💰",
+              "label": "支出",
+              "unit": "元"
+            }
+          ]
+        },
+        {
+          "id": "daily-review",
+          "heading": "## ✍️ 今日小结与回顾",
+          "type": "text",
+          "fields": [
+            {
+              "key": "今天最满意的事",
+              "label": "最满意"
+            },
+            {
+              "key": "今天遇到的障碍或困难",
+              "label": "障碍困难"
+            },
+            {
+              "key": "今天印象最深刻的事",
+              "label": "印象最深"
+            },
+            {
+              "key": "明天想改进的事",
+              "label": "明天改进"
+            }
+          ],
+          "panel": true
+        },
+        {
+          "id": "gtd",
+          "heading": "## 👀 GTD任务看板",
+          "type": "list",
+          "fields": [],
+          "lineTemplate": "- [ ] {{value}}",
+          "panel": true
+        },
+        {
+          "id": "ideas",
+          "heading": "## 💡 灵感与思考",
+          "type": "list",
+          "fields": [],
+          "panel": true,
+          "timestamp": true
+        },
+        {
+          "id": "sec-1790345916552",
+          "heading": "## ✒️随手记 ",
+          "type": "paragraph",
+          "fields": [],
+          "panel": true
+        }
+      ]
+    },
+    "weekly": {
+      "dir": "500 Journal/",
+      "templateNote": "",
+      "filenameFormat": "YYYY-[W]ww",
+      "sections": [
+        {
+          "id": "weekly-review",
+          "heading": "## 🤔 周末回顾与总结",
+          "type": "text",
+          "fields": [
+            {
+              "key": "本周成就/亮点",
+              "label": "成就亮点"
+            },
+            {
+              "key": "本周关键项目/计划进展",
+              "label": "项目进展"
+            },
+            {
+              "key": "本周遇到的挑战/问题",
+              "label": "挑战问题"
+            },
+            {
+              "key": "下周需要调整的地方",
+              "label": "需要调整"
+            },
+            {
+              "key": "下周展望",
+              "label": "下周展望"
+            }
+          ]
+        }
+      ]
+    },
+    "monthly": {
+      "dir": "500 Journal/",
+      "templateNote": "",
+      "filenameFormat": "YYYY-MM",
+      "sections": [
+        {
+          "id": "monthly-review",
+          "heading": "## 🤔 月度回顾与总结",
+          "type": "text",
+          "fields": [
+            {
+              "key": "本月最大的成就/亮点",
+              "label": "成就亮点"
+            },
+            {
+              "key": "本月关键项目进展",
+              "label": "项目进展"
+            },
+            {
+              "key": "本月遇到的挑战/问题",
+              "label": "挑战问题"
+            },
+            {
+              "key": "下月需要调整的地方",
+              "label": "需要调整"
+            },
+            {
+              "key": "下月展望",
+              "label": "下月展望"
+            }
+          ]
+        }
+      ]
+    },
+    "annual": {
+      "dir": "500 Journal/",
+      "templateNote": "",
+      "filenameFormat": "YYYY",
+      "sections": []
+    }
+  },
+  "summaryLayout": [
+    "task-chart",
+    "checkin",
+    "trend",
+    "calendar",
+    "entry-heatmap",
+    "task-heatmap",
+    "queries",
+    "feed"
+  ],
+  "summaryQueries": [
+    {
+      "title": "Inbox查询",
+      "kind": "dataview",
+      "code": "TABLE file.ctime AS \"创建日期\", file.mtime AS \"最后修改时间\"\nWHERE startswith(file.path, \"000 Inbox\") OR contains(tags, \"inbox\")\nWHERE file.name != \"Inbox Note List\"\nWHERE !startswith(file.path, \"500 Journal\")\nWHERE !contains(file.path, \"Clippings\")\nSORT file.mtime DESC"
+    }
+  ],
+  "viewLocations": {
+    "summary": "sidebar",
+    "panel": "sidebar"
+  },
+  "panel": {
+    "showCompleted": false
+  },
+  "stats": {
+    "includeNonDailyTasks": false
+  },
+  "tasks": {
+    "markers": {
+      "open": [
+        ">"
+      ],
+      "done": [
+        "x",
+        "X"
+      ],
+      "cancel": [
+        "-",
+        "/"
+      ],
+      "nonTask": [
+        "n",
+        "p",
+        "c",
+        "i"
+      ]
+    }
+  },
+  "trendSelection": "data::reading🕓"
+}

@@ -1,0 +1,1163 @@
+/* ============================================================================
+ * Quick Journal —— 插件样式
+ *
+ * 硬约束（与系列内 cw- / pm- / tm- 同一口径）：
+ * - 所有选择器都限制在 `qj-` 前缀类名下，无全局选择器；
+ * - 不使用 `!important`，不抬 z-index；
+ * - 颜色 / 间距 / 圆角一律取 Obsidian 主题变量，明暗主题自动适配。
+ * ==========================================================================*/
+
+.qj-summary-root {
+	padding: var(--size-4-2);
+}
+
+/* ── 工具栏 ────────────────────────────────────────────────────────────── */
+
+.qj-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin-bottom: var(--size-4-4);
+	padding-bottom: var(--size-2-3);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.qj-toolbar-nav {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--size-2-2);
+	margin-left: auto;
+}
+
+.qj-toolbar-key {
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+	min-width: 5em;
+	text-align: center;
+}
+
+.qj-btn {
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: var(--size-2-1) var(--size-4-2);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+}
+
+.qj-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-btn.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.qj-icon-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: var(--size-2-1);
+}
+
+/* ── 卡片区 ─────────────────────────────────────────────────────────────── */
+
+.qj-period-header {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	margin-bottom: var(--size-2-3);
+}
+
+.qj-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: var(--size-4-3);
+	align-items: stretch;
+}
+
+.qj-card-wrap {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.qj-card {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	padding: var(--size-4-3);
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.qj-card-title {
+	font-weight: var(--font-bold);
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	margin-bottom: var(--size-2-3);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.qj-metric-grid {
+	display: flex;
+	gap: var(--size-4-4);
+}
+
+.qj-metric {
+	display: flex;
+	flex-direction: column;
+}
+
+.qj-metric-value {
+	font-size: var(--font-ui-larger);
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+}
+
+.qj-metric-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.qj-muted {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.qj-empty {
+	color: var(--text-muted);
+	padding: var(--size-4-6);
+	text-align: center;
+}
+
+/* ── 打卡 / 数据行 ─────────────────────────────────────────────────────── */
+
+.qj-checkin-row,
+.qj-data-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-3);
+	padding: var(--size-2-1) 0;
+}
+
+.qj-checkin-label {
+	flex: 0 0 6em;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+}
+
+.qj-bar {
+	flex: 1 1 auto;
+	display: flex;
+	height: 6px;
+	border-radius: var(--radius-s);
+	overflow: hidden;
+	background: var(--background-modifier-border);
+	min-width: 4em;
+}
+
+.qj-bar-yes {
+	background: var(--text-success, var(--interactive-accent));
+}
+
+.qj-bar-no {
+	background: var(--text-faint, var(--background-modifier-border));
+}
+
+.qj-checkin-count,
+.qj-data-value {
+	flex: 0 0 auto;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+/* ── 表单（捕获弹窗） ──────────────────────────────────────────────────── */
+
+.qj-form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	padding: var(--size-2-2) 0;
+}
+
+.qj-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-1);
+}
+
+.qj-field-label {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+}
+
+.qj-input {
+	width: 100%;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: var(--size-2-2) var(--size-2-3);
+	color: var(--text-normal);
+	font-size: var(--font-ui-medium);
+}
+
+.qj-textarea {
+	min-height: 5em;
+	resize: vertical;
+}
+
+.qj-boolseg {
+	display: flex;
+	gap: var(--size-2-2);
+}
+
+.qj-boolseg-btn {
+	flex: 1;
+	font-size: var(--font-ui-medium);
+	padding: var(--size-4-2);
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	color: var(--text-normal);
+}
+
+.qj-boolseg-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-boolseg-btn.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.qj-bool-skip {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.qj-form-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--size-2-2);
+	margin-top: var(--size-2-2);
+}
+
+.qj-btn-primary {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+/* 清空当前内容（破坏性操作，红字提示；推到页脚左侧与取消/提交分开） */
+.qj-btn-danger {
+	color: var(--text-error);
+	margin-right: auto;
+}
+
+.qj-btn-danger:hover {
+	background: var(--background-modifier-error);
+	border-color: var(--text-error);
+}
+
+.qj-btn-primary:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.qj-btn-icon {
+	display: inline-flex;
+	margin-left: var(--size-2-1);
+}
+
+/* ── 动作选择 ──────────────────────────────────────────────────────────── */
+
+.qj-action-list {
+	display: flex;
+	flex-direction: column;
+	padding: var(--size-2-2) 0;
+}
+
+.qj-action-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	color: var(--text-normal);
+}
+
+.qj-action-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-action-icon {
+	color: var(--text-accent, var(--text-muted));
+}
+
+.qj-action-name {
+	font-size: var(--font-ui-medium);
+}
+
+.qj-confirm-body {
+	white-space: pre-wrap;
+	color: var(--text-normal);
+}
+
+/* ── 设置 ──────────────────────────────────────────────────────────────── */
+
+.qj-setting-note {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.qj-section-editor {
+	border-left: 2px solid var(--background-modifier-border);
+	padding-left: var(--size-4-2);
+	margin-bottom: var(--size-4-2);
+}
+
+/* ── 速记面板（Thino 式内容流） ────────────────────────────────────────── */
+
+.qj-panel-root {
+	padding: var(--size-4-2);
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.qj-feed-toolbar {
+	display: flex;
+	gap: var(--size-2-2);
+	margin-bottom: var(--size-2-3);
+}
+
+/* ── 录入区（卡片式 composer） ─────────────────────────────────────────── */
+
+.qj-composer {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	padding: var(--size-2-2) var(--size-2-3);
+	margin-bottom: var(--size-4-3);
+}
+
+.qj-composer-top {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-2);
+	min-height: 1.9em;
+}
+
+/* 日期选择：真实可见的原生 date input（对齐 TaskMatrix 筛选栏）。
+   原生日历锚定输入框自身矩形，紧贴其下方打开，无需额外锚点技巧 */
+.qj-composer-date-input {
+	flex: 0 0 auto;
+	min-width: 9em;
+	padding: var(--size-2-1) var(--size-2-2);
+	background: var(--background-modifier-form-field);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-family: inherit;
+	box-shadow: none;
+}
+
+.qj-composer-date-input:hover,
+.qj-composer-date-input:focus {
+	color: var(--text-normal);
+	border-color: var(--interactive-accent);
+}
+
+.qj-composer-top select.dropdown {
+	border: none;
+	background: transparent;
+	box-shadow: none;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	padding: 0;
+	max-width: 100%;
+}
+
+.qj-composer-target {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.qj-composer-input {
+	width: 100%;
+	border: none;
+	background: transparent;
+	color: var(--text-normal);
+	font-size: var(--font-ui-medium);
+	font-family: inherit;
+	line-height: 1.5;
+	resize: none;
+	outline: none;
+	box-shadow: none;
+	min-height: 1.6em;
+	padding: var(--size-2-1) 0;
+}
+
+.qj-composer-foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.qj-composer-hint {
+	font-size: var(--font-ui-smallest, 10px);
+	color: var(--text-faint, var(--text-muted));
+}
+
+.qj-send-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-2-1);
+	padding: var(--size-2-1) var(--size-4-2);
+}
+
+.qj-feed {
+	flex: 1 1 auto;
+	overflow-y: auto;
+}
+
+.qj-feed-day {
+	margin-bottom: var(--size-4-3);
+}
+
+.qj-feed-day-label {
+	display: inline-block;
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-bold);
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin-bottom: var(--size-2-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+	padding-bottom: var(--size-2-1);
+	width: 100%;
+}
+
+.qj-feed-item {
+	padding: var(--size-2-2) var(--size-2-3);
+	border-radius: var(--radius-s);
+}
+
+.qj-feed-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-feed-head {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+}
+
+.qj-feed-actions {
+	margin-left: auto;
+	display: flex;
+	gap: var(--size-1-1, 2px);
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.qj-feed-item:hover .qj-feed-actions,
+.qj-feed-actions:focus-within {
+	opacity: 1;
+}
+
+/* 触屏没有 hover：指针粗糙时按钮常显 */
+@media (hover: none) {
+	.qj-feed-actions {
+		opacity: 1;
+	}
+}
+
+.qj-feed-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--size-1-1, 2px) var(--size-1-2, 4px);
+	background: transparent;
+	border: none;
+	border-radius: var(--radius-s);
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.qj-feed-btn:hover {
+	background: var(--background-modifier-border);
+	color: var(--text-normal);
+}
+
+.qj-feed-meta {
+	display: flex;
+	gap: var(--size-2-2);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint, var(--text-muted));
+	margin-bottom: var(--size-1-1, 2px);
+}
+
+.qj-feed-label::before,
+.qj-feed-time::before {
+	content: "· ";
+}
+
+.qj-feed-time {
+	font-variant-numeric: tabular-nums;
+}
+
+.qj-feed-text {
+	color: var(--text-normal);
+	font-size: var(--font-ui-medium);
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+/* 段落按 markdown 渲染：限高滚动，图片/代码块/引用等正常呈现 */
+.qj-feed-text--md {
+	max-height: 16rem;
+	overflow-y: auto;
+	font-size: var(--font-ui-small);
+	border-radius: var(--radius-s);
+	/* 覆盖 .qj-feed-text 的 pre-wrap：渲染出的块级元素之间夹着换行文本
+	   节点，pre-wrap 会把它们显示成空行；段落间距改由元素自身 margin
+	   控制（见下方 p/ul/ol 规则），代码块内部的 pre 自带 pre-wrap */
+	white-space: normal;
+	line-height: 1.5;
+}
+
+.qj-feed-text--md p,
+.qj-feed-text--md ul,
+.qj-feed-text--md ol {
+	margin: 0 0 var(--size-2-1);
+}
+
+.qj-feed-text--md > :last-child {
+	margin-bottom: 0;
+}
+
+.qj-feed-text--md img {
+	max-width: 100%;
+	border-radius: var(--radius-s);
+}
+
+.qj-feed-text--md pre {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.qj-feed-text--md code {
+	font-size: var(--font-ui-smaller);
+}
+
+.qj-feed-text--md blockquote {
+	margin: 0;
+	padding-left: var(--size-2-3);
+	border-left: 3px solid var(--background-modifier-border);
+	color: var(--text-muted);
+}
+
+/* ── 速记面板工具栏扩展 ────────────────────────────────────────────────── */
+
+/* ── 顶部收起细栏（手机端把内容顶上来） ────────────────────────────────── */
+
+.qj-panel-toggle {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding-bottom: var(--size-2-2);
+	margin-bottom: var(--size-2-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.qj-panel-toggle-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.qj-feed-toolbar {
+	flex-wrap: wrap;
+}
+
+.qj-search {
+	flex: 1 1 10em;
+	max-width: 16em;
+	min-width: 8em;
+	padding: var(--size-2-1) var(--size-2-2);
+}
+
+/* 窄屏：搜索独占一行；操作按钮常显；汇总导航可换行；周热力图文字缩小 */
+@media (max-width: 520px) {
+	.qj-search {
+		flex-basis: 100%;
+		max-width: none;
+	}
+
+	.qj-feed-actions {
+		opacity: 1;
+	}
+
+	.qj-composer {
+		padding: var(--size-2-1) var(--size-2-2);
+	}
+
+	.qj-toolbar-nav {
+		gap: var(--size-1-1, 2px);
+	}
+
+	.qj-btn {
+		padding: var(--size-2-1) var(--size-2-2);
+		font-size: var(--font-ui-smaller);
+	}
+
+	.qj-hm-big {
+		aspect-ratio: auto;
+		min-height: 3.4em;
+		gap: 1px;
+	}
+
+	.qj-hm-big-label {
+		font-size: 9px;
+	}
+
+	.qj-hm-big-count {
+		font-size: 1.05em;
+	}
+}
+
+/* 完成切换按钮：唯一的方框——正文不再渲染状态符号，hover 有明确反馈 */
+.qj-feed-toggle {
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--radius-s);
+	padding: 0 var(--size-1-1, 2px);
+	margin-left: calc(-1 * (var(--size-1-1, 2px)));
+	font-size: 1.1em;
+	line-height: 1.4;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.qj-feed-toggle:hover {
+	color: var(--text-accent, var(--text-normal));
+	background: var(--background-modifier-hover);
+	border-color: var(--background-modifier-border);
+}
+
+/* ── 快速录入条（汇总视图顶部） ────────────────────────────────────────── */
+
+.qj-capture-strip {
+	margin-bottom: var(--size-4-3);
+}
+
+.qj-capture-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-2);
+}
+
+/* ── 柱状图（固定绘图区 + 独立标签行，基线对齐） ──────────────────────── */
+
+.qj-bars {
+	display: flex;
+	gap: 2px;
+	height: 120px;
+}
+
+.qj-bar-col {
+	flex: 1 1 0;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.qj-bar-plot {
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.qj-bar-count {
+	font-size: 9px;
+	color: var(--text-muted);
+	line-height: 1.2;
+}
+
+.qj-bar-v {
+	width: 100%;
+	background: var(--interactive-accent);
+	border-radius: var(--radius-s) var(--radius-s) 0 0;
+	min-height: 2px;
+}
+
+.qj-bar-l {
+	flex: 0 0 auto;
+	height: 14px;
+	line-height: 14px;
+	overflow: hidden;
+	font-size: 9px;
+	color: var(--text-muted);
+	white-space: nowrap;
+	text-align: center;
+	width: 100%;
+}
+
+/* ── 热力图（周=大格，月=日历格，年=小格整行） ─────────────────────────── */
+
+.qj-heatmap {
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-rows: repeat(7, max-content);
+	gap: 2px;
+	justify-content: stretch;
+	overflow-x: auto;
+	padding-bottom: var(--size-2-1);
+}
+
+.qj-hm-cell {
+	width: 100%;
+	min-width: 8px;
+	aspect-ratio: 1;
+	border-radius: 2px;
+	background: var(--background-modifier-border);
+}
+
+.qj-card--wide {
+	grid-column: 1 / -1;
+}
+
+.qj-hm-week {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: var(--size-2-2);
+	min-width: 0;
+}
+
+.qj-hm-big {
+	aspect-ratio: 1;
+	min-width: 0;
+	overflow: hidden;
+	border-radius: var(--radius-m);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	background: var(--background-modifier-border);
+}
+
+.qj-hm-big-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.qj-hm-big-count {
+	font-size: 1.3em;
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+}
+
+.qj-hm-grid {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 2px;
+	min-width: 0;
+}
+
+.qj-hm-cell-m {
+	aspect-ratio: 1;
+	min-width: 0;
+	overflow: hidden;
+	border-radius: var(--radius-s);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: var(--background-modifier-border);
+}
+
+.qj-hm-cell-day {
+	font-size: 9px;
+	color: var(--text-muted);
+}
+
+.qj-hm-cell-count {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+}
+
+.qj-hm-l1 {
+	background: color-mix(in srgb, var(--interactive-accent) 25%, transparent);
+}
+
+.qj-hm-l2 {
+	background: color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+}
+
+.qj-hm-l3 {
+	background: color-mix(in srgb, var(--interactive-accent) 70%, transparent);
+}
+
+.qj-hm-l4 {
+	background: var(--interactive-accent);
+}
+
+.qj-hm-l4 .qj-hm-cell-day,
+.qj-hm-l4 .qj-hm-big-count,
+.qj-hm-l4 .qj-hm-cell-count {
+	color: var(--text-on-accent);
+}
+
+/* ── 数据趋势（SVG 折线） ─────────────────────────────────────────────── */
+
+.qj-trend-row {
+	display: flex;
+	align-items: stretch;
+	gap: var(--size-2-2);
+	padding: var(--size-2-1) 0;
+}
+
+.qj-trend-yaxis {
+	flex: 0 0 auto;
+	height: 56px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: flex-end;
+	font-size: 9px;
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	padding: 1px 0;
+}
+
+.qj-trend-plot {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.qj-trend-svg {
+	width: 100%;
+	height: 56px;
+	color: var(--interactive-accent);
+}
+
+.qj-trend-svg polyline {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+	vector-effect: non-scaling-stroke;
+}
+
+.qj-trend-svg circle {
+	fill: currentColor;
+}
+
+.qj-trend-svg .qj-trend-grid {
+	stroke: var(--background-modifier-border);
+	stroke-width: 1;
+	stroke-dasharray: 2 2;
+	vector-effect: non-scaling-stroke;
+}
+
+.qj-trend-svg .qj-trend-axis {
+	stroke: var(--background-modifier-border-hover);
+	stroke-width: 1;
+	vector-effect: non-scaling-stroke;
+}
+
+.qj-trend-xaxis {
+	display: flex;
+	justify-content: space-between;
+	font-size: 9px;
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	margin-top: 2px;
+}
+
+.qj-trend-stats {
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ── 月历 ─────────────────────────────────────────────────────────────── */
+
+.qj-cal-title {
+	display: flex;
+	gap: var(--size-2-2);
+	margin-bottom: var(--size-2-2);
+}
+
+.qj-cal-chip {
+	background: transparent;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	color: var(--text-normal);
+	font-variant-numeric: tabular-nums;
+	padding: 0 var(--size-2-2);
+	cursor: pointer;
+}
+
+.qj-cal-chip:hover {
+	border-color: var(--interactive-accent);
+	color: var(--text-accent, var(--text-normal));
+}
+
+.qj-cal {
+	display: grid;
+	grid-template-columns: 1.6em repeat(7, 1fr);
+	gap: 2px;
+}
+
+.qj-cal-weekno {
+	font-size: 9px;
+	color: var(--text-accent, var(--text-muted));
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+
+.qj-cal-weekno:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-cal-head {
+	font-size: var(--font-ui-smallest, 10px);
+	color: var(--text-muted);
+	text-align: center;
+	padding: 2px 0;
+}
+
+.qj-cal-cell {
+	min-height: 2.6em;
+	border-radius: var(--radius-s);
+	padding: 2px 4px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	position: relative;
+	cursor: pointer;
+	border: 1px solid transparent;
+}
+
+.qj-cal-cell:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-cal-cell.is-today {
+	border-color: var(--interactive-accent);
+}
+
+/* 周视图的月历：当前期间所在周的格子底色提示 */
+.qj-cal-cell.is-in-period {
+	background: var(--background-modifier-hover);
+}
+
+.qj-cal-cell.is-in-period.is-today {
+	border-color: var(--interactive-accent);
+}
+
+.qj-cal-out {
+	opacity: 0.35;
+}
+
+.qj-cal-day {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-normal);
+}
+
+.qj-cal-badge {
+	align-self: flex-start;
+	font-size: 9px;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-radius: var(--radius-s);
+	padding: 0 3px;
+}
+
+.qj-cal-dot {
+	position: absolute;
+	bottom: 3px;
+	right: 4px;
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: var(--text-accent, var(--text-muted));
+}
+
+/* ── 最近速记 ─────────────────────────────────────────────────────────── */
+
+.qj-mini-row {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: var(--size-2-1) 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.qj-mini-row:last-of-type {
+	border-bottom: none;
+}
+
+.qj-mini-text {
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* ── 查询块 ───────────────────────────────────────────────────────────── */
+
+.qj-query-block {
+	margin-bottom: var(--size-4-2);
+}
+
+.qj-query-title {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-bold);
+	color: var(--text-normal);
+	margin-bottom: var(--size-2-1);
+}
+
+.qj-query-chip {
+	display: inline-block;
+	font-size: var(--font-ui-smallest, 10px);
+	color: var(--text-muted);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: 0 4px;
+	margin-bottom: var(--size-2-1);
+}
+
+.qj-query-body {
+	border-left: 2px solid var(--background-modifier-border);
+	padding-left: var(--size-2-3);
+	overflow-x: auto;
+}
+
+/* ── 汇总编辑模式 ─────────────────────────────────────────────────────── */
+
+.qj-cards.is-editing .qj-card-wrap {
+	position: relative;
+	outline: 1px dashed var(--background-modifier-border);
+	outline-offset: 2px;
+	border-radius: var(--radius-m);
+}
+
+.qj-cards.is-editing .qj-card-wrap.is-drop-target {
+	outline: 2px solid var(--interactive-accent);
+}
+
+.qj-card-chrome {
+	position: absolute;
+	top: var(--size-2-1);
+	right: var(--size-2-1);
+	display: flex;
+	gap: 2px;
+	z-index: 1;
+}
+
+.qj-add-palette {
+	border-style: dashed;
+}
+
+.qj-tabs {
+	display: flex;
+	gap: var(--size-2-2);
+	margin: var(--size-4-3) 0 var(--size-2-3);
+}
+
+.qj-tabs--inner {
+	margin-top: 0;
+}
+
+.qj-trend-select {
+	margin-bottom: var(--size-2-2);
+	padding: var(--size-2-1) var(--size-2-2);
+}
+
+.qj-checkin-heading {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-medium);
+	color: var(--text-muted);
+	margin: var(--size-2-2) 0 var(--size-1-1, 2px);
+}
+
+.qj-query-edit-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin-bottom: var(--size-2-1);
+}
+
+.qj-query-edit-code {
+	flex: 1 1 auto;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.qj-query-add {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+	margin-top: var(--size-2-3);
+}
+
+.qj-query-task {
+	display: flex;
+	align-items: baseline;
+	gap: var(--size-2-2);
+	padding: var(--size-1-1, 2px) 0;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+
+.qj-query-task:hover {
+	background: var(--background-modifier-hover);
+}
+
+.qj-query-task-text {
+	flex: 1 1 auto;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.qj-query-task .qj-feed-meta {
+	flex: 0 0 auto;
+}

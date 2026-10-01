@@ -83,21 +83,20 @@ mastery_level: <% tp.system.suggester(["入门","进阶","精通","专家"],["be
 
 ## 知识网络
 
-```dataview
-TABLE WITHOUT ID 
-	file.link as "相关笔记", 
-	file.mtime as "更新时间", 
-	file.folder as "位置" 
-FROM [[]] 
-WHERE file.name != this.file.name 
-SORT file.mtime 
-DESC 
-LIMIT 20
-```
 
 ---
 
 ## 维护记录
 - `<% tp.date.now("YYYY-MM-DD") %>`: 创建知识地图
 - 
+
+## 反链列表
+```dataview
+LIST
+FROM [[]]
+WHERE file.name != this.file.name
+SORT file.mtime DESC
+```
+
+
 

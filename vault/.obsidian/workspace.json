@@ -1,27 +1,116 @@
 {
   "main": {
-    "id": "5324373015726ba8",
+    "id": "f1478631f6ed3692",
     "type": "split",
     "children": [
       {
-        "id": "03799b57e6f43738",
+        "id": "95783bbf012a376a",
         "type": "tabs",
         "children": [
           {
-            "id": "e0680db384dd856e",
+            "id": "7f2eaee98074a2b5",
+            "type": "leaf",
+            "pinned": true,
+            "state": {
+              "type": "cw-workspace",
+              "state": {},
+              "pinned": true,
+              "icon": "home",
+              "title": "我的工作台"
+            }
+          },
+          {
+            "id": "8fed1712c225ddfd",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "900 Assets/920 Queries/项目中心（升级）.md",
+                "file": "000 Inbox/ThinkDoKit样例库同步工作流.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "项目中心（升级）"
+              "title": "ThinkDoKit样例库同步工作流"
+            }
+          },
+          {
+            "id": "4e24fd18aa02f614",
+            "type": "leaf",
+            "pinned": true,
+            "state": {
+              "type": "pm-dashboard-view",
+              "state": {
+                "filter": {
+                  "statuses": [
+                    "inbox",
+                    "draft",
+                    "active",
+                    "on-hold"
+                  ],
+                  "areas": [],
+                  "areaMode": "selected",
+                  "currentAreas": [],
+                  "search": "",
+                  "dateRange": {
+                    "preset": "all",
+                    "start": null,
+                    "end": null
+                  },
+                  "startYear": 2026,
+                  "endYear": null
+                },
+                "zoom": "year",
+                "grouping": "objective",
+                "sort": "due-asc",
+                "tab": "gantt"
+              },
+              "pinned": true,
+              "icon": "gantt-chart",
+              "title": "Project dashboard"
+            }
+          },
+          {
+            "id": "673a4167364b227b",
+            "type": "leaf",
+            "pinned": true,
+            "state": {
+              "type": "task-matrix-view",
+              "state": {},
+              "pinned": true,
+              "icon": "square-kanban",
+              "title": "任务矩阵"
+            }
+          },
+          {
+            "id": "475f3efa67bccfd7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/⭐ThinkDoKit（知行盒子）使用指南1.0.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "⭐ThinkDoKit（知行盒子）使用指南1.0"
+            }
+          },
+          {
+            "id": "1bad7ee7ab2bba84",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "000 Inbox/ThinkDoKit样例库同步工作流.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ThinkDoKit样例库同步工作流"
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -33,6 +122,7 @@
       {
         "id": "0d4936ce4a90f2a3",
         "type": "tabs",
+        "dimension": 67.87941787941789,
         "children": [
           {
             "id": "c2bbd590909f709a",
@@ -55,10 +145,10 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "同样重要",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
-                "collapseAll": false,
+                "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical"
               },
@@ -71,19 +161,80 @@
             "type": "leaf",
             "state": {
               "type": "bookmarks",
-              "state": {
-                "showSearch": false,
-                "searchQuery": ""
-              },
+              "state": {},
               "icon": "lucide-bookmark",
               "title": "书签"
             }
           }
         ]
+      },
+      {
+        "id": "70ad89988ea71d43",
+        "type": "tabs",
+        "dimension": 32.12058212058212,
+        "children": [
+          {
+            "id": "9b31f8b60aa7d915",
+            "type": "leaf",
+            "state": {
+              "type": "advanced-tables-toolbar",
+              "state": {},
+              "icon": "spreadsheet",
+              "title": "Advanced Tables"
+            }
+          },
+          {
+            "id": "350089695678ae71",
+            "type": "leaf",
+            "state": {
+              "type": "localgraph",
+              "state": {
+                "options": {
+                  "collapse-filter": true,
+                  "search": "",
+                  "localJumps": 2,
+                  "localBacklinks": true,
+                  "localForelinks": true,
+                  "localInterlinks": false,
+                  "showTags": false,
+                  "showAttachments": false,
+                  "hideUnresolved": false,
+                  "collapse-color-groups": true,
+                  "colorGroups": [],
+                  "collapse-display": true,
+                  "showArrow": true,
+                  "textFadeMultiplier": 0,
+                  "nodeSizeMultiplier": 1.63316008316008,
+                  "lineSizeMultiplier": 1.4497920997921,
+                  "collapse-forces": true,
+                  "centerStrength": 0.508316008316008,
+                  "repelStrength": 8.5031185031185,
+                  "linkStrength": 1,
+                  "linkDistance": 232,
+                  "scale": 0.5087618855792589,
+                  "close": true
+                }
+              },
+              "icon": "lucide-git-fork",
+              "title": "局部关系图谱"
+            }
+          },
+          {
+            "id": "616475d1e6e10f66",
+            "type": "leaf",
+            "state": {
+              "type": "journal-view:b9f3a1c2-0d4e-4f6a-8b1c-2d3e4f5a6b7c",
+              "state": {},
+              "icon": "calendar-days",
+              "title": "日历"
+            }
+          }
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
-    "width": 204.5
+    "width": 213.5
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -92,25 +243,64 @@
       {
         "id": "4670e93cec4ca723",
         "type": "tabs",
-        "dimension": 29.840319361277444,
+        "dimension": 63.78109452736319,
         "children": [
           {
-            "id": "bcd65f4256ddd6f9",
+            "id": "24e9fcaa50f1c811",
             "type": "leaf",
             "state": {
-              "type": "journal-calendar",
+              "type": "claudian-view",
               "state": {},
-              "icon": "calendar-days",
-              "title": "Calendar"
+              "icon": "bot",
+              "title": "Claudian"
             }
           },
           {
-            "id": "88b97d3b6cf6ac68",
+            "id": "53e6381173c1ba89",
+            "type": "leaf",
+            "state": {
+              "type": "planner-timeline",
+              "state": {},
+              "icon": "calendar-with-checkmark",
+              "title": "Timeline"
+            }
+          },
+          {
+            "id": "84909c6457e0ae5e",
+            "type": "leaf",
+            "state": {
+              "type": "review-queue-list-view",
+              "state": {},
+              "icon": "lucide-ghost",
+              "title": "review-queue-list-view"
+            }
+          },
+          {
+            "id": "2482a2660c24cb8c",
+            "type": "leaf",
+            "state": {
+              "type": "qj-panel",
+              "state": {},
+              "icon": "message-square-quote",
+              "title": "速记面板"
+            }
+          },
+          {
+            "id": "8a4aeb260a0ce88f",
+            "type": "leaf",
+            "state": {
+              "type": "qj-summary",
+              "state": {},
+              "icon": "notebook-pen",
+              "title": "日志汇总"
+            }
+          },
+          {
+            "id": "fafadf4775718557",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "从这里开始 Start from here!.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -120,31 +310,30 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "从这里开始 Start from here! 的反向链接列表"
+              "title": "反向链接"
             }
           },
           {
-            "id": "03978fdd3cdfe5e1",
+            "id": "24320fc7d93c995b",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "👉从这里开始 Start from here!.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "👉从这里开始 Start from here! 的出链列表"
+              "title": "出链"
             }
           },
           {
-            "id": "509497c3cfa408ab",
+            "id": "c26373fdb4a6f747",
             "type": "leaf",
             "state": {
-              "type": "timer-view",
+              "type": "planner-time-tracker",
               "state": {},
               "icon": "timer",
-              "title": "Timer"
+              "title": "Time Tracker"
             }
           }
         ]
@@ -152,21 +341,44 @@
       {
         "id": "ab6e053c3b226343",
         "type": "tabs",
-        "dimension": 70.15968063872255,
+        "dimension": 36.21890547263681,
         "children": [
+          {
+            "id": "51ef1b008f4cf90a",
+            "type": "leaf",
+            "state": {
+              "type": "footnotes",
+              "state": {
+                "file": "500 Journal/540 Daily/2026-04-09.md"
+              },
+              "icon": "lucide-file-signature",
+              "title": "脚注"
+            }
+          },
           {
             "id": "d4ab8c6cfc5b462a",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "900 Assets/ThinkDoKit 更新日志.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "👉从这里开始 Start from here! 的大纲"
+              "title": "大纲"
+            }
+          },
+          {
+            "id": "9d576e43328e4571",
+            "type": "leaf",
+            "state": {
+              "type": "file-properties",
+              "state": {
+                "file": "000 Inbox/ThinkDoKit样例库同步工作流.md"
+              },
+              "icon": "lucide-info",
+              "title": "笔记属性"
             }
           },
           {
@@ -177,7 +389,7 @@
               "state": {
                 "sortOrder": "frequency",
                 "useHierarchy": true,
-                "showSearch": true,
+                "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-tags",
@@ -185,25 +397,17 @@
             }
           },
           {
-            "id": "9d576e43328e4571",
+            "id": "3f846b27800f1f82",
             "type": "leaf",
             "state": {
-              "type": "file-properties",
+              "type": "all-properties",
               "state": {
-                "file": "900 Assets/920 Queries/项目中心（升级）.md"
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
               },
-              "icon": "lucide-info",
-              "title": "笔记属性"
-            }
-          },
-          {
-            "id": "055375921944b3e5",
-            "type": "leaf",
-            "state": {
-              "type": "planner-timeline",
-              "state": {},
-              "icon": "calendar-with-checkmark",
-              "title": "Timeline"
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
             }
           }
         ],
@@ -211,82 +415,91 @@
       }
     ],
     "direction": "horizontal",
-    "width": 248.5
+    "width": 798.5
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-memos:Thino Super": false,
-      "task-matrix-dashboard:Open task matrix": false,
-      "bases:新建数据库": false,
-      "homepage:Open homepage": false,
-      "pomodoro-timer:Toggle timer panel": false,
-      "obsidian-spaced-repetition:复习卡片": false,
-      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "quick-journal:快速录入": false,
+      "task-matrix-dashboard:打开任务矩阵": false,
       "obsidian-excalidraw-plugin:新建绘图文件": false,
-      "graph:查看关系图谱": false,
+      "marp-slides:Show Slide Preview": false,
+      "project-master:打开项目中心": false,
+      "aurora-dashboard:打开 Dashboard": false,
+      "vault-dashboard:打开工作台": false,
+      "tts-reader:Open TTS player": false,
+      "janitor:Janitor: scan vault": false,
+      "open-vscode:VS Code": false,
+      "obsidian-gantt-builder:打开当前笔记 Gantt Builder": false,
+      "mp-publisher:打开公众号发布": false,
+      "obsidian42-brat:BRAT": false,
+      "claudian:Open Claudian": false,
+      "bases:新建数据库": false,
+      "obsidian-local-images-plus:Local Images Plus  0.16.4\r\nLocalize attachments (plugin folder)": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "remotely-save:Remotely Save": false,
+      "switcher:打开快速切换": true,
+      "graph:查看关系图谱": true,
       "canvas:新建白板": false,
-      "daily-notes:打开/创建今天的日记": false,
+      "daily-notes:打开/创建今天的日记": true,
       "templates:插入模板": true,
-      "command-palette:打开命令面板": false,
-      "zk-prefixer:创建时间戳笔记": true,
+      "command-palette:打开命令面板": true,
+      "zk-prefixer:创建时间戳笔记": false,
       "random-note:开始漫游笔记": false,
       "audio-recorder:开始/结束录音": false,
-      "workspaces:管理工作区布局": false,
-      "templater-obsidian:Templater": false,
-      "switcher:打开快速切换": false,
-      "obsidian-day-planner:Open Timeline": false,
-      "obsidian-day-planner:Open Multi-Day View": false,
-      "obsidian-memos:Thino": false
+      "workspaces:管理工作区布局": true,
+      "templater-obsidian:Templater": true,
+      "obsidian-spaced-repetition:复习卡片": false,
+      "obsidian-day-planner:Open Timeline": true,
+      "obsidian-day-planner:Open Multi-Day View": true
     }
   },
-  "active": "c2bbd590909f709a",
+  "active": "24e9fcaa50f1c811",
   "lastOpenFiles": [
-    "900 Assets/920 Queries/任务中心.md",
-    "900 Assets/920 Queries/项目中心（升级）.md",
-    "900 Assets/920 Queries/按钮中心.md",
-    "900 Assets/920 Queries/笔记数据库.base",
-    "900 Assets/920 Queries/Keywords Query.md",
-    "900 Assets/920 Queries/日志数据统计.md",
-    "900 Assets/920 Queries/闪卡统计.md",
-    "900 Assets/920 Queries/我的书架.md",
-    "900 Assets/920 Queries/任务月历.md",
-    "900 Assets/920 Queries/项目任务查询.md",
-    "900 Assets/920 Queries/Inbox清单中心.md",
-    "900 Assets/950 Readme/ThinkDoKit 更新日志.md",
-    "👉从这里开始 Start from here!.md",
-    "Excalidraw/Drawing 2026-06-03 20.53.37.excalidraw.md",
-    "Excalidraw/Drawing 2026-06-03 20.50.11.excalidraw.md",
-    "Excalidraw/Drawing 2026-06-03 20.33.44.excalidraw.md",
-    "900 Assets/950 Readme/ThinkDoKit（知行盒子）使用指南.md",
-    "Excalidraw/Drawing 2026-06-03 20.21.08.excalidraw.md",
-    "Excalidraw/Drawing 2026-05-31 23.07.27.excalidraw.md",
-    "Excalidraw",
-    "500 Journal/540 Daily/2026-03-09.md",
-    "100 Projects/测试项目20260309.md",
-    "500 Journal/540 Daily/2026-03-07.md",
-    "未命名.md",
-    "100 Projects/202501项目1/测试项目1.md",
-    "100 Projects/202511无主文件项目/未命名.md",
-    "100 Projects/202512项目9/测试项目2.md",
-    "100 Projects/202603test",
-    "100 Projects/20260309test",
-    "900 Assets/960 Scripts/gantt-with-svg-export.js",
-    "900 Assets/960 Scripts/obsidian_table_to_bullet.js",
-    "900 Assets/960 Scripts/tab-task-view.js",
-    "900 Assets/960 Scripts/dynamic-chart-kanban3.js",
-    "900 Assets/960 Scripts/dynamic-chart.js",
-    "900 Assets/960 Scripts/annual-daily-task-stats.js",
-    "内容创作工作台设计.canvas",
-    "知识管理工作台设计.canvas",
-    "900 Assets/990 Attachments/unnamed (1) 1.png",
-    "900 Assets/990 Attachments/unnamed (1).png",
-    "900 Assets/990 Attachments/unnamed.png",
-    "900 Assets/990 Attachments/Pasted image 20250704222000.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162419.png",
-    "900 Assets/990 Attachments/Pasted image 20251006162514.png",
-    "900 Assets/990 Attachments/s4208841.jpg",
-    "900 Assets/990 Attachments/Pasted image 20250704220528.png",
-    "900 Assets/990 Attachments/Pasted image 20250704220404.png",
-    "900 Assets/990 Attachments/Pasted image 20250705112725.png"
+    "AGENTS.md",
+    "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/⭐ThinkDoKit（知行盒子）使用指南1.0.md",
+    "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/ThinkDoKit（知行盒子）使用指南 (Beta.1).md",
+    "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/开箱即用的Obsidian库—知行盒子（Beta版）.md",
+    "000 Inbox/ThinkDoKit样例库同步工作流.md",
+    "500 Journal/2026-10-01.md",
+    "900 Assets/AgentLogs/20260930.md",
+    "300 Resources/310 Scripts&Readme/Others/PluginReadme/【插件配置教程】Obsidian Copilot.md",
+    "200 Areas/210 PKM/Obsidian专题/【插件配置教程】Obsidian Copilot.md",
+    "300 Resources/360 WorkMemos/工作备忘/【工作备忘】20231115英才营线下workshop2.md",
+    "300 Resources/360 WorkMemos/会议记录/【工作备忘】20231115英才营线下workshop2.md",
+    "300 Resources/360 WorkMemos/工作备忘/【工作备忘】20230802英才营线下workshop1.md",
+    "300 Resources/360 WorkMemos/202306 CIMS菁英计划/【工作备忘】20231116卓尔营线下workshop2.md",
+    "300 Resources/360 WorkMemos/202306 CIMS菁英计划/【工作备忘】20231115英才营线下workshop2.md",
+    "900 Assets/AgentLogs/2026-09-30.md",
+    "900 Assets/AgentLogs/20260926.md",
+    "300 Resources/310 Scripts&Readme/Others/PluginReadme/【readme】NoteChain插件.md",
+    "200 Areas/210 PKM/Obsidian专题/Obsidian-Excalidraw 功能手册.md",
+    "000 Inbox/Clippings/Obsidian-Excalidraw 功能手册.md",
+    "200 Areas/220 自媒体内容/参考资料/How AI can make us better decision-makers, with Cassie Kozyrkov.md",
+    "000 Inbox/Clippings/How AI can make us better decision-makers, with Cassie Kozyrkov.md",
+    "300 Resources/310 Scripts&Readme/Others/【总结】基础Markdown语法.md",
+    "300 Resources/350 PersonalMemos/【总结】基础Markdown语法.md",
+    "300 Resources/310 Scripts&Readme/Others/PluginReadme/【说明文档】知乎in Obsidian.md",
+    "400 Archive/410 Project Archive/2024工作项目/快速项目/2024羽毛球比赛.md",
+    "500 Journal/2026-04-15.md",
+    "900 Assets/960 Scripts/check-frontmatter.py.tmp.19276.0a6a49ee198a",
+    "300 Resources/360 WorkMemos/工作备忘/202609出差记账.csv",
+    "500 Journal/540 Daily",
+    "900 Assets/990 Attachments/2026-09-30 tasks插件.png",
+    "900 Assets/990 Attachments/Task面板.png",
+    "900 Assets/960 Scripts/parse_openclaw_chat 1.py",
+    "900 Assets/960 Scripts/parse_openclaw_chat.py",
+    "300 Resources/350 PersonalMemos/20210308084051-0002.jpg",
+    "400 Archive/430 Resources Archive/Scripts-dataview/progressBar.js",
+    "400 Archive/430 Resources Archive/Scripts-dataview/TabTaskView.js",
+    "400 Archive/430 Resources Archive/Scripts-dataview/random-quote.js",
+    "400 Archive/430 Resources Archive/Scripts-dataview/projectGantt.js",
+    "400 Archive/430 Resources Archive/Scripts-dataview/random-quote2.js",
+    "900 Assets/990 Attachments/f2742721e69e15d69e9ddc57783652db_MD5.jpg",
+    "900 Assets/990 Attachments/e14e71b6e05d38fb9043b427f9b50caa_MD5.jpg",
+    "900 Assets/990 Attachments/afff5d1e8ce658901d9b4dbeeb89c344_MD5.jpg",
+    "900 Assets/990 Attachments/c497b36734dbc4fc5b2ea33118507fc4_MD5.jpg",
+    "900 Assets/990 Attachments/c39dcd6f5f7561c0c0b4db9e01ea003d_MD5.jpg",
+    "900 Assets/990 Attachments/96a907a53de6148959c9522c8b332301_MD5.jpg",
+    "900 Assets/990 Attachments/a5eb240b9a487d36d0cd71462c2c7911_MD5.jpg"
   ]
 }

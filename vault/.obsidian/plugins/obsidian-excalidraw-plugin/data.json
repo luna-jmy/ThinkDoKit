@@ -1,14 +1,23 @@
 {
+  "showTabTitlebarButtons": true,
   "copyLinkToElemenetAnchorTo100": false,
   "copyFrameLinkByName": false,
   "disableDoubleClickTextEditing": false,
   "phoneFooterSafeAreaPadding": false,
-  "folder": "Excalidraw",
+  "tabletFooterSafeAreaPadding": false,
+  "folder": "900 Assets/970 Excalidraw",
+  "libraryFolderPath": "Excalidraw/Libraries",
+  "libraryFileName": "local-library",
+  "libraryStorageMode": "vault",
+  "libraryMigrationStatus": "not-required",
+  "libraryMigrationSnoozeUntil": 0,
   "cropFolder": "",
   "annotateFolder": "",
   "embedUseExcalidrawFolder": false,
   "templateFilePath": "Excalidraw/Template.excalidraw",
   "scriptFolderPath": "Excalidraw/Scripts",
+  "allowJavaScriptFiles": false,
+  "storeScriptFilesAsJavaScript": false,
   "fontAssetsPath": "Excalidraw/CJK Fonts",
   "loadChineseFonts": false,
   "loadJapaneseFonts": false,
@@ -16,8 +25,6 @@
   "compress": true,
   "decompressForMDView": false,
   "onceOffCompressFlagReset": true,
-  "onceOffGPTVersionReset": true,
-  "autosave": true,
   "autosaveIntervalDesktop": 60000,
   "autosaveIntervalMobile": 30000,
   "drawingFilenamePrefix": "Drawing ",
@@ -62,7 +69,7 @@
   "allowPinchZoom": false,
   "allowWheelZoom": false,
   "zoomToFitOnOpen": true,
-  "zoomToFitOnResize": true,
+  "zoomToFitOnResize": false,
   "zoomToFitMaxLevel": 2,
   "zoomStep": 0.05,
   "zoomMin": 0.1,
@@ -78,7 +85,7 @@
   "showSecondOrderLinks": true,
   "focusOnFileTab": true,
   "openInMainWorkspace": true,
-  "showLinkBrackets": true,
+  "showLinkBrackets": false,
   "syncElementLinkWithText": false,
   "allowCtrlClick": true,
   "forceWrap": false,
@@ -105,7 +112,7 @@
   "experimentalFileTag": "✏️",
   "experimentalLivePreview": true,
   "fadeOutExcalidrawMarkup": false,
-  "loadPropertySuggestions": true,
+  "loadPropertySuggestions": false,
   "experimentalEnableFourthFont": false,
   "experimantalFourthFont": "Virgil",
   "addDummyTextElement": false,
@@ -119,7 +126,7 @@
   "library2": {
     "type": "excalidrawlib",
     "version": 2,
-    "source": "https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag2.23.8",
+    "source": "https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.25.3",
     "libraryItems": []
   },
   "imageElementNotice": true,
@@ -129,9 +136,36 @@
   "mdFontColor": "Black",
   "mdBorderColor": "Black",
   "mdCSS": "",
+  "markdownImageSettings": {
+    "defaults": {
+      "width": 500,
+      "paddingBottom": 10,
+      "fontFamily": "Virgil",
+      "fontColor": "Black",
+      "border": {
+        "enabled": false,
+        "color": "Black"
+      },
+      "css": "",
+      "transclusion": {
+        "enabled": false,
+        "fontFamily": "Cascadia",
+        "fontColor": "Black",
+        "border": {
+          "enabled": false,
+          "color": "Black"
+        },
+        "css": ""
+      }
+    }
+  },
+  "markdownImageDeletionPreference": "ask",
   "scriptEngineSettings": {},
-  "previousRelease": "2.23.8",
+  "autostartScripts": {},
+  "autostartScriptFailures": {},
+  "previousRelease": "2.27.3",
   "showReleaseNotes": true,
+  "useDeclarativeSettings": true,
   "excalidrawMasteryPromoCollapsed": false,
   "compareManifestToPluginVersion": true,
   "showNewVersionNotification": true,
@@ -545,12 +579,6 @@
       "model": "grok-4-fast",
       "endpoint": "",
       "multimodalSupport": true
-    },
-    "gpt-3.5-turbo-1106": {
-      "providerId": "OpenAI",
-      "model": "gpt-3.5-turbo-1106",
-      "endpoint": "",
-      "multimodalSupport": true
     }
   },
   "aiImageModelConfigs": {
@@ -760,8 +788,9 @@
       "supportsMaskImageEdits": false
     }
   },
-  "aiDefaultTextModel": "gpt-3.5-turbo-1106",
-  "aiDefaultImageGenerationModel": "dall-e-3",
+  "aiDefaultTextModel": "gpt-5-mini",
+  "aiDefaultMultimodalModel": "gpt-5-mini",
+  "aiDefaultImageGenerationModel": "gpt-image-1",
   "aiDefaultMaxOutgoingTokens": 0,
   "aiDefaultMaxResponseTokens": 4096,
   "modifierKeyConfig": {
@@ -1011,7 +1040,7 @@
         "rules": [
           {
             "shift": false,
-            "ctrl_cmd": false,
+            "ctrl_cmd": true,
             "alt_opt": false,
             "meta_ctrl": false,
             "result": "active-pane"
@@ -1085,7 +1114,7 @@
     "margin": "normal"
   },
   "disableContextMenu": false,
-  "isDebugMode": false,
-  "defaultTrayMode": true,
-  "compactModeOnTablets": true
+  "onceOffGPTVersionReset": true,
+  "autosave": true,
+  "isDebugMode": false
 }

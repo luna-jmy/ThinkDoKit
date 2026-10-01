@@ -1,10 +1,12 @@
 {
   "cssTheme": "Blue Topaz",
+  "theme": "obsidian",
   "enabledCssSnippets": [
-    "autohide-yaml-header-test1",
-    "【BlueTopaz】表格样式TableStyles",
     "projectCard",
-    "Tab"
+    "cardBox"
   ],
-  "theme": "moonstone"
+  "showRibbon": true,
+  "showViewHeader": true,
+  "accentColor": "",
+  "baseFontSize": 16
 }

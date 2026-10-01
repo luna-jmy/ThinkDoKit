@@ -1,0 +1,105 @@
+/* 番茄钟主题背景 CSS 片段 */
+/* 兼容 Blue Topaz 主题 */
+
+/* 工作阶段 - 深蓝色调 */
+body.pomodoro-work {
+    /* 主背景色 */
+    --background-primary: #1a2332 !important;
+    --background-secondary: #0f1419 !important;
+    --background-modifier-border: #2d3748 !important;
+    --background-modifier-form-field: #2d3748 !important;
+    --background-modifier-form-field-highlighted: #4a5568 !important;
+    
+    /* 文本颜色调整 */
+    --text-normal: #e2e8f0 !important;
+    --text-muted: #a0aec0 !important;
+    --text-accent: #63b3ed !important;
+    
+    /* 边框颜色 */
+    --background-modifier-border-focus: #4299e1 !important;
+    --background-modifier-border-hover: #3182ce !important;
+    
+    /* 导航栏和侧边栏 */
+    --background-secondary-alt: #0f1419 !important;
+    --background-modifier-cover: rgba(26, 35, 50, 0.8) !important;
+    
+    /* 编辑器背景 */
+    --background-primary-alt: #1a2332 !important;
+    
+    /* 平滑过渡效果 */
+    transition: all 0.5s ease-in-out !important;
+}
+
+/* 休息阶段 - 温和绿色调 */
+body.pomodoro-break {
+    /* 主背景色 */
+    --background-primary: #1a2e1a !important;
+    --background-secondary: #0f1a0f !important;
+    --background-modifier-border: #2d4a2d !important;
+    --background-modifier-form-field: #2d4a2d !important;
+    --background-modifier-form-field-highlighted: #48734a !important;
+    
+    /* 文本颜色调整 */
+    --text-normal: #e8f5e8 !important;
+    --text-muted: #a8d4a8 !important;
+    --text-accent: #68d391 !important;
+    
+    /* 边框颜色 */
+    --background-modifier-border-focus: #48bb78 !important;
+    --background-modifier-border-hover: #38a169 !important;
+    
+    /* 导航栏和侧边栏 */
+    --background-secondary-alt: #0f1a0f !important;
+    --background-modifier-cover: rgba(26, 46, 26, 0.8) !important;
+    
+    /* 编辑器背景 */
+    --background-primary-alt: #1a2e1a !important;
+    
+    /* 平滑过渡效果 */
+    transition: all 0.5s ease-in-out !important;
+}
+
+/* 停止状态 - 恢复默认（可选：轻微指示） */
+body.pomodoro-stopped {
+    /* 可以在这里添加轻微的视觉指示，表明番茄钟已停止 */
+    /* 或者保持空白以完全恢复默认主题 */
+    transition: all 0.5s ease-in-out !important;
+}
+
+/* 增强视觉效果 - 可选 */
+/* 为不同阶段添加微妙的边框装饰 */
+body.pomodoro-work .workspace-leaf.mod-active .workspace-leaf-content {
+    border-left: 3px solid #4299e1 !important;
+}
+
+body.pomodoro-break .workspace-leaf.mod-active .workspace-leaf-content {
+    border-left: 3px solid #48bb78 !important;
+}
+
+/* 状态栏颜色指示 */
+body.pomodoro-work .status-bar {
+    background-color: rgba(66, 153, 225, 0.1) !important;
+}
+
+body.pomodoro-break .status-bar {
+    background-color: rgba(72, 187, 120, 0.1) !important;
+}
+
+/* 标题栏颜色指示 */
+body.pomodoro-work .titlebar {
+    background-color: rgba(26, 35, 50, 0.9) !important;
+}
+
+body.pomodoro-break .titlebar {
+    background-color: rgba(26, 46, 26, 0.9) !important;
+}
+
+/* 确保过渡效果应用到所有相关元素 */
+.workspace-leaf-content,
+.workspace-tab-header,
+.nav-header,
+.nav-files-container,
+.status-bar,
+.titlebar {
+    transition: all 0.5s ease-in-out !important;
+}

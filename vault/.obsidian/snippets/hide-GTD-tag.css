@@ -1,0 +1,76 @@
+/* 隐藏以 #GTD/ 开头的标签前缀，用 @ 替换显示 */
+
+/* 人物标签 */
+.cm-tag[title="#GTD/Selina"], .tag[href="#GTD/Selina"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/Selina"]::before, .tag[href="#GTD/Selina"]::before { content: "@Selina"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/Jianlei"], .tag[href="#GTD/Jianlei"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/Jianlei"]::before, .tag[href="#GTD/Jianlei"]::before { content: "@Jianlei"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/Jill"], .tag[href="#GTD/Jill"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/Jill"]::before, .tag[href="#GTD/Jill"]::before { content: "@Jill"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/Nick"], .tag[href="#GTD/Nick"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/Nick"]::before, .tag[href="#GTD/Nick"]::before { content: "@Nick"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/me"], .tag[href="#GTD/me"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/me"]::before, .tag[href="#GTD/me"]::before { content: "@me"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/Abby"], .tag[href="#GTD/Abby"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/Abby"]::before, .tag[href="#GTD/Abby"]::before { content: "@Abby"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/Kate"], .tag[href="#GTD/Kate"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/Kate"]::before, .tag[href="#GTD/Kate"]::before { content: "@Kate"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+/* 情境标签 */
+.cm-tag[title="#GTD/home"], .tag[href="#GTD/home"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/home"]::before, .tag[href="#GTD/home"]::before { content: "@home"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/computer"], .tag[href="#GTD/computer"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/computer"]::before, .tag[href="#GTD/computer"]::before { content: "@computer"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/office"], .tag[href="#GTD/office"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/office"]::before, .tag[href="#GTD/office"]::before { content: "@office"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/errands"], .tag[href="#GTD/errands"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/errands"]::before, .tag[href="#GTD/errands"]::before { content: "@errands"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/phone"], .tag[href="#GTD/phone"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/phone"]::before, .tag[href="#GTD/phone"]::before { content: "@phone"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/travel"], .tag[href="#GTD/travel"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/travel"]::before, .tag[href="#GTD/travel"]::before { content: "@travel"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/gem"], .tag[href="#GTD/gem"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/gem"]::before, .tag[href="#GTD/gem"]::before { content: "@gem"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/excercise"], .tag[href="#GTD/excercise"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/excercise"]::before, .tag[href="#GTD/excercise"]::before { content: "@excercise"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/meeting"], .tag[href="#GTD/meeting"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/meeting"]::before, .tag[href="#GTD/meeting"]::before { content: "@meeting"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/waiting"], .tag[href="#GTD/waiting"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/waiting"]::before, .tag[href="#GTD/waiting"]::before { content: "@waiting"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/milestone"], .tag[href="#GTD/milestone"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/milestone"]::before, .tag[href="#GTD/milestone"]::before { content: "@milestone"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+/* 行为标签 */
+.cm-tag[title="#GTD/action"], .tag[href="#GTD/action"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/action"]::before, .tag[href="#GTD/action"]::before { content: "@action"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/read"], .tag[href="#GTD/read"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/read"]::before, .tag[href="#GTD/read"]::before { content: "@read"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/watch"], .tag[href="#GTD/watch"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/watch"]::before, .tag[href="#GTD/watch"]::before { content: "@watch"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/download"], .tag[href="#GTD/download"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/download"]::before, .tag[href="#GTD/download"]::before { content: "@download"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/review"], .tag[href="#GTD/review"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/review"]::before, .tag[href="#GTD/review"]::before { content: "@review"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }
+
+.cm-tag[title="#GTD/calls"], .tag[href="#GTD/calls"] { visibility: hidden; position: relative; }
+.cm-tag[title="#GTD/calls"]::before, .tag[href="#GTD/calls"]::before { content: "@calls"; visibility: visible; position: absolute; left: 0; top: 0; color: var(--tag-color); background: var(--tag-background); border-radius: var(--tag-radius); padding: var(--tag-padding-y) var(--tag-padding-x); }

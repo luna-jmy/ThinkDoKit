@@ -1,1297 +1,1741 @@
-/* task-matrix-base-styles:start */
-      .task-matrix-view {
-        padding: 16px;
-        height: 100%;
-        overflow: auto;
-      }
-      .task-matrix-shell {
-        max-width: 1400px;
-        margin: 0 auto;
-        width: 100%;
-      }
-      .task-matrix-header {
-        margin-bottom: 16px;
-      }
-      .task-matrix-title-block {
-        margin-bottom: 12px;
-      }
-      .task-matrix-kicker {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--text-muted);
-        margin-bottom: 4px;
-      }
-      .task-matrix-title {
-        font-size: 24px;
-        font-weight: 600;
-        margin: 0 0 4px 0;
-      }
-      .task-matrix-subtitle {
-        font-size: 13px;
-        color: var(--text-muted);
-        margin: 0;
-      }
-      .task-matrix-toolbar {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-        padding: 12px;
-        background: var(--background-secondary);
-        border-radius: 8px;
-      }
-      .task-matrix-search {
-        flex: 1;
-        min-width: 200px;
-        padding: 6px 10px;
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 6px;
-        background: var(--background-primary);
-        color: var(--text-normal);
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .task-matrix-segmented {
-        display: flex;
-        gap: 4px;
-        flex-wrap: wrap;
-      }
-      .task-matrix-filter-wrap {
-        position: relative;
-      }
-      .task-matrix-filter-btn {
-        padding: 6px 10px;
-        border: 1px solid var(--background-modifier-border);
-        background: var(--background-primary);
-        color: var(--text-normal);
-        border-radius: 6px;
-        cursor: pointer;
-        min-height: 34px;
-      }
-      .task-matrix-filter-btn.is-active {
-        background: var(--background-modifier-hover);
-        border-color: var(--interactive-accent);
-      }
-      .task-matrix-filter-panel {
-        position: absolute;
-        top: calc(100% + 8px);
-        right: 0;
-        z-index: 20;
-        width: min(360px, 90vw);
-        padding: 12px;
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 8px;
-        background: var(--background-primary);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
-      }
-      .task-matrix-filter-panel[hidden] {
-        display: none;
-      }
-      .task-matrix-filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .task-matrix-filter-row {
-        display: grid;
-        grid-template-columns: 88px 1fr 1fr;
-        gap: 8px;
-        align-items: center;
-      }
-      .task-matrix-filter-row label {
-        font-size: 12px;
-        color: var(--text-muted);
-        font-weight: 600;
-      }
-      .task-matrix-filter-row select,
-      .task-matrix-filter-row input {
-        width: 100%;
-        min-height: 34px;
-        padding: 6px 8px;
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 6px;
-        background: var(--background-secondary);
-        color: var(--text-normal);
-        box-sizing: border-box;
-      }
-      .task-matrix-filter-row input:disabled {
-        background: var(--background-modifier-hover);
-        color: var(--text-faint);
-        border-color: var(--background-modifier-border);
-        cursor: not-allowed;
-        opacity: 0.75;
-      }
-      .task-matrix-filter-actions {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 10px;
-      }
-      .task-matrix-filter-clear {
-        padding: 6px 10px;
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 6px;
-        background: var(--background-secondary);
-        color: var(--text-normal);
-        cursor: pointer;
-      }
-      .task-matrix-mode-button {
-        padding: 6px 12px;
-        border: 1px solid var(--background-modifier-border);
-        background: var(--background-primary);
-        color: var(--text-normal);
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 12px;
-        min-height: 34px;
-      }
-      .task-matrix-mode-button.is-active {
-        background: var(--interactive-accent);
-        color: var(--text-on-accent);
-      }
-      .task-matrix-toolbar-btn {
-        padding: 6px 10px;
-        border: 1px solid var(--background-modifier-border);
-        background: var(--background-primary);
-        border-radius: 6px;
-        cursor: pointer;
-        min-height: 34px;
-      }
-      .task-matrix-toolbar-btn.is-active {
-        background: var(--interactive-accent);
-        color: var(--text-on-accent);
-      }
-      .task-matrix-refresh {
-        padding: 6px 10px;
-        border: 1px solid var(--background-modifier-border);
-        background: var(--background-primary);
-        border-radius: 6px;
-        cursor: pointer;
-        min-height: 34px;
-      }
-      .task-matrix-empty {
-        text-align: center;
-        padding: 48px;
-        color: var(--text-muted);
-      }
-      .task-matrix-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .task-matrix-board {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 16px;
-        align-items: start;
-      }
-      .task-matrix-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-        align-content: start;
-      }
-      .task-calendar {
-        background: var(--background-secondary);
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 8px;
-        padding: 12px;
-      }
-      .task-calendar-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-      }
-      .task-calendar-segmented {
-        display: flex;
-        gap: 4px;
-      }
-      .task-calendar-mode-btn,
-      .task-calendar-nav-btn {
-        border: 1px solid var(--background-modifier-border);
-        background: var(--background-primary);
-        color: var(--text-normal);
-        border-radius: 6px;
-        padding: 4px 8px;
-        cursor: pointer;
-        font-size: 12px;
-      }
-      .task-calendar-mode-btn.active {
-        background: var(--interactive-accent);
-        color: var(--text-on-accent);
-      }
-      .task-calendar-nav {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .task-calendar-summary-wrap {
-        position: relative;
-      }
-      .task-calendar-summary-popup {
-        position: absolute;
-        right: 0;
-        top: calc(100% + 6px);
-        z-index: 15;
-        min-width: 180px;
-        background: var(--background-primary);
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 8px;
-        padding: 8px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-      }
-      .task-calendar-summary-popup[hidden] {
-        display: none;
-      }
-      .task-calendar-summary-popup ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .task-calendar-summary-popup li {
-        font-size: 12px;
-        color: var(--text-normal);
-      }
-      .task-calendar-title {
-        min-width: 130px;
-        text-align: center;
-        font-size: 13px;
-        font-weight: 600;
-      }
-      .task-calendar-month {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        min-width: 0;
-      }
-      .task-calendar-heads,
-      .task-calendar-month-grid {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        gap: 6px;
-        min-width: 0;
-      }
-      .task-calendar-head {
-        font-size: 11px;
-        color: var(--text-muted);
-        text-align: center;
-      }
-      .task-calendar-head.weekend {
-        color: var(--interactive-accent);
-      }
-      .task-calendar-day {
-        border: 1px solid var(--background-modifier-border);
-        background: var(--background-primary);
-        border-radius: 6px;
-        min-height: 110px;
-        padding: 6px;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      .task-calendar-day.weekend-day {
-        background: var(--background-modifier-active-hover);
-      }
-      .task-calendar-day.weekend-day .task-calendar-date {
-        color: var(--interactive-accent);
-      }
-      .task-calendar-day.outside {
-        opacity: 0.45;
-      }
-      .task-calendar-day.today {
-        border: 2px solid var(--interactive-accent);
-        background: var(--background-modifier-active-hover);
-      }
-      .task-calendar-day.weekend-day.today {
-        background: color-mix(in srgb, var(--interactive-accent) 14%, var(--background-primary));
-      }
-      .task-calendar-day.today .task-calendar-date {
-        color: var(--interactive-accent);
-      }
-      .task-calendar-date {
-        font-size: 11px;
-        font-weight: 600;
-      }
-      .task-calendar-items {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-      }
-      .task-calendar-item {
-        display: block;
-        padding: 2px 4px;
-        border-radius: 4px;
-        font-size: 10px;
-        line-height: 1.35;
-        color: var(--text-normal);
-        background: var(--background-secondary);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .task-calendar-item.type-due { border-left: 2px solid #f59e0b; }
-      .task-calendar-item.type-start { border-left: 2px solid #3b82f6; }
-      .task-calendar-item.type-scheduled { border-left: 2px solid #8b5cf6; }
-      .task-calendar-item.type-done { border-left: 2px solid #22c55e; }
-      .task-calendar-item.type-overdue { border-left: 2px solid #ef4444; }
-      .task-calendar-item.type-process { border-left: 2px solid #0ea5e9; }
-      .task-calendar-week {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(160px, 1fr));
-        gap: 8px;
-        overflow-x: auto;
-      }
-      .task-calendar-week-split {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .task-calendar-week-main {
-        grid-template-columns: repeat(5, minmax(160px, 1fr));
-      }
-      .task-calendar-week-compact {
-        grid-template-columns: repeat(5, minmax(160px, 1fr));
-      }
-      .task-calendar-weekend {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(160px, 1fr));
-        gap: 8px;
-      }
-      .task-calendar-day.week-day {
-        min-height: 180px;
-      }
-      .task-calendar-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .task-calendar-list-day {
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 6px;
-        overflow: hidden;
-        background: var(--background-primary);
-      }
-      .task-calendar-list-day.today {
-        border-color: var(--interactive-accent);
-        background: var(--background-modifier-active-hover);
-      }
-      .task-calendar-list-day.today > summary {
-        color: var(--interactive-accent);
-        font-weight: 700;
-      }
-      .task-calendar-list-day > summary {
-        cursor: pointer;
-        list-style: none;
-        padding: 8px 10px;
-        font-size: 12px;
-        color: var(--text-muted);
-        border-bottom: 1px solid var(--background-modifier-border);
-      }
-      .task-calendar-list-content {
-        padding: 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-      @media (max-width: 800px) {
-        .task-matrix-view {
-          padding: 10px;
-        }
-        .task-matrix-header {
-          margin-bottom: 12px;
-        }
-        .task-matrix-title {
-          font-size: 20px;
-        }
-        .task-matrix-subtitle {
-          font-size: 12px;
-        }
-        .task-matrix-toolbar {
-          align-items: stretch;
-          gap: 10px;
-          padding: 10px;
-        }
-        .task-matrix-search {
-          min-width: 0;
-        }
-        .task-matrix-segmented {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          width: 100%;
-        }
-        .task-matrix-filter-wrap {
-          width: 100%;
-        }
-        .task-matrix-filter-btn {
-          width: 100%;
-          min-height: 38px;
-        }
-        .task-matrix-mode-button,
-        .task-matrix-toolbar-btn,
-        .task-matrix-refresh {
-          width: 100%;
-          min-height: 38px;
-        }
-        .task-matrix-filter-panel {
-          position: static;
-          width: 100%;
-          margin-top: 8px;
-        }
-        .task-matrix-filter-row {
-          grid-template-columns: 1fr;
-        }
-        .task-matrix-board {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 12px;
-        }
-        .task-matrix-column {
-          min-width: 0;
-          flex: none;
-        }
-        .task-matrix-grid {
-          grid-template-columns: 1fr;
-          gap: 12px;
-        }
-        .task-matrix-cell {
-          min-height: 0;
-        }
-        .task-matrix-cell.is-collapsible .task-matrix-column-header {
-          margin-bottom: 0;
-        }
-        .task-matrix-cell.is-collapsible:not(.is-collapsed) .task-matrix-column-header {
-          margin-bottom: 12px;
-        }
-        .task-matrix-card {
-          padding: 12px;
-        }
-        .task-matrix-card-top {
-          flex-direction: column;
-        }
-        .task-matrix-badge {
-          align-self: flex-start;
-        }
-        .task-matrix-card-actions {
-          gap: 6px;
-        }
-        .task-matrix-action-btn {
-          min-height: 32px;
-        }
-        .task-calendar-toolbar {
-          align-items: stretch;
-        }
-        .task-calendar-segmented,
-        .task-calendar-nav {
-          width: 100%;
-        }
-        .task-calendar-segmented {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-        .task-calendar-nav {
-          flex-wrap: wrap;
-          justify-content: space-between;
-        }
-        .task-calendar-title {
-          order: -1;
-          width: 100%;
-          min-width: 0;
-          text-align: left;
-        }
-        .task-calendar-summary-wrap {
-          margin-left: auto;
-        }
-        .task-calendar-month {
-          overflow-x: auto;
-          padding-bottom: 4px;
-          -webkit-overflow-scrolling: touch;
-        }
-        .task-calendar-heads,
-        .task-calendar-month-grid {
-          min-width: 560px;
-        }
-        .task-calendar-week,
-        .task-calendar-week-main,
-        .task-calendar-week-compact,
-        .task-calendar-weekend {
-          display: flex;
-          overflow-x: auto;
-          width: 100%;
-          padding-bottom: 4px;
-          -webkit-overflow-scrolling: touch;
-        }
-        .task-calendar-week .task-calendar-day,
-        .task-calendar-weekend .task-calendar-day {
-          min-width: min(78vw, 240px);
-          flex: 0 0 min(78vw, 240px);
-        }
-        .task-calendar-day {
-          min-height: auto;
-        }
-        .task-calendar-summary-popup {
-          right: 0;
-          left: auto;
-          max-width: min(88vw, 260px);
-        }
-        .task-matrix-modal {
-          padding: 16px;
-        }
-        .task-matrix-input-row {
-          align-items: stretch;
-        }
-        .task-matrix-input-row > * {
-          width: 100%;
-        }
-        .task-matrix-modal-buttons {
-          justify-content: stretch;
-        }
-        .task-matrix-modal-buttons button {
-          flex: 1 1 100%;
-        }
-      }
-      .task-matrix-column, .task-matrix-cell {
-        background: var(--background-secondary);
-        border-radius: 8px;
-        padding: 12px;
-        min-height: 200px;
-      }
-      .task-matrix-column-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--background-modifier-border);
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .task-matrix-column-header h3 {
-        font-size: 14px;
-        margin: 0;
-        font-weight: 600;
-        min-width: 0;
-      }
-      .task-matrix-column-header.is-collapsible {
-        cursor: pointer;
-      }
-      .task-matrix-column-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        min-width: 0;
-      }
-      .task-matrix-collapse-indicator {
-        display: none;
-        font-size: 12px;
-        color: var(--text-muted);
-        flex: 0 0 auto;
-      }
-      .task-matrix-column-header.is-collapsible .task-matrix-collapse-indicator {
-        display: inline-flex;
-      }
-      .task-matrix-cell-body.is-collapsed {
-        display: none;
-      }
-      .task-matrix-column-body.is-collapsed {
-        display: none;
-      }
-      .task-matrix-cell.is-collapsed,
-      .task-matrix-column.is-collapsed {
-        min-height: 0;
-        padding-bottom: 12px;
-      }
-      .task-matrix-cell.is-collapsed .task-matrix-column-header,
-      .task-matrix-column.is-collapsed .task-matrix-column-header {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 0;
-      }
-      .task-matrix-count {
-        background: var(--background-modifier-border);
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-      }
-      .task-matrix-header-right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .task-matrix-add-btn {
-        width: 24px;
-        height: 24px;
-        border: none;
-        border-radius: 50%;
-        background: var(--interactive-accent);
-        color: var(--text-on-accent);
-        font-size: 16px;
-        line-height: 1;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: opacity 0.2s;
-      }
-      .task-matrix-add-btn:hover {
-        opacity: 0.8;
-      }
-      .task-matrix-card {
-        background: var(--background-primary);
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 6px;
-        padding: 10px;
-        margin-bottom: 8px;
-        cursor: pointer;
-        transition: box-shadow 0.2s;
-        position: relative;
-      }
-      .task-matrix-card:hover {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      }
-      .task-matrix-card.dragging {
-        opacity: 0.5;
-      }
-      .task-matrix-card-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 8px;
-        margin-bottom: 6px;
-      }
-      .task-matrix-card-title {
-        font-size: 13px;
-        font-weight: 500;
-        line-height: 1.4;
-        flex: 1;
-        min-width: 0;
-      }
-      .task-matrix-card-title p {
-        margin: 0;
-      }
-      .task-matrix-badge {
-        font-size: 10px;
-        padding: 2px 6px;
-        border-radius: 4px;
-        white-space: nowrap;
-      }
-      .task-matrix-badge.status-open {
-        background: var(--background-modifier-border);
-        color: var(--text-muted);
-      }
-      .task-matrix-badge.status-completed {
-        background: #22c55e;
-        color: white;
-      }
-      .task-matrix-badge.status-cancelled {
-        background: #ef4444;
-        color: white;
-      }
-      .task-matrix-badge.status-in-progress {
-        background: #3b82f6;
-        color: white;
-      }
-      .task-matrix-badge.status-to-be-started {
-        background: #8b5cf6;
-        color: white;
-      }
-      .task-matrix-badge.status-overdue {
-        background: #dc2626;
-        color: white;
-      }
-      /* Eisenhower Quadrant Colors */
-      .task-matrix-cell[data-quadrant="Q1"] .task-matrix-column-header h3 {
-        color: #dc2626;
-        border-left: 3px solid #dc2626;
-        padding-left: 8px;
-      }
-      .task-matrix-cell[data-quadrant="Q2"] .task-matrix-column-header h3 {
-        color: #059669;
-        border-left: 3px solid #059669;
-        padding-left: 8px;
-      }
-      .task-matrix-cell[data-quadrant="Q3"] .task-matrix-column-header h3 {
-        color: #d97706;
-        border-left: 3px solid #d97706;
-        padding-left: 8px;
-      }
-      .task-matrix-cell[data-quadrant="Q4"] .task-matrix-column-header h3 {
-        color: #6b7280;
-        border-left: 3px solid #6b7280;
-        padding-left: 8px;
-      }
-      .task-matrix-chip-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        margin-bottom: 6px;
-      }
-      .task-matrix-chip {
-        font-size: 10px;
-        padding: 2px 6px;
-        background: var(--background-secondary);
-        border-radius: 4px;
-        color: var(--text-muted);
-      }
-      .task-matrix-chip.warning {
-        background: #fef3c7;
-        color: #92400e;
-      }
-      .task-matrix-chip.conflict {
-        background: #fee2e2;
-        color: #dc2626;
-        font-weight: 600;
-        border: 1px solid #fecaca;
-      }
-      .task-matrix-card-meta {
-        font-size: 11px;
-        color: var(--text-muted);
-        word-break: break-word;
-      }
-      .task-matrix-card-actions {
-        display: flex;
-        gap: 4px;
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px solid var(--background-modifier-border);
-        flex-wrap: wrap;
-      }
-      .task-matrix-action-btn {
-        font-size: 11px;
-        padding: 2px 6px;
-        border: 1px solid var(--background-modifier-border);
-        background: var(--background-secondary);
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .task-matrix-action-btn:hover {
-        background: var(--background-modifier-hover);
-      }
-      .task-matrix-action-btn.quadrant-move {
-        min-width: 24px;
-        text-align: center;
-        font-weight: 600;
-        padding: 2px 4px;
-      }
-      .task-matrix-action-separator {
-        font-size: 12px;
-        color: var(--text-muted);
-        align-self: center;
-        margin: 0 2px 0 4px;
-      }
-      .task-matrix-action-label {
-        font-size: 11px;
-        color: var(--text-muted);
-        align-self: center;
-        margin-right: 2px;
-      }
-      .task-matrix-drag-over {
-        background: var(--background-modifier-hover) !important;
-        border: 2px dashed var(--interactive-accent);
-      }
-      .task-matrix-card.blocked {
-        opacity: 0.7;
-        border-left: 3px solid #ef4444;
-      }
-      .task-matrix-modal {
-        padding: 20px;
-      }
-      .task-matrix-modal h2 {
-        margin-top: 0;
-      }
-      .task-matrix-form-row {
-        margin-bottom: 16px;
-      }
-      .task-matrix-form-row label {
-        display: block;
-        font-size: 12px;
-        font-weight: 600;
-        margin-bottom: 4px;
-        color: var(--text-muted);
-      }
-      .task-matrix-form-row input,
-      .task-matrix-form-row select,
-      .task-matrix-form-row textarea {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 4px;
-        background-color: var(--background-primary);
-        color: var(--text-normal);
-        min-height: 36px;
-        line-height: 1.4;
-      }
-      .task-matrix-form-row select {
-        height: 36px;
-        padding: 6px 28px 6px 8px;
-        background-repeat: no-repeat;
-        background-position: right 8px center;
-      }
-      .task-matrix-form-row input[type="date"] {
-        font-family: inherit;
-        cursor: pointer;
-      }
-      .task-matrix-form-row input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: var(--calendar-picker-filter, none);
-        cursor: pointer;
-      }
-      .task-matrix-form-row textarea {
-        min-height: 80px;
-        resize: vertical;
-      }
-      .task-matrix-input-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .task-matrix-grow-input {
-        flex: 1;
-      }
-      .task-matrix-inline-action-btn {
-        margin-left: 8px;
-      }
-      .task-matrix-modal-buttons {
-        display: flex;
-        gap: 8px;
-        justify-content: flex-end;
-        margin-top: 20px;
-        flex-wrap: wrap;
-      }
-      .task-matrix-folder-group {
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 6px;
-        overflow: hidden;
-        background: var(--background-primary);
-      }
-      .task-matrix-folder-header {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-muted);
-        padding: 8px 10px;
-        background: var(--background-primary);
-        margin: 0;
-        border-bottom: 1px solid var(--background-modifier-border);
-      }
-      .task-matrix-folder-header.task-matrix-folder-toggle {
-        width: 100%;
-        text-align: left;
-        border: none;
-        cursor: pointer;
-      }
-      .task-matrix-folder-header.task-matrix-folder-toggle:hover {
-        background: var(--background-modifier-hover);
-      }
-      .task-matrix-folder-content {
-        padding: 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .task-matrix-folder-content.is-collapsed {
-        display: none;
-      }
-/* task-matrix-base-styles:end */
+/* ============================================================================
+ * Task Matrix —— 插件样式
+ *
+ * 硬约束（与系列内的 Project Master 同一口径）：
+ * - 所有选择器都限制在 `tm-` 前缀类名下，不出现 `button`、`input`、`body`、
+ *   `.markdown-preview-view`、`.cm-editor` 这类全局选择器；
+ * - 不使用 `!important`，不盲目抬 z-index；
+ * - 不做全局 reset，颜色/间距/圆角一律取自 Obsidian 主题变量，明暗主题自动适配。
+ *
+ * 布局三段（自上而下）：`.tm-toolbar` → `.tm-filter-bar` → `.tm-body`
+ *
+ * 容器对称的数值契约（改一处要连着改，否则容器就不再等大）：
+ *   容器网格列 `minmax(280px, 1fr)` / 行 `clamp(280px, 46vh, 520px)` / 间距 --size-4-2
+ *   宽屏（≥1100px）例外：网格 height:100% + 行 minmax(280px, 1fr) 一屏装满，
+ *   见下方宽屏规则；日历月/周视图宽屏同样撑满（见日历段的宽屏规则）
+ * ========================================================================== */
 
-.task-matrix-view .task-calendar {
-  --cal-radius: 12px;
-  --cal-gap: 8px;
-  --cal-border: 1px solid var(--background-modifier-border);
-  --cal-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-  background: linear-gradient(180deg, var(--background-primary), var(--background-secondary));
-  border: var(--cal-border);
-  border-radius: calc(var(--cal-radius) + 2px);
-  padding: 14px;
-  box-shadow: var(--cal-shadow);
+/* ───────────────────────────── 骨架 ───────────────────────────── */
+
+.tm-root {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--size-4-2);
+	color: var(--text-normal);
+	background: var(--background-primary);
+	overflow: hidden;
 }
 
-.task-matrix-view .task-calendar-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
+.tm-body {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
 }
 
-.task-matrix-view .task-calendar-segmented {
-  display: inline-flex;
-  gap: 0;
-  border: var(--cal-border);
-  border-radius: 9px;
-  overflow: hidden;
-  background: var(--background-primary);
+/*
+ * 主区宿主：面板网格与日历共用一个位置，谁在前台谁拿满高度。
+ * 用 flex 撑满而不是 height: 100% —— 百分比高度要求父元素有明确高度，
+ * 多层 flex 里这个前提随时可能被打破，一旦退化成 auto 就会把内容顶出边界。
+ */
+.tm-board-host {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
 }
 
-.task-matrix-view .task-calendar-mode-btn,
-.task-matrix-view .task-calendar-nav-btn {
-  border: none;
-  border-right: var(--cal-border);
-  background: transparent;
-  color: var(--text-muted);
-  border-radius: 0;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 1.2;
-  transition: color 120ms ease, background-color 120ms ease, transform 120ms ease;
+/* `is-hidden` 是宿主也在用的通用类名，必须限定在插件根容器下再改写 */
+.tm-root .is-hidden {
+	display: none;
 }
 
-.task-matrix-view .task-calendar-mode-btn:last-child,
-.task-matrix-view .task-calendar-nav-btn:last-child {
-  border-right: none;
+/* ───────────────────────────── 第一行：工具栏 ───────────────────────────── */
+
+.tm-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding-bottom: var(--size-4-2);
 }
 
-.task-matrix-view .task-calendar-mode-btn:hover,
-.task-matrix-view .task-calendar-nav-btn:hover {
-  color: var(--text-normal);
-  background: var(--background-modifier-hover);
+.tm-toolbar__title {
+	margin: 0;
+	font-size: var(--font-ui-large);
+	font-weight: var(--font-semibold);
+	color: var(--text-normal);
 }
 
-.task-matrix-view .task-calendar-mode-btn.active {
-  background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-  color: var(--interactive-accent);
-  font-weight: 700;
+.tm-toolbar__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-3);
+	margin-left: auto;
 }
 
-.task-matrix-view .task-calendar-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.tm-toolbar__modes {
+	display: flex;
+	gap: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	overflow: hidden;
 }
 
-.task-matrix-view .task-calendar-nav > .task-calendar-nav-btn,
-.task-matrix-view .task-calendar-summary-wrap > .task-calendar-nav-btn {
-  border: var(--cal-border);
-  border-radius: 8px;
-  background: var(--background-primary);
-  color: var(--text-normal);
-  min-width: 36px;
-  padding: 6px 10px;
+.tm-btn {
+	padding: var(--size-2-2) var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
 }
 
-.task-matrix-view .task-calendar-title {
-  min-width: 150px;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-normal);
+.tm-btn:hover {
+	background: var(--interactive-hover);
 }
 
-.task-matrix-view .task-calendar-summary-wrap {
-  position: relative;
+.tm-btn:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
 }
 
-.task-matrix-view .task-calendar-summary-popup {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  z-index: 25;
-  min-width: 205px;
-  background: var(--background-primary);
-  border: var(--cal-border);
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.14);
+/*
+ * 模式切换（列表 / GTD / 矩阵 / 日历）：工具栏里最关键的控件，
+ * 用强调色标出当前模式，一眼能看出自己在哪个视图。
+ */
+.tm-mode-btn {
+	padding: var(--size-2-2) var(--size-4-2);
+	border: none;
+	border-radius: 0;
+	background: var(--interactive-normal);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
 }
 
-.task-matrix-view .task-calendar-summary-popup[hidden] {
-  display: none;
+.tm-mode-btn:hover {
+	background: var(--interactive-hover);
+	color: var(--text-normal);
 }
 
-.task-matrix-view .task-calendar-summary-popup ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.tm-mode-btn.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
 }
 
-.task-matrix-view .task-calendar-summary-popup li {
-  font-size: 13px;
-  color: var(--text-normal);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 2px 0;
+.tm-mode-btn:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
 }
 
-.task-matrix-view .task-calendar-summary-popup li::before {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  font-size: 13px;
+/*
+ * 面板模式与甘特模式的控件互斥（Project Master 的「面板模式」反过来）。
+ *
+ * 默认是面板模式：甘特那两个下拉整组不显示；进甘特之后反过来，面板模式那组收起。
+ * 两边都由根容器上的一个类切换，不在 JS 里逐个开关 —— 那样迟早会漏一个。
+ *
+ * 隐藏规则带上 `.tm-root` 不是多余的前缀：`.tm-toolbar__field` 自己就是
+ * `display: flex`，与单类的隐藏规则优先级打平、谁写在后面谁赢 ——
+ * 那正是这两个下拉在面板模式藏不住的原因。两类的规则稳赢。
+ */
+.tm-root .tm-toolbar__gantt-only {
+	display: none;
 }
 
-.task-matrix-view .task-calendar-summary-popup li:nth-child(1)::before { content: "✅"; }
-.task-matrix-view .task-calendar-summary-popup li:nth-child(2)::before { content: "📅"; }
-.task-matrix-view .task-calendar-summary-popup li:nth-child(3)::before { content: "⚠️"; }
-.task-matrix-view .task-calendar-summary-popup li:nth-child(4)::before { content: "🛫"; }
-.task-matrix-view .task-calendar-summary-popup li:nth-child(5)::before { content: "⏳"; }
-.task-matrix-view .task-calendar-summary-popup li:nth-child(6)::before { content: "🔁"; }
-.task-matrix-view .task-calendar-summary-popup li:nth-child(7)::before { content: "📝"; }
-
-.task-matrix-view .task-calendar-month {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.tm-root--gantt .tm-toolbar__gantt-only {
+	display: flex;
 }
 
-.task-matrix-view .task-calendar-heads,
-.task-matrix-view .task-calendar-month-grid {
-  display: grid;
-  gap: 6px;
+.tm-root--gantt .tm-toolbar__panel-only {
+	display: none;
 }
 
-.task-matrix-view .task-calendar-heads.is-workweek,
-.task-matrix-view .task-calendar-month-grid.is-workweek {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+/* 工具栏上的「标签 + 下拉」：标签用说明色，下拉只占它需要的宽度 */
+.tm-toolbar__field {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
 }
 
-.task-matrix-view .task-calendar-head {
-  text-align: center;
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 2px 0 4px;
+.tm-toolbar__label {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
 }
 
-.task-matrix-view .task-calendar-head.weekend {
-  color: var(--interactive-accent);
+/* 进/出甘特的开关：点亮时用强调色，一眼看出当前在甘特模式 */
+.tm-btn--toggle.is-on {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
 }
 
-.task-matrix-view .task-calendar-day {
-  border: var(--cal-border);
-  background: var(--background-primary);
-  border-radius: var(--cal-radius);
-  min-height: 126px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+.tm-btn--toggle.is-on:hover {
+	background: var(--interactive-accent-hover);
 }
 
-.task-matrix-view .task-calendar-day:hover {
-  border-color: color-mix(in srgb, var(--interactive-accent) 35%, var(--background-modifier-border));
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+/* ───────────────────────────── 第二行：筛选栏 ───────────────────────────── */
+
+.tm-filter-host {
+	flex: 0 0 auto;
 }
 
-.task-matrix-view .task-calendar-day.outside {
-  opacity: 0.5;
-  filter: saturate(0.75);
+.tm-filter-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+	margin-bottom: var(--size-4-2);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
 }
 
-.task-matrix-view .task-calendar-day.weekend-day {
-  background: color-mix(in srgb, var(--background-primary) 92%, var(--interactive-accent) 8%);
+.tm-filter-group {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-3);
 }
 
-.task-matrix-view .task-calendar-day.weekend-day .task-calendar-date {
-  color: var(--interactive-accent);
+.tm-filter-group--summary {
+	margin-left: auto;
 }
 
-.task-matrix-view .task-calendar-day.today {
-  border: 2px solid color-mix(in srgb, var(--interactive-accent) 70%, white 0%);
-  background: color-mix(in srgb, var(--interactive-accent) 10%, var(--background-primary));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+.tm-filter-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	white-space: nowrap;
 }
 
-.task-matrix-view .task-calendar-day.weekend-day.today {
-  background: color-mix(in srgb, var(--interactive-accent) 14%, var(--background-primary));
-  border-color: color-mix(in srgb, var(--interactive-accent) 78%, white 0%);
+/*
+ * 表单控件的配色口径：
+ * - 底色用 `--background-modifier-form-field`（主题专门给表单控件留的那层），
+ *   深色下才与筛选栏的 --background-secondary 拉得开；
+ * - 只写 background-color，不用 background 简写：`<select>` 的箭头是主题给的
+ *   background-image，简写会连 position/size 一起重置，箭头会凭空消失；
+ * - 右侧留白单独给足：箭头与日历图标都画在右侧，整体改写 padding 会压到文字上。
+ */
+.tm-filter-select,
+.tm-filter-input {
+	padding-top: var(--size-2-2);
+	padding-bottom: var(--size-2-2);
+	padding-left: var(--size-2-3);
+	padding-right: 1.8em;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background-color: var(--background-modifier-form-field);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
 }
 
-.task-matrix-view .task-calendar-date {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-normal);
+/* 关闭原生外观：Windows 深色下原生 select 会给选中文字叠一层重影 */
+.tm-filter-select {
+	appearance: none;
+	-webkit-appearance: none;
+	max-width: 10em;
 }
 
-.task-matrix-view .task-calendar-day.today .task-calendar-date {
-  color: var(--interactive-accent);
+.tm-filter-input--date {
+	min-width: 9em;
 }
 
-.task-matrix-view .task-calendar-items {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.tm-date-range {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
 }
 
-.task-matrix-view .task-calendar-item {
-  display: block;
-  padding: 3px 6px;
-  border-radius: 6px;
-  font-size: 11px;
-  line-height: 1.3;
-  color: var(--text-normal);
-  background: var(--background-secondary);
-  border: 1px solid transparent;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-decoration: none;
-  transition: background-color 120ms ease, transform 120ms ease, border-color 120ms ease;
+.tm-date-sep {
+	color: var(--text-faint);
 }
 
-.task-matrix-view .task-calendar-item:hover {
-  transform: translateX(1px);
+/*
+ * chips 用「按钮面」变量（--interactive-normal），不用 --background-primary：
+ * 深色主题下 primary 与筛选栏的 secondary 几乎同色，未选中的 chip 会糊成一团。
+ */
+.tm-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-2);
 }
 
-.task-matrix-view .task-calendar-item.type-due {
-  border-left: 3px solid #f59e0b;
-  background: color-mix(in srgb, #f59e0b 12%, var(--background-secondary));
+/* 标记 chips 显示的是方括号内容（[x] / [-]），等宽字体更像代码本身 */
+.tm-chips--marker .tm-chip {
+	font-family: var(--font-monospace);
 }
 
-.task-matrix-view .task-calendar-item.type-start {
-  border-left: 3px solid #3b82f6;
-  background: color-mix(in srgb, #3b82f6 12%, var(--background-secondary));
+.tm-chip {
+	padding: 2px var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-l);
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
 }
 
-.task-matrix-view .task-calendar-item.type-scheduled {
-  border-left: 3px solid #8b5cf6;
-  background: color-mix(in srgb, #8b5cf6 12%, var(--background-secondary));
+button.tm-chip {
+	cursor: pointer;
 }
 
-.task-matrix-view .task-calendar-item.type-done {
-  border-left: 3px solid #22c55e;
-  background: color-mix(in srgb, #22c55e 12%, var(--background-secondary));
+/* 可点的 chip（预览栏上的开关）：悬停给反馈，点亮 = 这一项开着 */
+button.tm-chip:hover {
+	border-color: var(--text-muted);
 }
 
-.task-matrix-view .task-calendar-item.type-overdue {
-  border-left: 3px solid #ef4444;
-  background: color-mix(in srgb, #ef4444 13%, var(--background-secondary));
+button.tm-chip.is-active {
+	border-color: var(--interactive-accent);
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
 }
 
-.task-matrix-view .task-calendar-item.type-process {
-  border-left: 3px solid #0ea5e9;
-  background: color-mix(in srgb, #0ea5e9 12%, var(--background-secondary));
+button.tm-chip:hover {
+	background-color: var(--interactive-hover);
 }
 
-.task-matrix-view .task-calendar-week {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(160px, 1fr));
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
+/* 选中 = 强调色；--text-on-accent 由主题按深浅自动取反，不必单写 dark 规则 */
+button.tm-chip.is-active {
+	background-color: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+	color: var(--text-on-accent);
 }
 
-.task-matrix-view .task-calendar-week-split {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.tm-chip:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
 }
 
-.task-matrix-view .task-calendar-week-main {
-  grid-template-columns: repeat(5, minmax(160px, 1fr));
+/* 卡片上的 chip 只是信息，不可点 */
+.tm-chip--static {
+	background-color: var(--background-secondary);
+	color: var(--text-muted);
 }
 
-.task-matrix-view .task-calendar-week-compact {
-  grid-template-columns: repeat(5, minmax(160px, 1fr));
+.tm-chip--warning {
+	border-color: var(--text-error);
+	color: var(--text-error);
 }
 
-.task-matrix-view .task-calendar-weekend {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(160px, 1fr));
-  gap: 8px;
+.tm-chip--conflict {
+	border-color: var(--color-orange, var(--text-warning, var(--text-error)));
+	color: var(--text-warning, var(--text-error));
 }
 
-.task-matrix-view .task-calendar-day.week-day {
-  min-height: 210px;
+.tm-filter-count {
+	font-size: var(--font-ui-smaller);
+	font-variant-numeric: tabular-nums;
+	color: var(--text-muted);
 }
 
-.task-matrix-view .task-calendar-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.tm-filter-count--empty {
+	color: var(--text-error);
 }
 
-.task-matrix-view .task-calendar-list-day {
-  border: var(--cal-border);
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--background-primary);
-  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+.tm-filter-clear {
+	padding: 2px var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: transparent;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
 }
 
-.task-matrix-view .task-calendar-list-day > summary {
-  cursor: pointer;
-  list-style: none;
-  padding: 9px 12px;
-  font-size: 13px;
-  color: var(--text-muted);
-  background: var(--background-secondary);
-  border-bottom: var(--cal-border);
+.tm-filter-clear:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
 }
 
-.task-matrix-view .task-calendar-list-day > summary::-webkit-details-marker {
-  display: none;
+/* ───────────────────────────── 主区：容器网格 ───────────────────────────── */
+
+.tm-board {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
 }
 
-.task-matrix-view .task-calendar-list-day.today {
-  border-color: color-mix(in srgb, var(--interactive-accent) 45%, var(--background-modifier-border));
-  background: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
+/*
+ * 容器网格 —— 「容器大小规则对称」的唯一来源。
+ * `--flow`（列表）的行高在下面单独压矮一档，理由见那条规则。
+ *
+ * - 列：`auto-fit + 1fr` 让固定 4 个容器（GTD / 矩阵）等宽并撑满整行，
+ *   窗口变窄时自动折成 2×2、1×4；
+ * - 行：`grid-auto-rows: clamp(...)` 让同一行的容器**等高**；
+ * - 关键：**绝不能写 `align-items: start`** —— 一写容器就退回内容高度，
+ *   等高立刻失效，整页会变成高低错落的砖墙。
+ */
+.tm-board__grid {
+	display: grid;
+	gap: var(--size-4-2);
+	grid-auto-rows: clamp(280px, 46vh, 520px);
+	align-content: start;
 }
 
-.task-matrix-view .task-calendar-list-day.today > summary {
-  color: var(--interactive-accent);
-  font-weight: 700;
-  background: color-mix(in srgb, var(--interactive-accent) 10%, var(--background-secondary));
+.tm-board__grid--fixed {
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-.task-matrix-view .task-calendar-list-content {
-  padding: 9px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+/*
+ * `--flow`：列表模式（一格 = 一条笔记或一个文件夹，装的是清单行）。
+ *
+ * 列宽与 GTD/矩阵同一族，但行高矮一档：清单行比卡片矮得多，
+ * 沿用 `--fixed` 那个 clamp(280px, 46vh, 520px) 会在容器底部留大片空白。
+ */
+.tm-board__grid--flow {
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	grid-auto-rows: clamp(200px, 30vh, 400px);
 }
 
-@media (max-width: 980px) {
-  .task-matrix-view .task-calendar {
-    padding: 10px;
-  }
-
-  .task-matrix-view .task-calendar-title {
-    min-width: auto;
-    font-size: 14px;
-  }
+/*
+ * 宽屏（PC）：面板容器一屏装满 —— 列表 / GTD / 矩阵共用的这套网格
+ * 直接给足高度（height: 100%），行高改成 minmax(280px, 1fr)：
+ * 卡片少时行被拉满到视口，不再在下半屏留白；卡片多时行按 280px 起步、
+ * 超出部分照旧由容器内部滚动承担。
+ *
+ * 两点边界：
+ * - 排除 .tm-section__body（按文件夹分组时的网格）：它住在高度 auto 的
+ *   分区里，百分比高度解析不了；分组模式维持内容行高不变；
+ * - height 用 100% 而不是 min-height：min-height 只能保证网格盒子够高，
+ *   配 align-content: start 时多出来的空间会堆在行下方（还是留白），
+ *   行本身不会被拉满。
+ *
+ * 窄屏与手机走上面的矮行高，维持不变。
+ */
+@media (min-width: 1100px) {
+	.tm-board__grid:not(.tm-section__body) {
+		height: 100%;
+		grid-auto-rows: minmax(280px, 1fr);
+	}
 }
 
-@media (max-width: 720px) {
-  .task-matrix-view .task-calendar-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
+/*
+ * 分区（笔记列表按文件夹分组）：可折叠的分组标题 + 里面的笔记容器。
+ *
+ * 分区刻意不做容器（不套边框盒子）：里面已经是容器了，再套一层，
+ * 每格宽度要被三层 padding 挤掉。折叠状态由 `is-collapsed` 一个类承担。
+ */
+.tm-sections {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+}
 
-  .task-matrix-view .task-calendar-nav {
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
+.tm-section {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+}
 
-  .task-matrix-view .task-calendar-day {
-    min-height: 96px;
-  }
+.tm-section__head {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	padding: var(--size-2-1) var(--size-2-2);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
 
-  .task-matrix-view .task-calendar-day.week-day {
-    min-height: 150px;
-  }
+.tm-section__head:hover {
+	background: var(--background-modifier-hover);
+}
 
-  .task-matrix-view .task-calendar-week,
-  .task-matrix-view .task-calendar-week-main,
-  .task-matrix-view .task-calendar-week-compact,
-  .task-matrix-view .task-calendar-weekend {
-    grid-template-columns: 1fr;
-  }
+.tm-section__chevron {
+	flex: 0 0 auto;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
 
-  .task-matrix-view .task-calendar-item {
-    font-size: 10px;
-  }
+.tm-section__title {
+	margin: 0;
+	font-size: var(--font-ui-medium);
+}
+
+.tm-section__count {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.tm-section.is-collapsed .tm-section__body {
+	display: none;
+}
+
+/* 容器：固定行高下自己撑满，超出由 __body 内部滚动承担 */
+.tm-panel {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	min-width: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
+	overflow: hidden;
+}
+
+.tm-panel__head {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	flex: 0 0 auto;
+	padding: var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+}
+
+.tm-panel__chevron {
+	color: var(--text-faint);
+	flex: 0 0 auto;
+}
+
+.tm-panel__titles {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.tm-panel__title {
+	margin: 0;
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+	color: var(--text-normal);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tm-panel__subtitle {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.tm-panel__head-right {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin-left: auto;
+}
+
+.tm-panel__count {
+	min-width: 2em;
+	text-align: right;
+	font-size: var(--font-ui-smaller);
+	font-variant-numeric: tabular-nums;
+	color: var(--text-muted);
+}
+
+.tm-panel__add {
+	padding: 0 var(--size-2-3);
+	font-size: var(--font-ui-small);
+	line-height: 1.6;
+}
+
+.tm-panel__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	flex: 1 1 auto;
+	min-height: 0;
+	padding: var(--size-4-2);
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+.tm-panel.is-collapsed .tm-panel__body {
+	display: none;
+}
+
+.tm-panel.is-collapsed .tm-panel__head {
+	border-bottom: none;
+}
+
+.tm-panel__empty {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+/* 拖放落点：只有带 dropTarget 的容器会加上这个类 */
+.tm-panel--drop-target.is-drop-over {
+	border-color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+}
+
+.tm-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var(--size-2-2);
+	flex: 1 1 auto;
+	padding: var(--size-4-4);
+	color: var(--text-muted);
+	text-align: center;
+}
+
+.tm-empty h3 {
+	margin: 0;
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+}
+
+/* ───────────────────────────── 任务卡片 ───────────────────────────── */
+
+.tm-card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+	flex: 0 0 auto;
+	padding: var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary-alt);
+	cursor: pointer;
+}
+
+.tm-card:hover {
+	border-color: var(--background-modifier-border-hover, var(--background-modifier-border));
+}
+
+.tm-card.is-dragging {
+	opacity: 0.5;
+}
+
+/* 依赖未完成：左侧一条红边，扫一眼就知道被卡住了 */
+.tm-card--blocked {
+	border-left: 3px solid var(--text-error);
+}
+
+.tm-card__head {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--size-2-2);
+}
+
+.tm-card__title {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	word-break: break-word;
+}
+
+/* 卡片里渲染的是用户自己的 Markdown，段落不该带主题的大段外边距 */
+.tm-card__title > p {
+	margin: 0;
+}
+
+.tm-card__title > p + p {
+	margin-top: var(--size-2-2);
+}
+
+.tm-badge {
+	flex: 0 0 auto;
+	padding: 0 var(--size-2-2);
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-smaller);
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+}
+
+.tm-badge--overdue,
+.tm-badge--cancelled {
+	color: var(--text-error);
+}
+
+.tm-badge--completed {
+	color: var(--text-success, var(--text-muted));
+}
+
+.tm-badge--to-be-started {
+	color: var(--text-accent);
+}
+
+.tm-card__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-1);
+}
+
+.tm-card__meta {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tm-card__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-1);
+}
+
+.tm-card__action {
+	padding: 0 var(--size-2-2);
+	line-height: 1.6;
+}
+
+.tm-card__actions-sep {
+	color: var(--text-faint);
+}
+
+.tm-card__actions-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+}
+
+/* ───────────────────────────── 日历 ───────────────────────────── */
+
+.tm-calendar {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+.tm-calendar__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-4-2);
+	flex: 0 0 auto;
+}
+
+.tm-calendar__modes {
+	display: flex;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	overflow: hidden;
+}
+
+.tm-calendar__mode {
+	padding: var(--size-2-2) var(--size-4-2);
+	border: none;
+	background: var(--interactive-normal);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+.tm-calendar__mode.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.tm-calendar__nav {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	margin-left: auto;
+}
+
+.tm-calendar__nav-btn {
+	padding: var(--size-2-2) var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+.tm-calendar__nav-btn.is-active {
+	border-color: var(--interactive-accent);
+	color: var(--interactive-accent);
+}
+
+.tm-calendar__title {
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	white-space: nowrap;
+}
+
+.tm-calendar__summary {
+	padding: var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-secondary);
+}
+
+.tm-calendar__summary ul {
+	margin: 0;
+	padding-left: var(--size-4-3);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* 月视图：7 列固定网格，日期格本身就是规整的，不需要套容器网格 */
+.tm-calendar__month {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+}
+
+.tm-calendar__heads,
+.tm-calendar__grid {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: var(--size-2-2);
+}
+
+.tm-calendar__month.is-workweek .tm-calendar__heads,
+.tm-calendar__month.is-workweek .tm-calendar__grid {
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.tm-calendar__head {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	text-align: center;
+}
+
+.tm-calendar__head.is-weekend {
+	color: var(--text-faint);
+}
+
+.tm-calendar__day {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-1);
+	min-height: 6em;
+	padding: var(--size-2-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary-alt);
+	overflow: hidden;
+}
+
+.tm-calendar__day.is-weekend {
+	background: var(--background-secondary);
+}
+
+.tm-calendar__day.is-outside {
+	opacity: 0.55;
+}
+
+/* 今天的高亮优先级最高：写成 .is-today.is-today 之外，还要排在周末规则之后 */
+.tm-calendar__day.is-today {
+	border-color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+}
+
+.tm-calendar__date {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
+
+.tm-calendar__day.is-today .tm-calendar__date {
+	color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+}
+
+.tm-calendar__items {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	overflow: hidden;
+}
+
+.tm-calendar__item {
+	display: block;
+	padding: 0 var(--size-2-2);
+	border-left: 3px solid var(--text-faint);
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	text-decoration: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.tm-calendar__item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.tm-calendar__item.is-due {
+	border-left-color: var(--text-accent);
+}
+
+.tm-calendar__item.is-start {
+	border-left-color: var(--text-success, var(--text-accent));
+}
+
+.tm-calendar__item.is-scheduled {
+	border-left-color: var(--text-warning, var(--text-accent));
+}
+
+.tm-calendar__item.is-done {
+	border-left-color: var(--text-faint);
+	color: var(--text-muted);
+}
+
+.tm-calendar__item.is-overdue {
+	border-left-color: var(--text-error);
+}
+
+.tm-calendar__item.is-process {
+	border-left-color: var(--text-faint);
+	background: transparent;
+}
+
+.tm-calendar__more {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+}
+
+/* 周视图：工作日一行，周末单独一行 */
+.tm-calendar__week {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+}
+
+.tm-calendar__week-main,
+.tm-calendar__weekend {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: var(--size-2-2);
+}
+
+.tm-calendar__day--card {
+	min-height: 10em;
+}
+
+/* 列表视图：一天一条 details */
+.tm-calendar__list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-2);
+}
+
+.tm-calendar__list-day {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary-alt);
+}
+
+.tm-calendar__list-day > summary {
+	padding: var(--size-2-2) var(--size-4-2);
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.tm-calendar__list-day.is-today {
+	border-color: var(--interactive-accent);
+}
+
+.tm-calendar__list-day.is-today > summary {
+	color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+}
+
+.tm-calendar__list-body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-2-1);
+	padding: 0 var(--size-4-2) var(--size-4-2);
+}
+
+/*
+ * 宽屏（PC）：日历同样一屏装满 —— 与容器网格的宽屏规则同一思路，
+ * 但这里走 flex 撑满（日历的几层包装本来就是 flex 列，比 height: 100%
+ * 少一层「父级必须有明确高度」的前提）。行下限沿用原来的 min-height
+ * （月 6em / 周 10em），内容超出时照旧整页滚动。
+ * 列表视图是一天一条的纵向清单，没有可拉伸的行，维持不变。
+ * 窄屏与手机维持原行高。
+ */
+@media (min-width: 1100px) {
+	/* 月视图：外层拿满剩余高度，日期行 minmax(6em, 1fr) 均分 */
+	.tm-calendar__month {
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+
+	.tm-calendar__month .tm-calendar__grid {
+		flex: 1 1 auto;
+		min-height: 0;
+		grid-auto-rows: minmax(6em, 1fr);
+	}
+
+	/* 周视图：工作日行与周末行同样拉满 */
+	.tm-calendar__week {
+		flex: 1 1 auto;
+		min-height: 0;
+	}
+
+	.tm-calendar__week-main,
+	.tm-calendar__weekend {
+		flex: 1 1 auto;
+		min-height: 0;
+		grid-auto-rows: minmax(10em, 1fr);
+	}
+}
+
+/* ───────────────────────────── 甘特 ─────────────────────────────
+ *
+ * 数值契约（与 gantt/gantt-view.ts 里的常量配对，改一处必须一起改）：
+ *   行高 30px / 分节头 26px / 表头两行各 22px（合计 44px）/ 条高 ROW_HEIGHT-10
+ *   / 天数文字 11px（= DURATION_FONT_SIZE）
+ * 这里是 SVG 坐标计算与盒子高度的两套口径，对不上就会出现「条与行错位」。
+ */
+
+.tm-gantt-board {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.tm-gantt-board__view {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.tm-gantt {
+	position: relative;
+	display: flex;
+	flex-direction: row;
+	flex: 1 1 auto;
+	width: 100%;
+	min-height: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-primary);
+	overflow: hidden;
+}
+
+/* 左侧任务列：行高与右侧 SVG 严格一一对应 */
+.tm-gantt__sidebar {
+	/*
+	 * 宽度由变量给（拖动分隔条时改它），没拖过时用默认值。
+	 * 上下限都不写死在这儿：下限由 SplitResizer 收敛，上限按容器宽度现算 ——
+	 * 窗口被拖窄后，昨天存的宽度不许把时间轴挤没。
+	 */
+	flex: 0 0 var(--tm-gantt-sidebar-width, 240px);
+	max-width: calc(100% - 220px);
+	min-width: 0;
+	overflow: hidden;
+	background: var(--background-primary-alt);
+}
+
+/*
+ * 任务列与时间轴之间的分隔条。
+ *
+ * 触摸目标要够宽（6px），视觉上却只该是一条细线：本体透明，线用伪元素画。
+ * 拖动中/悬停/键盘聚焦时线变粗变色，兼作「这里能拖」的提示。
+ */
+.tm-gantt__resizer {
+	position: relative;
+	flex: 0 0 auto;
+	width: 6px;
+	cursor: col-resize;
+	background: transparent;
+}
+
+.tm-gantt__resizer::before {
+	content: "";
+	position: absolute;
+	inset: 0 auto 0 50%;
+	width: 1px;
+	transform: translateX(-50%);
+	background: var(--background-modifier-border);
+}
+
+.tm-gantt__resizer:hover::before,
+.tm-gantt__resizer.is-dragging::before,
+.tm-gantt__resizer:focus-visible::before {
+	width: 2px;
+	background: var(--interactive-accent);
+}
+
+.tm-gantt__resizer:focus-visible {
+	outline: none;
+}
+
+/* 拖动中：整个窗口禁掉选中、保持抓手光标（指针滑出分隔条也不会变回箭头） */
+body.tm-resizing {
+	user-select: none;
+	cursor: col-resize;
+}
+
+/* 44px = 表头两行 22px：两侧顶部必须齐平，否则行就错开了 */
+.tm-gantt__sidebar-head {
+	display: flex;
+	align-items: center;
+	height: 44px;
+	padding: 0 var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* 纵向跟随时间轴滚动（值由 gantt-view 的 syncScroll 写入） */
+.tm-gantt__sidebar-body {
+	transform: translateY(var(--tm-sidebar-offset, 0));
+}
+
+.tm-gantt__sidebar-section {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	width: 100%;
+	height: 26px;
+	padding: 0 var(--size-4-2);
+	border: none;
+	border-radius: 0;
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	text-align: left;
+	cursor: pointer;
+}
+
+.tm-gantt__sidebar-section:hover {
+	background: var(--background-modifier-hover);
+}
+
+.tm-gantt__sidebar-section:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
+}
+
+.tm-gantt__sidebar-section.is-collapsed {
+	color: var(--text-faint);
+}
+
+.tm-gantt__chevron {
+	flex: 0 0 auto;
+	color: var(--text-faint);
+}
+
+.tm-gantt__sidebar-section-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tm-gantt__sidebar-row {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+	height: 30px;
+	padding: 0 var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tm-gantt__sidebar-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.tm-gantt__sidebar-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--font-ui-smaller);
+}
+
+.tm-gantt__sidebar-name a {
+	color: var(--text-normal);
+	text-decoration: none;
+}
+
+.tm-gantt__sidebar-name a:hover {
+	color: var(--text-accent);
+}
+
+.tm-gantt__sidebar-meta {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-1);
+	flex-shrink: 0;
+}
+
+/*
+ * 行上的编辑按钮。
+ *
+ * 常驻显示（与任务卡片的操作行同口径：不靠悬停才出现，否则触屏与键盘用户找不到），
+ * 但不套 `.tm-btn` 的边框与内边距 —— 行高只有 30px，带框的按钮会把整列压得喘不上气，
+ * 所以这里只用弱化的颜色表示「可点」，悬停时才给底色。
+ */
+.tm-gantt__row-edit {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: none;
+	border-radius: var(--radius-s);
+	background: transparent;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	line-height: 1;
+	cursor: pointer;
+}
+
+.tm-gantt__row-edit:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.tm-gantt__row-edit:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
+}
+
+.tm-gantt__tag {
+	padding: 0 var(--size-2-1);
+	border-radius: var(--radius-s);
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* 「缺日期」用橙色底：这是要人去补的数据问题，比「好看」优先 */
+.tm-gantt__fallback-hint {
+	padding: 0 var(--size-2-1);
+	border-radius: var(--radius-s);
+	background: rgba(var(--color-orange-rgb, 255, 150, 0), 0.2);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* 唯一滚动容器：横向滚时间、纵向滚行；粘性表头靠它生效 */
+.tm-gantt__timeline {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+	/* 可按住拖动平移（横向滚动条在 Obsidian 里是浮层又细，不好找也不好抓） */
+	cursor: grab;
+}
+
+.tm-gantt__timeline.is-panning {
+	cursor: grabbing;
+	user-select: none;
+}
+
+.tm-gantt__canvas {
+	position: relative;
+	width: var(--tm-canvas-width, 100%);
+}
+
+.tm-gantt__header {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: var(--background-primary);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tm-gantt__header-row {
+	display: flex;
+	height: 22px;
+}
+
+.tm-gantt__header-row--upper {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+}
+
+.tm-gantt__header-row--lower {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+/* 列宽由 JS 写成变量：表头是流式排布，网格线是绝对定位，两者共用一个宽度才不会错开 */
+.tm-gantt__header-cell {
+	flex: 0 0 auto;
+	width: var(--tm-cell-width, 40px);
+	overflow: hidden;
+	border-left: 1px solid var(--background-modifier-border);
+}
+
+.tm-gantt__header-label {
+	padding-left: var(--size-2-2);
+	white-space: nowrap;
+}
+
+.tm-gantt__svg {
+	display: block;
+}
+
+.tm-gantt__bar {
+	fill: var(--text-muted);
+	cursor: pointer;
+}
+
+.tm-gantt__bar:hover {
+	filter: brightness(1.15);
+}
+
+.tm-gantt__bar:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+}
+
+/* 起止日期是推导出来的：虚线橙边提醒「去补真实日期」 */
+.tm-gantt__bar[data-fallback="true"] {
+	stroke: var(--color-orange);
+	stroke-width: 1;
+	stroke-dasharray: 4 3;
+}
+
+/*
+ * 四类状态的颜色一律由 JS 内联写 `fill`（在设置里可改），样式表不参与配色 ——
+ * `tm-gantt__bar--active/--done/--crit/--fallback` 这几个类名只用来在
+ * 开发者工具里辨认状态，别去这里找颜色。
+ */
+
+/*
+ * 天数文字：11px 必须与 gantt-view 的 DURATION_FONT_SIZE 一致。
+ *
+ * 条内是「条色 + on-accent 文字」，而条色可能是黄/青这类亮色（用户还能自己改），
+ * 白字会糊掉，所以加一圈**半透明深色**描边，并用 `paint-order: stroke` 把描边压在
+ * 文字之后。这里有两处不能省的细节（原来都踩了，表现就是笔画看着像**重影**）：
+ *
+ * 1. 描边色必须是**始终比条色深**的 rgba 黑，不能取 `--background-primary` ——
+ *    浅色主题下那就是白色，白字配白描边，笔画会糊成一团；
+ * 2. 11px 的字配 2px 描边，字形本身要够粗，否则描边会啃掉细笔画（同样像重影），
+ *    所以字重取 semibold。这两条与 Project Master 的口径一致。
+ */
+.tm-gantt__bar-duration {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	fill: var(--text-on-accent);
+	stroke: rgba(0, 0, 0, 0.28);
+	stroke-width: 2px;
+	stroke-linejoin: round;
+	paint-order: stroke;
+	dominant-baseline: middle;
+	pointer-events: none;
+}
+
+.tm-gantt__bar-duration--outside {
+	fill: var(--text-muted);
+	stroke: none;
+}
+
+/* 周末底带画在网格与任务条之下，只做背景提示 */
+.tm-gantt__off-day {
+	fill: var(--background-modifier-hover);
+	pointer-events: none;
+}
+
+.tm-gantt__grid-line {
+	stroke: var(--background-modifier-border);
+	stroke-width: 1;
+}
+
+.tm-gantt__today {
+	stroke: var(--color-red);
+	stroke-width: 1;
+	stroke-dasharray: 4 3;
+}
+
+/* sticky left：横向滚动时「没有可显示的任务」这句话不会被推出视野 */
+.tm-gantt__empty {
+	position: sticky;
+	left: 0;
+	padding: var(--size-4-3);
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* ───────────────────────────── 即时悬停提示 ───────────────────────────── */
+
+/*
+ * 挂在 `document.body` 下、以视口定位：锚点可能被容器裁掉或在滚动，
+ * 跟着它走会闪；固定在视口上只需摆一次位置。
+ *
+ * z-index 只取主题给提示层留的那一档（--layer-tooltip），不硬编码一个大数：
+ * 抬太高会压住命令面板、菜单这些同样需要浮在最上面的东西。
+ */
+.tm-tooltip {
+	position: fixed;
+	max-width: 22em;
+	padding: var(--size-2-2) var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	box-shadow: var(--shadow-s);
+	pointer-events: none;
+	z-index: var(--layer-tooltip, 30);
+}
+
+.tm-tooltip__line {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-normal);
+	word-break: break-word;
+}
+
+.tm-tooltip__line.is-muted {
+	color: var(--text-muted);
+}
+
+/* ───────────────────────────── 甘特：区内页签 ───────────────────────────── */
+
+/*
+ * 甘特这块主区里有两个页签：时间轴 / Mermaid 预览。
+ * 与主工具栏的模式按钮刻意长得不一样（这里是下划线页签）：它们是同一块主区里的
+ * 两种呈现，不是两套数据，混成一组会让人以为「预览」看的是别的东西。
+ */
+.tm-gantt-shell {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	/*
+	 * min-width: 0 是必须的，不是保险：宿主 `.tm-body` 是**行**方向 flex，本元素是它的
+	 * flex item，而 `min-width: auto` 在主轴上等于「内容的 min-content 宽度」——
+	 * 时间轴画布宽达成千上万像素，整块主区于是被撑到 canvas 那么宽，再被 `.tm-body`
+	 * 的 overflow:hidden 裁掉。症状就是「视野停在最早的那天，而且怎么都滚不动」
+	 * （滚动容器自己滚不了，因为它的可视宽度等于内容宽度）。
+	 */
+	min-width: 0;
+	min-height: 0;
+	gap: var(--size-2-2);
+	overflow: hidden;
+}
+
+.tm-gantt-shell__tabs {
+	display: flex;
+	flex: 0 0 auto;
+	gap: var(--size-2-1);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tm-gantt-shell__tab {
+	padding: var(--size-2-2) var(--size-4-2);
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: var(--radius-s) var(--radius-s) 0 0;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+.tm-gantt-shell__tab:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.tm-gantt-shell__tab.is-active {
+	border-bottom-color: var(--interactive-accent);
+	color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+}
+
+.tm-gantt-shell__tab:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
+}
+
+/* ───────────────────────────── Mermaid 预览 ───────────────────────────── */
+
+.tm-mermaid {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	gap: var(--size-2-2);
+}
+
+/* 一行控件：左侧是选项 chips，右侧是出口按钮 */
+.tm-mermaid__bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-2);
+	flex: 0 0 auto;
+}
+
+.tm-mermaid__hint {
+	color: var(--text-faint);
+	cursor: help;
+}
+
+/* 日期输入：标签 + 输入框。宽度给够看清一条区间写法（2026-10-01~2026-10-07） */
+.tm-mermaid__field {
+	display: flex;
+	align-items: center;
+	gap: var(--size-2-2);
+}
+
+.tm-mermaid__field-label {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	white-space: nowrap;
+}
+
+.tm-mermaid__input {
+	width: 190px;
+	max-width: 100%;
+	padding: 2px var(--size-2-3);
+	font-size: var(--font-ui-smaller);
+}
+
+.tm-mermaid__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-2);
+	/* 出口靠右：左边是「看什么」，右边是「拿去用」，读起来不打架 */
+	margin-left: auto;
+}
+
+.tm-mermaid__preview {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+	padding: var(--size-4-2);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background-color: var(--background-primary-alt);
+}
+
+/* mermaid 自己会撑得很宽，给个上限，免得把整块主区顶出横向滚动 */
+.tm-mermaid__preview svg {
+	max-width: 100%;
+	height: auto;
+}
+
+.tm-mermaid__preview-empty {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.tm-mermaid__preview-error {
+	color: var(--text-error);
+	font-size: var(--font-ui-smaller);
+}
+
+/* ───────────────────────────── 设置页：分页 ───────────────────────────── */
+
+.tm-settings__tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-1);
+	margin-bottom: var(--size-4-2);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tm-settings__tab {
+	padding: var(--size-2-2) var(--size-4-2);
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: var(--radius-s) var(--radius-s) 0 0;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	cursor: pointer;
+}
+
+.tm-settings__tab:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.tm-settings__tab.is-active {
+	border-bottom-color: var(--interactive-accent);
+	color: var(--text-normal);
+	font-weight: var(--font-semibold);
+}
+
+.tm-settings__tab:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
+}
+
+/* 页首说明：分页之后每页只剩两三组，没这句就看不出这页的边界 */
+.tm-settings__lead {
+	margin-bottom: var(--size-4-2);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.5;
+}
+
+/* ───────────────────────────── 设置页：配色色块 ───────────────────────────── */
+
+.tm-color-presets {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-2-2);
+	padding: 0 var(--size-4-2) var(--size-4-2);
+}
+
+.tm-color-swatch {
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+
+.tm-color-swatch.is-active {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
+}
+
+/* ───────────────────────────── 模态 ───────────────────────────── */
+
+.tm-modal__message {
+	color: var(--text-normal);
+}
+
+/* 描述域：撑满弹窗宽度，纵向可拉（默认那点宽度改长描述会很难受） */
+.tm-form__description {
+	width: 100%;
+	resize: vertical;
+}
+
+/* 描述行上下布局：说明文字长，默认左右布局会把文本框挤成一条竖栏。
+   选择器必须与 task-editor-modal.ts 里 addClass 的类名逐字一致 */
+.tm-form .tm-form__row--stack {
+	display: block;
+}
+
+.tm-form .tm-form__row--stack .setting-item-control {
+	width: 100%;
+	margin-top: var(--size-2-2);
+}
+
+/*
+ * 标签下拉（描述下方）：候选 chips 收在「标签」按钮的面板里，点开才占空间 ——
+ * 库里标签一多，整排铺出来能吃掉半个弹窗。面板走普通文档流展开（弹窗内容
+ * 被推下去），不需要抬 z-index。选中态 = 「这个标签已经在正文里」，
+ * 点一下加/去掉（见 modals/tag-chips.ts）。
+ */
+.tm-tag-menu {
+	margin: 0 0 var(--size-2-2);
+}
+
+.tm-tag-menu__chevron {
+	margin-left: var(--size-2-1);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	transition: transform 120ms ease;
+}
+
+.tm-tag-menu.is-open .tm-tag-menu__chevron {
+	transform: rotate(180deg);
+}
+
+.tm-tag-menu__panel {
+	display: none;
+}
+
+.tm-tag-menu.is-open .tm-tag-menu__panel {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--size-2-2);
+	max-width: 100%;
+	min-width: 0;
+}
+
+.tm-tag-chips__empty {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+}
+
+.tm-tag-chips__chip {
+	padding: var(--size-2-1) var(--size-2-3);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	cursor: pointer;
+}
+
+.tm-tag-chips__chip:hover {
+	border-color: var(--text-muted);
+	color: var(--text-normal);
+}
+
+.tm-tag-chips__chip.is-active {
+	border-color: var(--interactive-accent);
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.tm-tag-chips__chip:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 1px;
+}
+
+/*
+ * 弹窗宽度。
+ *
+ * Obsidian 的对话框宽度跟着内容走：标签候选那排一多，一行排不下也不换行 ——
+ * 因为「放不下才换行」的前提是宽度受限，而内容决定宽度时这个前提不存在，
+ * 整个对话框就被一路撑到接近全屏。给内容一个明确的宽度，换行才有意义，
+ * 对话框也跟着收回来。确认框共用这个类，收窄对它们没有影响。
+ */
+.tm-modal {
+	width: min(640px, 92vw);
+}
+
+.tm-form .setting-item {
+	border-top: none;
+	padding-top: var(--size-2-2);
+	padding-bottom: var(--size-2-2);
+}
+
+.tm-modal__buttons {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: var(--size-4-2);
+}
+
+.tm-modal__buttons .setting-item {
+	border-top: none;
+	padding-top: 0;
+}
+
+/* ───────────────────────────── 窄屏 ───────────────────────────── */
+
+@media (max-width: 800px) {
+	.tm-root {
+		padding: var(--size-4-1);
+	}
+
+	.tm-toolbar__actions {
+		margin-left: 0;
+	}
+
+	.tm-filter-group--summary {
+		margin-left: 0;
+	}
+
+	.tm-board__grid {
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		grid-auto-rows: clamp(220px, 40vh, 420px);
+	}
 }

@@ -18,12 +18,12 @@ content_hub:
 # 学习笔记: <% tp.file.title %>
 
 ```button
-name 点击按钮移动笔记
+name 点击此按钮将移动笔记至对应文件夹
 type command
-action Templater: Insert JS-ResearchNoteMove
+action Templater: Insert 900 Assets/910 Templates/JS-ResearchNoteMove.md
 color blue
 ```
-%%根据笔记属性source_type移动笔记至300 Resouces对应子文件夹%%
+^button-s9ex
 
 > [!info]- 来源信息
 类型: `=this.file.link.source_type`
@@ -50,12 +50,13 @@ color blue
 
 
 ## 可提炼的知识点 (链接到常青笔记)
-- [[该来源提到的某个概念的常青笔记]]
-- [[该来源支持的某个论点的常青笔记]]
+>*该来源提到的某个概念的常青笔记或该来源支持的某个论点的常青笔记*
+- 
 
 ## 相关内容 / 项目
-- [[关联的内容中心笔记名称]]
-- [[关联的项目笔记名称]]
+>*关联的内容中心笔记名称或关联的项目笔记名称*
+- 
 
 ## 相关研究笔记
-- [[与此相关的其他研究笔记]]
+>*与此相关的其他研究笔记*
+- 

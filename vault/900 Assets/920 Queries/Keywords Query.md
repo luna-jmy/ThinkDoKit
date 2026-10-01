@@ -1,18 +1,26 @@
 ---
+created: 2025-09-18
 obsidianUIMode: preview
-cssclasses:
-  - fullwidth
-  - matrix
-type: query
 ---
 
+## 查询所有有关键词的笔记(limit 5)
+
+```dataview
+TABLE area, type, created, file.mday as "修改日期"
+WHERE keyword
+SORT file.mday DESC
+limit 5
+```
+
 ### 查询有特定关键词笔记
->*此关键词统计是基于笔记的内联字段keyword，如笔记中无此字段则无法统计。*
+```button
+name 更新查询的关键词
+type command
+action QuickAdd: UpdateInlineField
+color purple
+```
 
-
-| `button-supdate` | [query::理财] |
-| ---------------- | ----------- |
-
+[query::心理学] 
 ```dataviewjs
 // 获取当前页面的 query 内联字段值
 const currentFile = dv.current();
@@ -37,8 +45,21 @@ dv.table(
 );
 ```
 
-## 关键词云
->*此关键词统计是基于笔记的内联字段keyword，如笔记中无此字段则无法统计。仅列出出现超10次的关键词*
+## 查询YAML里的关键词数量 (Top 10)
+
+```dataview
+TABLE WITHOUT ID
+  keywords AS "关键词",
+  length(rows) AS "出现次数"
+FLATTEN file.frontmatter.keywords AS keywords
+WHERE keywords
+GROUP BY keywords
+SORT length(rows) DESC
+limit 10
+```
+
+## 查询笔记内容里的关键词
+>*此关键词统计是基于笔记的内联字段keyword，如笔记中无此字段则无法统计。*
 
 ```dataviewjs
 // --- 关键词词云生成脚本 (v4, 已修正HTML解析错误) ---
@@ -47,7 +68,7 @@ dv.table(
 const MAX_PAGES_TO_SCAN = 2000;
 const MAX_KEYWORDS_FOR_CLOUD = 150;
 const MAX_KEYWORDS_FOR_TABLE = 10;
-const MIN_KEYWORD_FREQUENCY = 5;
+const MIN_KEYWORD_FREQUENCY = 10;
 const EXCLUDED_KEYWORDS = [];
 // ----------------------------------------------------
 
@@ -159,17 +180,4 @@ setTimeout(() => {
 }, 0);
 ```
 
-
-## 查询YAML里的关键词数量 (Top 10)
-
-```dataview
-TABLE WITHOUT ID
-  keywords AS "关键词",
-  length(rows) AS "出现次数"
-FLATTEN file.frontmatter.keywords AS keywords
-WHERE keywords
-GROUP BY keywords
-SORT length(rows) DESC
-limit 10
-```
 

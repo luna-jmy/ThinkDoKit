@@ -1,0 +1,69 @@
+filters:
+  and:
+    - file.folder.contains("Daily")
+    - note["journal-date"] >= "2025-09-01"
+properties:
+  note.💊medicine:
+    displayName: 💊✅
+  note.🧠flashcard:
+    displayName: 🧠✅
+  note.🧘‍♂️meditation:
+    displayName: 🧘‍♂️✅
+  note.🍽️fasting:
+    displayName: 🍽️✅
+  note.reading🕓:
+    displayName: 📖🕓
+  note.saving💰:
+    displayName: ➕💰
+  note.spent💰:
+    displayName: ➖💰
+views:
+  - type: table
+    name: 2025-09之后
+    order:
+      - file.name
+      - 🍽️fasting
+      - 💊medicine
+      - 🧘‍♂️meditation
+      - 🧠flashcard
+      - reading🕓
+    sort:
+      - property: file.name
+        direction: DESC
+    columnSize:
+      note.saving💰: 76
+  - type: table
+    name: 2025-09
+    filters:
+      and:
+        - note["journal-date"] >= "2025-09-01"
+        - note["journal-date"] < "2025-10-01"
+    order:
+      - file.name
+      - 💊medicine
+      - 🧠flashcard
+      - 🧘‍♂️meditation
+      - 🍽️fasting
+      - reading🕓
+      - saving💰
+      - spent💰
+    sort:
+      - property: file.path
+        direction: ASC
+    columnSize:
+      file.name: 134
+  - type: table
+    name: 2025-10
+    filters:
+      and:
+        - note["journal-date"] >= "2025-10-01"
+        - note["journal-date"] < "2025-11-01"
+    order:
+      - file.name
+      - 🍽️fasting
+      - 💊medicine
+      - 🧘‍♂️meditation
+      - 🧠flashcard
+      - reading🕓
+      - saving💰
+      - spent💰

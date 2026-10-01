@@ -1,3 +1,7 @@
+---
+created: 2025-09-18
+---
+
 <%*
 const sourceType = tp.frontmatter.source_type;
 const currentFile = tp.file.find_tfile(tp.file.title);
@@ -13,13 +17,13 @@ if (sourceType && currentFile) {
             targetFolder = "300 Resources/320 References";
             break;
         case "books":
-            targetFolder = "300 Resources/330 Books";
+            targetFolder = "300 Resources/330 Books/333 BookNotes";
             break;
         case "courses":
-            targetFolder = "300 Resources/340 Courses";
+            targetFolder = "300 Resources/340 Notes";
             break;
         case "others":
-            targetFolder = "300 Resources/360 OtherResources";
+            targetFolder = "300 Resources/390 EverythingElse";
             break;
     }
     

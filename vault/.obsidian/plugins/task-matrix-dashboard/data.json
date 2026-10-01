@@ -1,39 +1,96 @@
 {
-  "scanFolders": [],
+  "uiLanguage": "auto",
+  "scanFolders": [
+    "500 Journal",
+    "100 Projects",
+    "300 Resources/360 WorkMemos/会议记录"
+  ],
   "excludeFolders": [
-    "900 Assets",
-    "400 Archive",
-    "700 Books"
+    "900 Assets"
   ],
   "defaultView": "eisenhower",
-  "includeCompleted": false,
+  "ganttBarColors": {
+    "active": "var(--color-blue)",
+    "done": "var(--color-green)",
+    "crit": "var(--color-red)",
+    "fallback": "var(--text-muted)"
+  },
+  "ganttSidebarWidth": 199,
+  "ganttBarDuration": "workday",
+  "mermaidTitle": "任务进度甘特图",
+  "mermaidTodayMarker": true,
+  "mermaidExcludeWeekends": true,
+  "mermaidExcludeDates": "",
+  "mermaidIncludeDates": "",
+  "holidaySchedules": {
+    "2026": {
+      "holidays": "01-01~01-03, 02-15~02-23, 04-04~04-06, 05-01~05-05, 06-19~06-21, 09-25~09-27, 10-01~10-07",
+      "makeupWorkdays": "01-04, 02-14, 02-28, 05-09, 09-20, 10-10"
+    }
+  },
+  "mermaidMarkerStart": "%% task-matrix:start %%",
+  "mermaidMarkerEnd": "%% task-matrix:end %%",
+  "completedTaskDisplayRange": 1,
+  "includeCompletedWithoutDueDate": false,
   "openLocation": "tab",
+  "gtdWaitingTags": [
+    "#waiting",
+    "#delegated",
+    "#blocked",
+    "#next"
+  ],
+  "gtdInProgressTags": [
+    "#doing",
+    "#active",
+    "#started"
+  ],
+  "dragEnabled": true,
+  "quadrantPriorities": {
+    "Q1": "high",
+    "Q2": "high",
+    "Q3": "low",
+    "Q4": "lowest"
+  },
   "completionMarkers": [
     "x",
-    "X",
-    "i",
+    "X"
+  ],
+  "excludeMarkers": [
     "n",
-    "!",
+    "i",
+    ">",
     "p",
     "c",
-    ">",
-    "<"
+    "!"
   ],
   "cancelledMarkers": [
     "-",
     "/"
   ],
   "listGroupByFolder": true,
-  "listGroupByFolderDepth": 2,
-  "newTaskTargetPath": "500 Journal/540 Daily/YYYY-MM-DD.md",
+  "newTaskTargetPath": "500 Journal/{{date:YYYY-MM-DD}}.md",
+  "newTaskTemplatePath": "900 Assets/910 Templates/TPL-Daily.md",
   "newTaskTargetHeading": "## 👀 GTD任务看板",
   "trackCompletionDate": false,
   "urgentDaysRange": 3,
   "showCalendarWeekends": true,
   "showCalendarMonthWeekends": true,
   "calendarListShowFullMonth": false,
-  "showCalendarInProcessTasks": true,
+  "showCalendarInProcessTasks": false,
   "calendarFirstDayOfWeek": "monday",
   "dueDateDisplayRange": 1,
-  "hideFutureStartTasks": false
+  "hideFutureStartTasks": true,
+  "gtdInProgressSetsStartDate": true,
+  "gtdInboxClearsStartDate": true,
+  "gtdPastStartIsInProgress": true,
+  "quadrantUrgency": {
+    "Q1": "today",
+    "Q2": "clear-urgent",
+    "Q3": "today",
+    "Q4": "clear-urgent"
+  },
+  "listGroupByFolderDepth": 1,
+  "quadrantUrgentAddsDueDate": true,
+  "includeCompleted": false,
+  "listShowCancelled": false
 }

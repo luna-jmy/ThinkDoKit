@@ -1665,7 +1665,8 @@ class CreateNewItem {
         const childIsFolded = list.isFoldRoot();
         const endPos = list.getLastLineContentEnd();
         const endOfLine = cursor.line === endPos.line && cursor.ch === endPos.ch;
-        const onChildLevel = listIsZoomingRoot || (hasChildren && !childIsFolded && endOfLine);
+        const onChildLevel = this.after &&
+            (listIsZoomingRoot || (hasChildren && !childIsFolded && endOfLine));
         const indent = onChildLevel
             ? hasChildren
                 ? list.getChildren()[0].getFirstLineIndent()
@@ -1689,7 +1690,7 @@ class CreateNewItem {
             list.addBeforeAll(newList);
         }
         else {
-            if (!childIsFolded || !endOfLine) {
+            if (this.after && (!childIsFolded || !endOfLine)) {
                 const children = list.getChildren();
                 for (const child of children) {
                     list.removeChild(child);

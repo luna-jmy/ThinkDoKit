@@ -18,6 +18,9 @@
   ],
   "recurrenceOnNextLine": false,
   "removeScheduledDateOnRecurrence": false,
+  "searchResults": {
+    "taskCountLocation": "bottom"
+  },
   "statusSettings": {
     "coreStatuses": [
       {
@@ -41,7 +44,7 @@
         "name": "incomplete",
         "nextStatusSymbol": "x",
         "availableAsCommand": false,
-        "type": "IN_PROGRESS"
+        "type": "CANCELLED"
       },
       {
         "symbol": "-",
@@ -191,6 +194,22 @@
         "type": "TODO"
       }
     ]
+  },
+  "isShownInEditModal": {
+    "priority": true,
+    "recurrence": true,
+    "due": true,
+    "scheduled": true,
+    "start": true,
+    "before_this": true,
+    "after_this": true,
+    "status": true,
+    "created": true,
+    "done": true,
+    "cancelled": true
+  },
+  "dismissedNotices": {
+    "live-preview-callout-warning": false
   },
   "features": {
     "INTERNAL_TESTING_ENABLED_BY_DEFAULT": true
