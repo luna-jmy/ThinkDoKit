@@ -217,7 +217,7 @@ await app.vault.modify(activeFile, updatedContent);
 3. Use `dv` and `app` globals
 4. Handle errors with user messages
 5. Test in Obsidian via Dataview code block
-6. Document usage in `vault/300 Resources/310 Scripts&Readme/` if complex (plugin/script docs go to 310; 950 Readme is reserved for vault-wide guides)
+6. Document usage in `seed/300 Resources/310 Scripts&Readme/` if complex (plugin/script docs live in seed-side 310, NOT synced from working vault; 950 Readme is reserved for vault-wide guides)
 
 ### QuickAdd Script
 1. Create `.js` file in `vault/900 Assets/960 Scripts/`
