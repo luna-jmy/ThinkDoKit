@@ -110,7 +110,7 @@
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -375,7 +375,7 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "000 Inbox/ThinkDoKit样例库同步工作流.md"
+                "file": "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/⭐ThinkDoKit（知行盒子）使用指南1.0.md"
               },
               "icon": "lucide-info",
               "title": "笔记属性"
@@ -453,13 +453,13 @@
       "obsidian-day-planner:Open Multi-Day View": true
     }
   },
-  "active": "24e9fcaa50f1c811",
+  "active": "475f3efa67bccfd7",
   "lastOpenFiles": [
+    "000 Inbox/ThinkDoKit样例库同步工作流.md",
     "AGENTS.md",
     "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/⭐ThinkDoKit（知行盒子）使用指南1.0.md",
     "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/ThinkDoKit（知行盒子）使用指南 (Beta.1).md",
     "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/开箱即用的Obsidian库—知行盒子（Beta版）.md",
-    "000 Inbox/ThinkDoKit样例库同步工作流.md",
     "500 Journal/2026-10-01.md",
     "900 Assets/AgentLogs/20260930.md",
     "300 Resources/310 Scripts&Readme/Others/PluginReadme/【插件配置教程】Obsidian Copilot.md",
