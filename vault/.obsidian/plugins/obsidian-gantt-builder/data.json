@@ -1,7 +1,0 @@
-{
-  "excludeWeekends": true,
-  "openMode": "modal",
-  "insertMode": "bottom",
-  "ganttTargetHeading": "## 项目计划",
-  "taskTargetHeading": "## 项目计划"
-}

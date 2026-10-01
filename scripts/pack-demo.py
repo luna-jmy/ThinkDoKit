@@ -80,8 +80,31 @@ def main():
     if zip_path.exists():
         zip_path.unlink()
 
-    # Create ZIP directly from vault (no temp directory needed)
-    create_zip(VAULT_PATH, zip_path)
+    # Merge seed (demo content & base configs) + vault (kit); vault wins on conflict
+    import shutil
+    from datetime import datetime
+    seed_path = PROJECT_ROOT / "seed"
+    if seed_path.exists():
+        merge_dir = Path.cwd().parent / f"temp-pack-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        if merge_dir.exists():
+            shutil.rmtree(merge_dir)
+        shutil.copytree(seed_path, merge_dir, ignore=shutil.ignore_patterns(".DS_Store", ".trash"))
+        for item in VAULT_PATH.rglob("*"):
+            if item.is_file():
+                rel = item.relative_to(VAULT_PATH)
+                dst = merge_dir / rel
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(item, dst)
+        source_dir = merge_dir
+    else:
+        merge_dir = None
+        source_dir = VAULT_PATH
+
+    # Create ZIP directly from merged source
+    create_zip(source_dir, zip_path)
+
+    if merge_dir:
+        shutil.rmtree(merge_dir, ignore_errors=True)
 
     print("\n" + "=" * 60)
     print("[Step 2] Calculating archive size...")
