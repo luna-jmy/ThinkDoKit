@@ -40,6 +40,17 @@ def copy_folders(src_dir, dest_dir):
     else:
         print(f"  [WARNING] .obsidian not found in vault")
 
+    # Overlay seed base configs (app.json, hotkeys, etc.)
+    seed_obsidian = src_dir.parent / "seed" / ".obsidian"
+    if seed_obsidian.exists():
+        for item in seed_obsidian.iterdir():
+            s, d = item, dest_dir / ".obsidian" / item.name
+            if s.is_dir():
+                shutil.copytree(s, d, dirs_exist_ok=True)
+            else:
+                shutil.copy2(s, d)
+        print(f"  [COPY] seed/.obsidian base configs")
+
     # Copy selected subfolders from 900 Assets
     assets_src = src_dir / "900 Assets"
     if assets_src.exists():
