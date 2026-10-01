@@ -52,7 +52,6 @@ ThinkDoKit/
 - 版本号默认读取脚本内常量，可用 `TDK_VERSION` 环境变量临时覆盖
 - `.DS_Store` 和 `.trash` 不会被打进发布包
 
-## Changelog & Contributing
+## Changelog
 
-- 发布记录见 [CHANGELOG.md](CHANGELOG.md)
-- 贡献说明见 [CONTRIBUTING.md](CONTRIBUTING.md)
+发布记录见 [CHANGELOG.md](CHANGELOG.md)
