@@ -82,21 +82,21 @@
             }
           },
           {
-            "id": "475f3efa67bccfd7",
+            "id": "6b48678d6a03c43e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/⭐ThinkDoKit（知行盒子）使用指南1.0.md",
-                "mode": "preview",
+                "file": "000 Inbox/AGENTS.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "⭐ThinkDoKit（知行盒子）使用指南1.0"
+              "title": "AGENTS"
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -257,8 +257,8 @@
             "state": {
               "type": "review-queue-list-view",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "review-queue-list-view"
+              "icon": "SpacedRepIcon",
+              "title": "笔记复习序列"
             }
           },
           {
@@ -347,6 +347,7 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "000 Inbox/ThinkDoKit样例库同步工作流.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -361,7 +362,7 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/⭐ThinkDoKit（知行盒子）使用指南1.0.md"
+                "file": "000 Inbox/ThinkDoKit（知行盒子）使用指南2.0（公众号版·无表格）.md"
               },
               "icon": "lucide-info",
               "title": "笔记属性"
@@ -397,11 +398,11 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
-    "width": 798.5
+    "width": 627.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -441,52 +442,52 @@
   },
   "active": "24e9fcaa50f1c811",
   "lastOpenFiles": [
-    "900 Assets/920 Queries/查找闪卡.md",
-    "900 Assets/950 Readme/ThemeReadme/BlueTopaz任务查询样例.md",
-    "300 Resources/310 Scripts&Readme/Others/BlueTopaz主题Mermaid渲染修复.md",
-    "900 Assets/950 Readme/ThemeReadme/【BlueTopaz】自定义表格样式（需开启对应CSS片段）.md",
-    "900 Assets/950 Readme/ThemeReadme/【主题说明】BlueTopaz用例.md",
-    "300 Resources/310 Scripts&Readme/Others/【主题】Matrix样式用例.md",
-    "100 Projects/长期个人项目/202505 ThinkDoKit知行盒子/⭐ThinkDoKit（知行盒子）使用指南1.0.md",
-    "900 Assets/950 Readme",
-    "900 Assets/920 Queries/GTDCenterBlock.md",
-    "900 Assets/920 Queries/GTD Center.md",
-    "900 Assets/920 Queries/Tasks Center.md",
-    "900 Assets/920 Queries/Task Center Phone.md",
-    "900 Assets/920 Queries/TaskCenter查询备份.md",
-    "900 Assets/920 Queries/周打卡记录查询样式范例.md",
-    "900 Assets/920 Queries/项目中心（升级）.md",
-    "900 Assets/920 Queries/项目列表.base",
-    "900 Assets/920 Queries/我的书架-最近.md",
-    "900 Assets/920 Queries/我的书架-待整理&阅读.md",
-    "900 Assets/920 Queries/日志数据统计.md",
-    "900 Assets/920 Queries/未命名看板.md",
-    "900 Assets/920 Queries/批量删除空笔记.md",
-    "900 Assets/920 Queries/卡片档案馆.md",
-    "900 Assets/920 Queries/Inbox Center.md",
-    "900 Assets/920 Queries/My Book Shelf.md",
-    "900 Assets/920 Queries/Project Management.md",
-    "900 Assets/920 Queries/SideButtons.md",
-    "900 Assets/920 Queries/SystemCheck.md",
-    "300 Resources/330 Books/331 BookInfo/12步玩转股权激励.md",
+    "900 Assets/960 Scripts/r2.sh",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/_shared.mjs",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/_shared.d.mts",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/zip.mjs",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/zip.d.mts",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/gzip.mjs",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/gzip.d.mts",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/deflate.mjs",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/deflate.d.mts",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/brotli.mjs",
+    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/brotli.d.mts",
+    "900 Assets/960 Scripts/node_modules/unenv/README.md",
+    "900 Assets/960 Scripts/node_modules/undici/lib/web/subresource-integrity/Readme.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/best-practices/writing-tests.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/best-practices/undici-vs-builtin-fetch.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/best-practices/proxy.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/best-practices/mocking-request.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/best-practices/crawling.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/best-practices/client-certificate.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/WebSocket.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/Util.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/Socks5ProxyAgent.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/SnapshotAgent.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/RoundRobinPool.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/RetryHandler.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/RetryAgent.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/RedirectHandler.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/ProxyAgent.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/PoolStats.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/Pool.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockPool.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockErrors.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockClient.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockCallHistoryLog.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockCallHistory.md",
+    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockAgent.md",
+    "900 Assets/960 Scripts/node_modules/miniflare/dist/local-explorer-ui/favicon.svg",
     "900 Assets/920 Queries/2026Dashboard.canvas",
-    "900 Assets/960 Scripts/check-frontmatter.py.tmp.19276.0a6a49ee198a",
-    "300 Resources/360 WorkMemos/工作备忘/202609出差记账.csv",
-    "500 Journal/540 Daily",
     "900 Assets/990 Attachments/2026-09-30 tasks插件.png",
     "900 Assets/990 Attachments/Task面板.png",
-    "900 Assets/960 Scripts/parse_openclaw_chat 1.py",
-    "900 Assets/960 Scripts/parse_openclaw_chat.py",
     "300 Resources/350 PersonalMemos/20210308084051-0002.jpg",
-    "400 Archive/430 Resources Archive/Scripts-dataview/progressBar.js",
-    "400 Archive/430 Resources Archive/Scripts-dataview/TabTaskView.js",
-    "400 Archive/430 Resources Archive/Scripts-dataview/random-quote.js",
     "900 Assets/990 Attachments/f2742721e69e15d69e9ddc57783652db_MD5.jpg",
     "900 Assets/990 Attachments/e14e71b6e05d38fb9043b427f9b50caa_MD5.jpg",
     "900 Assets/990 Attachments/afff5d1e8ce658901d9b4dbeeb89c344_MD5.jpg",
     "900 Assets/990 Attachments/c497b36734dbc4fc5b2ea33118507fc4_MD5.jpg",
     "900 Assets/990 Attachments/c39dcd6f5f7561c0c0b4db9e01ea003d_MD5.jpg",
-    "900 Assets/990 Attachments/96a907a53de6148959c9522c8b332301_MD5.jpg",
-    "900 Assets/990 Attachments/a5eb240b9a487d36d0cd71462c2c7911_MD5.jpg"
+    "900 Assets/990 Attachments/96a907a53de6148959c9522c8b332301_MD5.jpg"
   ]
 }

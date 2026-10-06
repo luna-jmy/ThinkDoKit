@@ -1,20 +1,4 @@
 ---
-PersonalGrowth_review: 0
-PersonalGrowth_goal: 0
-HealthFitness_review: 0
-HealthFitness_goal: 0
-LoveRelationships_review: 0
-LoveRelationships_goal: 0
-CareerWork_review: 0
-CareerWork_goal: 0
-FunRecreation_review: 0
-FunRecreation_goal: 0
-Social_review: 0
-Social_goal: 0
-Finance_review: 0
-Finance_goal: 0
-Spiritual_review: 0
-Spiritual_goal: 0
 journal: Annual
 journal-date:
 type: annual_review
@@ -22,14 +6,6 @@ year: <% tp.date.now("YYYY") %>
 created: <% tp.date.now() %>
 tags:
   - journal/annual
-Finance: 0
-Social: 0
-FunRecreation: 0
-PersonalGrowth: 0
-HealthFitness: 0
-LoveRelationships: 0
-CareerWork: 0
-Spiritual: 0
 cssclasses:
 ---
 
@@ -43,9 +19,26 @@ cssclasses:
 - [ ] 目标二：具体内容
 - ...
 
-```dataviewjs
-dv.view("wheel-of-life-interactive")
-```
+## 🎯 生命之轮
+%%内联字段由 Quick Journal 读取，在日志汇总中生成雷达图；数值 0-10%%
+
+- [PersonalGrowth🎯:: 0]
+- [HealthFitness🎯:: 0]
+- [LoveRelationships🎯:: 0]
+- [CareerWork🎯:: 0]
+- [FunRecreation🎯:: 0]
+- [Social🎯:: 0]
+- [Finance🎯:: 0]
+- [Spiritual🎯:: 0]
+- [PersonalGrowth🏆:: 0]
+- [HealthFitness🏆:: 0]
+- [LoveRelationships🏆:: 0]
+- [CareerWork🏆:: 0]
+- [FunRecreation🏆:: 0]
+- [Social🏆:: 0]
+- [Finance🏆:: 0]
+- [Spiritual🏆:: 0]
+
 
 ## ✨ 年度高光时刻与挑战
 
@@ -65,12 +58,12 @@ dv.view("wheel-of-life-interactive")
 - 掌握的新技能:
 - 重要的书籍/课程/资源:
 
-## 🎈 年度法定节假日及事件
+## 🎈 年度事件
 
 
 ## 📇 年度日志索引
 
-> 本节由 `900 Assets/960 Scripts/generate-journal-index.py` 自动生成，请勿手动编辑；新增日志后重跑脚本刷新。
+> 请使用AI agent，用 `900 Assets/960 Scripts/generate-journal-index.py` 脚本生成，勿手动编辑；新增日志后重跑脚本刷新。
 
 
 ## 🔗 相关笔记

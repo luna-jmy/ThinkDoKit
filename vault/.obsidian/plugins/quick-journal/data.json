@@ -178,14 +178,94 @@
         }
       ]
     },
+    "quarterly": {
+      "dir": "500 Journal/515 Quarterly",
+      "templateNote": "",
+      "filenameFormat": "YYYY-[Q]Q",
+      "sections": []
+    },
     "annual": {
       "dir": "500 Journal/",
-      "templateNote": "",
+      "templateNote": "900 Assets/910 Templates/TPL-Annual.md",
       "filenameFormat": "YYYY",
-      "sections": []
+      "sections": [
+        {
+          "id": "sec-4",
+          "heading": "## 🎯 生命之轮",
+          "type": "compare",
+          "fields": [
+            {
+              "key": "PersonalGrowth",
+              "label": "个人成长"
+            },
+            {
+              "key": "HealthFitness",
+              "label": "健康"
+            },
+            {
+              "key": "LoveRelationships",
+              "label": "亲密关系"
+            },
+            {
+              "key": "CareerWork",
+              "label": "职业发展"
+            },
+            {
+              "key": "FunRecreation",
+              "label": "休闲娱乐"
+            },
+            {
+              "key": "Social",
+              "label": "社交"
+            },
+            {
+              "key": "Finance",
+              "label": "财务"
+            },
+            {
+              "key": "Spiritual",
+              "label": "心理健康"
+            }
+          ],
+          "compare": {
+            "series": [
+              {
+                "marker": "🎯",
+                "label": "目标"
+              },
+              {
+                "marker": "🏆",
+                "label": "复盘"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sec-5",
+          "heading": "## ✨ 年度高光时刻与挑战",
+          "type": "list",
+          "fields": [],
+          "lineTemplate": "- {{value}}"
+        },
+        {
+          "id": "sec-6",
+          "heading": "## 🤔 对未来的思考与规划",
+          "type": "list",
+          "fields": [],
+          "lineTemplate": "- {{value}}"
+        },
+        {
+          "id": "sec-7",
+          "heading": "## 🌱 个人成长与学习",
+          "type": "list",
+          "fields": [],
+          "lineTemplate": "- {{value}}"
+        }
+      ]
     }
   },
   "summaryLayout": [
+    "daily-capture",
     "task-chart",
     "checkin",
     "trend",
@@ -193,7 +273,8 @@
     "entry-heatmap",
     "task-heatmap",
     "queries",
-    "feed"
+    "feed",
+    "radar"
   ],
   "summaryQueries": [
     {

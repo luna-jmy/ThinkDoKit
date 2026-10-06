@@ -2094,11 +2094,11 @@
         "id": "openai",
         "autoSyncModels": true,
         "lastModelSync": {
-          "at": 1790814729347
+          "at": 1791206687704
         }
       }
     ],
-    "lastModelAutoSyncAt": 1790814729348
+    "lastModelAutoSyncAt": 1791206687705
   },
   "migrations": {
     "migrateToMacroIDFromEmbeddedMacro": true,

@@ -506,6 +506,22 @@ function areaPath(values, maximum, width = 100, height = 48) {
   return line ? `${line} L ${width} ${height} L 0 ${height} Z` : "";
 }
 
+// src/quotes/parser.ts
+function formatBookName(fileName) {
+  return `\u300A${fileName.replace(/^【.*?】/, "").trim()}\u300B`;
+}
+function matchingQuoteLines(text, tag) {
+  if (!tag) return [];
+  return text.split(/\r?\n/).filter((line) => line.includes(tag));
+}
+function cleanQuoteText(raw) {
+  const cleaned = raw.replace(/#[^\s#]+/g, "").replace(/\[.*?::.*?\]/g, "").replace(/^[#\-*\s>]+/, "").replace(/\s{2,}/g, " ").trim();
+  return cleaned || raw.trim();
+}
+function randomOf(items) {
+  return items.length ? items[Math.floor(Math.random() * items.length)] : void 0;
+}
+
 // src/ui/classes.ts
 function svgClasses(...tokens) {
   return tokens;
@@ -799,9 +815,6 @@ var baseView = {
     host.registerDomEvent(open, "click", () => void plugin.app.workspace.getLeaf(false).openFile(file));
   }
 };
-function formatBookName(fileName) {
-  return `\u300A${fileName.replace(/^【.*?】/, "").trim()}\u300B`;
-}
 var randomQuote = {
   id: "builtin/random-quote",
   name: "\u968F\u673A\u4E66\u6458",
@@ -812,6 +825,7 @@ var randomQuote = {
     { key: "tag", type: "tag", defaultValue: "" }
   ],
   async render(container, block, host, plugin) {
+    var _a;
     const folder = paramString(block.params.folder).replace(/^\/+|\/+$/g, "");
     const rawTag = paramString(block.params.tag).replace(/^#/, "");
     if (!folder || !rawTag) {
@@ -820,38 +834,46 @@ var randomQuote = {
     }
     const tag = `#${rawTag}`;
     const wrap = container.createDiv({ cls: "cw-quote" });
+    const root = plugin.app.vault.getAbstractFileByPath(folder);
+    const pages = [];
+    const stack = root instanceof import_obsidian4.TFolder ? [root] : [];
+    while (stack.length) {
+      const node = stack.pop();
+      if (!node) continue;
+      if (node instanceof import_obsidian4.TFolder) {
+        stack.push(...node.children);
+        continue;
+      }
+      if (!(node instanceof import_obsidian4.TFile) || node.extension !== "md") continue;
+      const cache = plugin.app.metadataCache.getFileCache(node);
+      if (matchesNoteFilter({ path: node.path, tags: cache ? (_a = (0, import_obsidian4.getAllTags)(cache)) != null ? _a : [] : [], frontmatter: cache == null ? void 0 : cache.frontmatter }, { tag: rawTag })) pages.push(node);
+    }
     const draw = async () => {
       wrap.empty();
-      const files = plugin.app.vault.getMarkdownFiles().filter((file) => file.path.startsWith(`${folder}/`));
-      const pages = files.filter((file) => {
-        var _a;
-        const cache = plugin.app.metadataCache.getFileCache(file);
-        return (cache ? (_a = (0, import_obsidian4.getAllTags)(cache)) != null ? _a : [] : []).some((item) => item.toLocaleLowerCase() === tag.toLocaleLowerCase());
-      });
-      if (!pages.length) {
+      const page = randomOf(pages);
+      if (!page) {
         wrap.createDiv({ text: t("\u6682\u65E0\u4E66\u6458\u53EF\u663E\u793A"), cls: "cw-empty" });
         return;
       }
-      const page = pages[Math.floor(Math.random() * pages.length)];
-      const text = await plugin.app.vault.cachedRead(page);
-      const lines = text.split("\n").filter((line) => line.includes(tag));
-      if (!lines.length) {
+      const raw = randomOf(matchingQuoteLines(await plugin.app.vault.cachedRead(page), tag));
+      if (!raw) {
         wrap.createDiv({ text: t("\u7B14\u8BB0\u4E2D\u6CA1\u6709\u5339\u914D\u6807\u7B7E\u7684\u884C"), cls: "cw-empty" });
         return;
       }
-      const raw = lines[Math.floor(Math.random() * lines.length)];
-      const quote = raw.replace(/#[^\s#]+/g, "").replace(/\[.*?::.*?\]/g, "").replace(/^[#\-*\s>]+/, "").replace(/\s{2,}/g, " ").trim() || raw.trim();
+      const quote = cleanQuoteText(raw);
       const source = formatBookName(page.name);
       const body = wrap.createDiv({ cls: "cw-quote__body" });
-      await import_obsidian4.MarkdownRenderer.render(plugin.app, `> ${quote}
->
-> \u2014 *${source}*`, body, page.path, host);
+      const quoteBlock = body.createEl("blockquote");
+      quoteBlock.createEl("p", { text: quote });
+      const sourceLine = quoteBlock.createEl("p");
+      sourceLine.appendText("\u2014 ");
+      sourceLine.createEl("em", { text: source });
       const tools = wrap.createDiv({ cls: "cw-quote__tools" });
       const copy = tools.createEl("button", { cls: "cw-quote__btn", attr: { "aria-label": t("\u590D\u5236\u4E66\u6458") } });
       (0, import_obsidian4.setIcon)(copy, "copy");
       host.registerDomEvent(copy, "click", () => {
-        var _a;
-        void ((_a = wrap.ownerDocument.defaultView) == null ? void 0 : _a.navigator.clipboard.writeText(`${quote}
+        var _a2;
+        void ((_a2 = wrap.ownerDocument.defaultView) == null ? void 0 : _a2.navigator.clipboard.writeText(`${quote}
 
 \u2014 ${source}`));
         new import_obsidian4.Notice(t("\u5DF2\u590D\u5236\u5230\u526A\u8D34\u677F"));

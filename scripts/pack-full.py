@@ -96,14 +96,6 @@ def copy_full_folders(src_dir, dest_dir):
     else:
         print(f"  [WARNING] 900 Assets not found in vault")
 
-    # Copy start file
-    start_file = src_dir / "👉从这里开始 Start from here!.md"
-    if start_file.exists():
-        shutil.copy2(start_file, dest_dir / start_file.name)
-        print(f"  [COPY] {start_file.name}")
-    else:
-        print(f"  [WARNING] Start file not found in vault")
-
 
 def create_zip(source_dir, output_file):
     """Create ZIP archive from directory"""
@@ -191,7 +183,6 @@ def main():
     print(f"\n  Contains:")
     print(f"    - .obsidian (full)")
     print(f"    - 900 Assets (full)")
-    print(f"    - 👉从这里开始 Start from here!.md")
     print(f"    - Fixed folder structure (empty)")
     print("=" * 60)
 
