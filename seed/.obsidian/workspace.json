@@ -259,7 +259,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       },
       {
         "id": "ab6e053c3b226343",
@@ -369,34 +369,37 @@
       "obsidian-day-planner:Open Multi-Day View": true
     }
   },
-  "active": "84909c6457e0ae5e",
+  "active": "2482a2660c24cb8c",
   "lastOpenFiles": [
+    "900 Assets/950 Readme/ThinkDoKit（知行盒子）使用指南2.0.md",
+    "900 Assets/990 Attachments/Douban/s35019587.jpg",
+    "900 Assets/990 Attachments/Douban/s34917944.jpg",
+    "900 Assets/990 Attachments/Douban/s34016149.jpg",
+    "900 Assets/990 Attachments/Douban/s29841816.jpg",
+    "900 Assets/920 Queries/Project Management.md",
+    "900 Assets/920 Queries/SideButtons.md",
+    "900 Assets/920 Queries/Task Center Phone.md",
+    "900 Assets/920 Queries/Tasks Center.md",
+    "900 Assets/920 Queries/按钮中心.md",
+    "900 Assets/920 Queries/查找闪卡.md",
+    "900 Assets/920 Queries/批量删除空笔记.md",
+    "900 Assets/920 Queries/生命之轮.md",
+    "900 Assets/920 Queries/手机主页.md",
+    "900 Assets/920 Queries/我的书架-待整理&阅读.md",
+    "900 Assets/920 Queries/我的书架-最近.md",
+    "300 Resources/330 Books/331 BookInfo/搞定.md",
+    "900 Assets/920 Queries/Project Center.md",
+    "900 Assets/920 Queries/Recent 7 days Summary.md",
     "900 Assets/960 Scripts/Dataviewjs/【dataviewjs】按标签搜索段落内容.md",
     "900 Assets/960 Scripts/Dataviewjs/【dataview】本月每日完成任务数统计表.md",
     "900 Assets/960 Scripts/Dataviewjs/【脚本说明】journal-section-summary.md",
     "900 Assets/960 Scripts/Dataviewjs/【脚本说明】内联字段生成表格.md",
-    "900 Assets/950 Readme/ThinkDoKit（知行盒子）使用指南2.0.md",
     "900 Assets/950 Readme/⭐ThinkDoKit（知行盒子）使用指南1.0.md",
     "900 Assets/950 Readme/ThemeReadme/BlueTopaz任务查询样例.md",
     "900 Assets/950 Readme/ThemeReadme/【BlueTopaz】自定义表格样式（需开启对应CSS片段）.md",
     "900 Assets/950 Readme/ThemeReadme/【主题说明】BlueTopaz用例.md",
-    "900 Assets/920 Queries/Tasks Center.md",
-    "900 Assets/920 Queries/Task Center Phone.md",
-    "900 Assets/920 Queries/SideButtons.md",
-    "900 Assets/920 Queries/Project Management.md",
-    "900 Assets/920 Queries/Recent 7 days Summary.md",
-    "900 Assets/920 Queries/Project Center.md",
     "900 Assets/920 Queries/Keywords Query.md",
     "900 Assets/920 Queries/My Book Shelf.md",
-    "900 Assets/920 Queries/Inbox Center.md",
-    "900 Assets/920 Queries/GTD Center.md",
-    "900 Assets/920 Queries/GTDCenterBlock.md",
-    "900 Assets/920 Queries/周打卡记录查询样式范例.md",
-    "900 Assets/920 Queries/我的书架-最近.md",
-    "900 Assets/920 Queries/我的书架-待整理&阅读.md",
-    "900 Assets/920 Queries/手机主页.md",
-    "900 Assets/920 Queries/生命之轮.md",
-    "900 Assets/920 Queries/批量删除空笔记.md",
     "900 Assets/960 Scripts/r2.sh",
     "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/_shared.mjs",
     "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/_shared.d.mts",
@@ -413,10 +416,6 @@
     "900 Assets/990 Attachments/Task面板.png",
     "300 Resources/350 PersonalMemos/20210308084051-0002.jpg",
     "900 Assets/990 Attachments/f2742721e69e15d69e9ddc57783652db_MD5.jpg",
-    "900 Assets/990 Attachments/e14e71b6e05d38fb9043b427f9b50caa_MD5.jpg",
-    "900 Assets/990 Attachments/afff5d1e8ce658901d9b4dbeeb89c344_MD5.jpg",
-    "900 Assets/990 Attachments/c497b36734dbc4fc5b2ea33118507fc4_MD5.jpg",
-    "900 Assets/990 Attachments/c39dcd6f5f7561c0c0b4db9e01ea003d_MD5.jpg",
-    "900 Assets/990 Attachments/96a907a53de6148959c9522c8b332301_MD5.jpg"
+    "900 Assets/990 Attachments/e14e71b6e05d38fb9043b427f9b50caa_MD5.jpg"
   ]
 }

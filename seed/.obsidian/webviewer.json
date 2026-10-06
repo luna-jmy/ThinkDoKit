@@ -1,7 +1,8 @@
 {
   "openExternalURLs": true,
   "enableAdblocking": true,
-  "markdownPath": "300 Resources/310 Clippings",
+  "markdownPath": "300 Resources/310 Clipplings",
   "homepage": "https://www.zhihu.com",
-  "searchEngine": "google"
+  "searchEngine": "google",
+  "customSearchEngine": "https://duckduckgo.com/?q=%s"
 }
