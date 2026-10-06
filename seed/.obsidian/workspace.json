@@ -73,8 +73,7 @@
               "title": "关系图谱"
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -210,16 +209,6 @@
         "dimension": 63.78109452736319,
         "children": [
           {
-            "id": "24e9fcaa50f1c811",
-            "type": "leaf",
-            "state": {
-              "type": "claudian-view",
-              "state": {},
-              "icon": "lucide-ghost",
-              "title": "claudian-view"
-            }
-          },
-          {
             "id": "53e6381173c1ba89",
             "type": "leaf",
             "state": {
@@ -258,9 +247,19 @@
               "icon": "notebook-pen",
               "title": "日志汇总"
             }
+          },
+          {
+            "id": "5217969f20138a43",
+            "type": "leaf",
+            "state": {
+              "type": "planner-time-tracker",
+              "state": {},
+              "icon": "timer",
+              "title": "Time Tracker"
+            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 2
       },
       {
         "id": "ab6e053c3b226343",
@@ -370,7 +369,7 @@
       "obsidian-day-planner:Open Multi-Day View": true
     }
   },
-  "active": "c41a219002db7f54",
+  "active": "2482a2660c24cb8c",
   "lastOpenFiles": [
     "300 Resources/360 WorkMemos/会议记录/20240116 Meeting Minutes.md",
     "000 Inbox/AGENTS-ThinkDoKit.md",

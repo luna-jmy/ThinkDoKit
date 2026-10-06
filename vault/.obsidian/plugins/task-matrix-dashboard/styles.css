@@ -1387,6 +1387,15 @@ body.tm-resizing {
 	z-index: var(--layer-tooltip, 30);
 }
 
+/*
+ * 提示元素挂在 document.body 上（见 tooltip.ts），不在 .tm-root 里，
+ * 文件开头那条 .tm-root .is-hidden 罩不住它 —— 隐藏规则必须单独写一条，
+ * 否则 hide() 加了类也不生效，提示一旦出现就永远留在屏幕上。
+ */
+.tm-tooltip.is-hidden {
+	display: none;
+}
+
 .tm-tooltip__line {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-normal);

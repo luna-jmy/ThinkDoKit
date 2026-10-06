@@ -368,7 +368,7 @@
           {
             "id": "0d4936ce4a90f2a3",
             "type": "tabs",
-            "dimension": 67.87941787941789,
+            "dimension": 62.149532710280376,
             "children": [
               {
                 "id": "c2bbd590909f709a",
@@ -417,7 +417,7 @@
           {
             "id": "70ad89988ea71d43",
             "type": "tabs",
-            "dimension": 32.12058212058212,
+            "dimension": 37.850467289719624,
             "children": [
               {
                 "id": "9b31f8b60aa7d915",
@@ -480,7 +480,7 @@
           }
         ],
         "direction": "horizontal",
-        "width": 213.5
+        "width": 306.5
       },
       "right": {
         "id": "1d363781f2dc0572",
@@ -491,16 +491,6 @@
             "type": "tabs",
             "dimension": 63.78109452736319,
             "children": [
-              {
-                "id": "24e9fcaa50f1c811",
-                "type": "leaf",
-                "state": {
-                  "type": "claudian-view",
-                  "state": {},
-                  "icon": "lucide-ghost",
-                  "title": "claudian-view"
-                }
-              },
               {
                 "id": "53e6381173c1ba89",
                 "type": "leaf",
@@ -540,9 +530,18 @@
                   "icon": "notebook-pen",
                   "title": "日志汇总"
                 }
+              },
+              {
+                "id": "5217969f20138a43",
+                "type": "leaf",
+                "state": {
+                  "type": "planner-time-tracker",
+                  "state": {},
+                  "icon": "timer",
+                  "title": "Time Tracker"
+                }
               }
-            ],
-            "currentTab": 4
+            ]
           },
           {
             "id": "ab6e053c3b226343",
@@ -652,8 +651,8 @@
           "obsidian-day-planner:Open Multi-Day View": true
         }
       },
-      "active": "c2bbd590909f709a",
-      "mtime": "2026-10-06T19:40:39+08:00",
+      "active": "53e6381173c1ba89",
+      "mtime": "2026-10-06T19:48:09+08:00",
       "workspaces-plus:settings-v1": {
         "explorerFoldState": [],
         "trackedFiles": {}

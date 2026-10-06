@@ -4838,6 +4838,13 @@ var CalendarBoard = class {
   destroy() {
     this.tooltip.destroy();
   }
+  /**
+   * 收起悬停提示。切走日历（工作区页签切换、本视图换模式）时鼠标往往
+   * 没离开条目，mouseleave 不会触发，由宿主视图在这些时机显式调用。
+   */
+  hideHover() {
+    this.tooltip.hide();
+  }
   render(options) {
     this.host.empty();
     this.tooltip.hide();
@@ -5626,6 +5633,9 @@ var MatrixView = class extends import_obsidian13.ItemView {
     this.buildBody(root);
     this.syncToolbar();
     this.render();
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", () => this.calendar?.hideHover())
+    );
     return Promise.resolve();
   }
   onClose() {
@@ -5904,6 +5914,7 @@ var MatrixView = class extends import_obsidian13.ItemView {
     const calendarActive = !ganttActive && this.mode === "calendar";
     const showTimeline = ganttActive && this.ganttView === "gantt";
     const showMermaid = ganttActive && this.ganttView === "mermaid";
+    if (!calendarActive) this.calendar?.hideHover();
     this.boardHost?.toggleClass("is-hidden", ganttActive || calendarActive);
     this.calendarHost?.toggleClass("is-hidden", !calendarActive);
     this.ganttShell?.toggleClass("is-hidden", !ganttActive);

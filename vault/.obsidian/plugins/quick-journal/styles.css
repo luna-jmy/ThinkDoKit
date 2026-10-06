@@ -252,6 +252,11 @@
 	margin-top: var(--size-2-2);
 }
 
+/* 编辑弹窗的插图按钮：输入工具不是表单动作，推到页脚左侧与取消/保存分开 */
+.qj-form-attach {
+	margin-right: auto;
+}
+
 .qj-btn-primary {
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
@@ -414,6 +419,12 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	gap: var(--size-2-2);
+}
+
+/* 附件按钮贴着发送按钮（space-between 三元素会把它甩到正中间）；提示词留在左侧 */
+.qj-composer-attach {
+	margin-left: auto;
 }
 
 .qj-composer-hint {

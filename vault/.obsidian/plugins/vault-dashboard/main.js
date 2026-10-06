@@ -1921,8 +1921,18 @@ var PluginBridge = class {
 var import_obsidian8 = require("obsidian");
 
 // src/metrics/text.ts
+function stripFrontmatter(input) {
+  var _a;
+  const lines = input.replace(/^FEFF/, "").split(/\r?\n/);
+  if (((_a = lines[0]) == null ? void 0 : _a.trimEnd()) !== "---") return input;
+  for (let i = 1; i < lines.length; i += 1) {
+    const line = lines[i].trim();
+    if (/^-{3,}$/.test(line) || /^\.{3,}$/.test(line)) return lines.slice(i + 1).join("\n");
+  }
+  return input;
+}
 function stripMarkdown(input) {
-  return input.replace(/^---\s*$[\s\S]*?^---\s*$/m, "").replace(/```[\s\S]*?```/g, "").replace(/^(?: {4}|\t).*$/gm, "").replace(/<!--[^]*?-->/g, "").replace(/`[^`]*`/g, "").replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/!\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g, "$1").replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, "$2 $1").replace(/^\s*[^\p{L}\p{N}]+\s*$/gmu, "").replace(/^[>#*+\-\d.)\s]+/gm, "").trim();
+  return stripFrontmatter(input).replace(/\r\n?/g, "\n").replace(/^```[\s\S]*?^```[ \t]*$/gm, "").replace(/<!--[^]*?-->/g, "").replace(/`[^`]*`/g, "").replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/!\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g, "$1").replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, "$2 $1").replace(/^\s*[^\p{L}\p{N}]+\s*$/gmu, "").replace(/^[>#*+\-\d.)\s]+/gm, "").trim();
 }
 function countReadableWords(input) {
   var _a, _b, _c, _d;
@@ -1986,12 +1996,14 @@ var VaultIndex = class {
       var _a2, _b;
       const cache = this.app.metadataCache.getFileCache(file);
       const frontmatter = cache == null ? void 0 : cache.frontmatter;
+      const raw = await this.app.vault.cachedRead(file);
+      const body = (cache == null ? void 0 : cache.frontmatterPosition) ? raw.slice(cache.frontmatterPosition.end.offset) : raw;
       return {
         path: file.path,
         ctime: file.stat.ctime,
         mtime: file.stat.mtime,
         frontmatterCreated: frontmatter == null ? void 0 : frontmatter.created,
-        words: countReadableWords(await this.app.vault.cachedRead(file)),
+        words: countReadableWords(body),
         outgoing: Object.values((_a2 = resolved[file.path]) != null ? _a2 : {}).reduce((sum, count) => sum + count, 0),
         incoming: (_b = incoming.get(file.path)) != null ? _b : 0
       };
@@ -2269,9 +2281,11 @@ container.createEl("p", { text: String(params.title) });
       const notes = await Promise.all(files.map(async (file) => {
         var _a, _b;
         const cache = this.app.metadataCache.getFileCache(file);
+        const raw = await this.app.vault.cachedRead(file);
+        const body = (cache == null ? void 0 : cache.frontmatterPosition) ? raw.slice(cache.frontmatterPosition.end.offset) : raw;
         return {
           created: resolveCreatedDate((_a = cache == null ? void 0 : cache.frontmatter) == null ? void 0 : _a.created, file.stat.ctime),
-          words: countReadableWords(await this.app.vault.cachedRead(file)),
+          words: countReadableWords(body),
           links: Object.values((_b = this.app.metadataCache.resolvedLinks[file.path]) != null ? _b : {}).reduce((sum, value) => sum + value, 0)
         };
       }));
