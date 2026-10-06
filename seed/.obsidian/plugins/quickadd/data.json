@@ -19,7 +19,27 @@
                 "name": "delete-tag-wholevault",
                 "type": "UserScript",
                 "id": "cc643e1d-c3e6-46a6-9c65-ae4f29d00397",
-                "path": "900 Assets/960 Scripts/delete-tag-wholevault.js",
+                "path": "900 Assets/960 Scripts/QuickAdd/delete-tag-wholevault.js",
+                "settings": {}
+              }
+            ]
+          },
+          "runOnStartup": false
+        },
+        {
+          "id": "b70a4374-7425-4d5a-aa47-2ec968edcddb",
+          "name": "AddGanttChart",
+          "type": "Macro",
+          "command": true,
+          "macro": {
+            "id": "716ab7c3-988f-47e6-88d5-2fa03efdba4d",
+            "name": "AddGanttChart",
+            "commands": [
+              {
+                "name": "gantt-with-svg-export2",
+                "type": "UserScript",
+                "id": "99800be9-4473-4726-be5a-578f9c4ae061",
+                "path": "900 Assets/960 Scripts/QuickAdd/gantt-with-svg-export2.js",
                 "settings": {}
               }
             ]
@@ -221,7 +241,7 @@
                 "name": "taskSnapshot",
                 "type": "UserScript",
                 "id": "4f47ef20-e1aa-4782-b68f-5f166ab66b53",
-                "path": "900 Assets/960 Scripts/taskSnapshot.js",
+                "path": "900 Assets/960 Scripts/QuickAdd/taskSnapshot.js",
                 "settings": {}
               }
             ]
@@ -240,7 +260,7 @@
                 "name": "wrapped-tag2metadata",
                 "type": "UserScript",
                 "id": "e1f8e08c-1188-4204-aa1e-6fbd1b3226dd",
-                "path": "900 Assets/960 Scripts/wrapped-tag2metadata.js",
+                "path": "900 Assets/960 Scripts/QuickAdd/wrapped-tag2metadata.js",
                 "settings": {}
               }
             ]
@@ -260,7 +280,7 @@
                 "name": "metadata2tag",
                 "type": "UserScript",
                 "id": "44eda619-76a6-4e6b-9ce9-118e217c405c",
-                "path": "900 Assets/960 Scripts/metadata2tag.js",
+                "path": "900 Assets/960 Scripts/QuickAdd/metadata2tag.js",
                 "settings": {}
               }
             ]
@@ -308,7 +328,7 @@
           "runOnStartup": false
         }
       ],
-      "collapsed": true
+      "collapsed": false
     },
     {
       "id": "01d6d2f3-19e2-498a-83f6-585394196c96",
@@ -602,6 +622,170 @@
             "mode": "default"
           },
           "activeFileWritePosition": "cursor"
+        },
+        {
+          "id": "ddf99b9d-42ca-457a-ae9b-2c9234c7fcd6",
+          "name": "添加本月重点",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "{{VALUE: 请输入本月重点}} ➕ {{date:YYYY-MM-DD}} "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "`button-smonthlyReminder`",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "top"
+          },
+          "prepend": false,
+          "task": true,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        },
+        {
+          "id": "e7464c00-b5b4-4d3d-8023-147cb02925cf",
+          "name": "添加本月目标",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "{{VALUE: 请输入本月目标}} ➕ {{date:YYYY-MM-DD}} "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "`button-smonthlyGoal`",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "top"
+          },
+          "prepend": false,
+          "task": true,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        },
+        {
+          "id": "290dbc6e-674f-4798-afc4-cc75b6425584",
+          "name": "添加娱乐",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "{{VALUE: 请输入内容}} ➕ {{date:YYYY-MM-DD}} "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "## 🎥 娱乐放松 / 亲子",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "cursor"
+          },
+          "prepend": false,
+          "task": true,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        },
+        {
+          "id": "6d372f32-8837-4cfd-b9f3-733c1aa1d2d1",
+          "name": "添加周计划",
+          "type": "Capture",
+          "command": true,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "{{VALUE: 请输入本周计划}} ➕ {{date:YYYY-MM-DD}} "
+          },
+          "insertAfter": {
+            "enabled": true,
+            "after": "`button-sweeklyPlan`",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "top"
+          },
+          "prepend": false,
+          "task": true,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
         }
       ],
       "collapsed": true
@@ -1048,6 +1232,97 @@
       "collapsed": true
     },
     {
+      "id": "8fc8e1d2-017e-4f2a-ae3a-9ca82c09b9cb",
+      "name": "QuickQuery",
+      "type": "Multi",
+      "command": false,
+      "choices": [
+        {
+          "id": "a69cc74d-7bd3-4ffb-a55b-5ae4143df4ed",
+          "name": "添加单个会议待办任务查询",
+          "type": "Capture",
+          "command": false,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "```tasks\nnot done\npath includes {{value:输入会议记录文件名}}\nfilter by function task.status.symbol === ' '\nsort by path\nsort by priority reverse\nshort mode\n```\n"
+          },
+          "insertAfter": {
+            "enabled": false,
+            "after": "",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "top"
+          },
+          "prepend": false,
+          "task": false,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        },
+        {
+          "id": "dd93da28-8b70-4eee-b032-24545f1389ee",
+          "name": "添加两个会议待办任务查询",
+          "type": "Capture",
+          "command": false,
+          "appendLink": false,
+          "captureTo": "",
+          "captureToActiveFile": true,
+          "createFileIfItDoesntExist": {
+            "enabled": false,
+            "createWithTemplate": false,
+            "template": ""
+          },
+          "format": {
+            "enabled": true,
+            "format": "```tasks\nnot done\n(path includes {{value:输入会议记录1文件名}}) OR (path includes {{value:输入会议记录2文件名}})\nfilter by function task.status.symbol === ' '\nsort by path\nsort by priority reverse\ngroup by filename\nshort mode\n```\n"
+          },
+          "insertAfter": {
+            "enabled": false,
+            "after": "",
+            "insertAtEnd": false,
+            "considerSubsections": false,
+            "createIfNotFound": false,
+            "createIfNotFoundLocation": "top"
+          },
+          "prepend": false,
+          "task": false,
+          "openFileInNewTab": {
+            "enabled": false,
+            "direction": "vertical",
+            "focus": true
+          },
+          "openFile": false,
+          "openFileInMode": "default",
+          "fileOpening": {
+            "location": "tab",
+            "direction": "vertical",
+            "focus": true,
+            "mode": "default"
+          }
+        }
+      ],
+      "collapsed": true
+    },
+    {
       "id": "c749c12b-934c-4579-824c-54568edd21ed",
       "name": "🔗 AddRelevantMonthLink",
       "type": "Capture",
@@ -1124,6 +1399,26 @@
       "fileExistsBehavior": {
         "kind": "prompt"
       }
+    },
+    {
+      "id": "22db2c06-fc3d-4dc4-a639-5ea08d76e7e6",
+      "name": "更新时间轴参数",
+      "type": "Macro",
+      "command": true,
+      "macro": {
+        "id": "035d6680-82c3-47e9-9f46-085dce19071e",
+        "name": "更新时间轴参数",
+        "commands": [
+          {
+            "name": "quickadd_timeline_editor",
+            "type": "UserScript",
+            "id": "f79f281a-d809-4ebb-86fd-658e972282b3",
+            "path": "900 Assets/960 Scripts/quickadd_timeline_editor.js",
+            "settings": {}
+          }
+        ]
+      },
+      "runOnStartup": false
     },
     {
       "id": "f825db4e-8ce2-40d2-a256-ef7d9130453b",
@@ -1217,7 +1512,7 @@
             "name": "TextWrapper",
             "type": "UserScript",
             "id": "bdce0672-25ab-40a9-b776-571d58b3f2ed",
-            "path": "900 Assets/960 Scripts/TextWrapper.js",
+            "path": "900 Assets/960 Scripts/QuickAdd/TextWrapper.js",
             "settings": {}
           }
         ]
@@ -1237,7 +1532,67 @@
             "name": "TextWrapper-reverse",
             "type": "UserScript",
             "id": "e64a2d52-ee04-4c50-8fe4-037bf41fb4b8",
-            "path": "900 Assets/960 Scripts/TextWrapper-reverse.js",
+            "path": "900 Assets/960 Scripts/QuickAdd/TextWrapper-reverse.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "9d8b5a78-c3b8-4777-9bd1-64739a1df2b8",
+      "name": "Gantt2Tasks",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "Gantt2Tasks",
+        "id": "97a7fabc-ad6d-4252-a888-37a91cb5050d",
+        "commands": [
+          {
+            "name": "MermaidGanttToTasks",
+            "type": "UserScript",
+            "id": "9f2e761c-8ecb-41af-b694-5892123a5bd1",
+            "path": "900 Assets/960 Scripts/MermaidGanttToTasks.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "6e34ee60-11da-4ea4-827d-fb366d89ad07",
+      "name": "GanttGenerator",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "GanttGenerator",
+        "id": "d4535e0c-8b74-48d4-8455-da14b87c4397",
+        "commands": [
+          {
+            "name": "gantt-with-svg-export",
+            "type": "UserScript",
+            "id": "abf72c86-9608-4683-a16d-a005876d79c6",
+            "path": "900 Assets/960 Scripts/QuickAdd/gantt-with-svg-export.js",
+            "settings": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "641e24c9-f923-46e5-af1e-9a99a72b9b42",
+      "name": "NewProject",
+      "type": "Macro",
+      "command": true,
+      "runOnStartup": false,
+      "macro": {
+        "name": "NewProject",
+        "id": "e2fe1d55-4cb8-4571-a6fe-30e6f7cd7172",
+        "commands": [
+          {
+            "name": "createProject",
+            "type": "UserScript",
+            "id": "e5ff086b-e5f0-4f93-bdd5-bb125baf4f8f",
+            "path": "900 Assets/960 Scripts/QuickAdd/createProject.js",
             "settings": {}
           }
         ]
@@ -1361,6 +1716,53 @@
             "settings": {}
           }
         ]
+      }
+    },
+    {
+      "id": "32da23fe-4608-46ac-acc1-303d2f86436c",
+      "name": "InterviewInfo",
+      "type": "Capture",
+      "command": true,
+      "appendLink": false,
+      "captureTo": "",
+      "captureToActiveFile": true,
+      "captureToCanvasNodeId": "",
+      "activeFileWritePosition": "cursor",
+      "createFileIfItDoesntExist": {
+        "enabled": false,
+        "createWithTemplate": false,
+        "template": ""
+      },
+      "format": {
+        "enabled": true,
+        "format": "\n- [姓名::]\n- [面试时间::]\n- [面试地点::]\n- [籍贯::]\n- [家庭::]\n- [基本情况::]\n- [状态::]\n- [p] Pros：\n\t- \n- [c] Cons：\n\t- \n- [结论::]\n- [其他::]\n- [推荐度::] \n\n---\n"
+      },
+      "insertAfter": {
+        "enabled": false,
+        "after": "",
+        "insertAtEnd": false,
+        "considerSubsections": false,
+        "createIfNotFound": false,
+        "createIfNotFoundLocation": "top",
+        "inline": false,
+        "replaceExisting": false,
+        "blankLineAfterMatchMode": "auto"
+      },
+      "newLineCapture": {
+        "enabled": false,
+        "direction": "below"
+      },
+      "prepend": false,
+      "task": false,
+      "openFile": false,
+      "fileOpening": {
+        "location": "tab",
+        "direction": "vertical",
+        "mode": "default",
+        "focus": true
+      },
+      "templater": {
+        "afterCapture": "none"
       }
     },
     {

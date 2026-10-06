@@ -7,7 +7,7 @@ version: "2.0"
 
 # Obsidian ThinkDoKit（知行盒子）使用指南 2.0
 
-> 本指南面向 **ThinkDoKit 2.0**。2.0 是一次架构性升级：原先依靠 Dataview 查询、DataviewJS 统计脚本和若干辅助插件实现的工作台，现在由**四个自研插件**原生承担——更快、更稳、手机上也能用。
+> 本指南面向 **ThinkDoKit 2.0**。2.0 是一次架构性升级：原先依靠 Dataview 查询、DataviewJS 统计脚本和若干辅助插件实现的工作台，现在由**四个自研插件**原生承担——更快、更稳、手机适配更好。
 > 如果你从 1.x 版本升级而来，请重点阅读 [[#9. 从 1.x 到 2.0：变化对照与迁移说明]]。
 > 方法论基础（GTD / PARA / Zettelkasten / 间隔重复）与文件夹结构不变，1.0 指南中关于理念的部分在 2.0 中依然适用，本指南不再重复展开，聚焦 2.0 的新用法。
 
@@ -31,14 +31,14 @@ version: "2.0"
 
 ## 2. 快速上手
 
-1. 解压发布包（Demo / Full / Lite），用 Obsidian 打开文件夹，信任作者并启用插件（发布包已预配置好插件设置，开箱即用）。
+1. 解压发布包（Demo / Full / Lite），用 Obsidian 打开文件夹，选择 **“信任作者并启用插件”** （发布包已预配置好插件设置，开箱即用）。
 2. 打开 Vault Dashboard 的主页（插件已预配置为启动页），打开 Obsidian 即见统计与今日任务——它取代了旧版的"👉从这里开始"导航页。
 3. 试着在日志笔记写一个 `- [ ] 任务 📅 2026-12-31`，然后打开 Task Matrix——它会自动出现在列表和日历里。目前默认设置里扫描的是 `500 Journal` 和 `100 Projects`，不建议设置全库扫描。
 4. 在 Project Master 中创建一个项目笔记，模板文件 `TPL-Project` 在设置中已预设好，填好属性中的 `status / start_date / due_date`，在 Project Master 中即可看到它的甘特图时间条。
 
 ## 3. 文件夹结构
 
-与 1.x 完全一致（PARA + 时间维度），此处仅列骨架：
+与 1.x 骨架一致（PARA + 时间维度）：
 
 ```
 Obsidian-ThinkDoKit/
@@ -51,10 +51,11 @@ Obsidian-ThinkDoKit/
 ├── 600 Zettelkasten       | 知识卡片（610 Evergreen / 620 Flashcards）
 └── 900 Assets             | 🔢 模板 / 查询 / 说明 / 脚本 / 附件
 ```
+（2.0版日志目录默认平铺，也可保留 1.x 子文件夹结构，详见第 9.3 节提醒）
 
-## 4. 四大插件要点
+## 4. 四大插件简介
 
-> 完整文档见插件文档站（链接在 GitHub 仓库主页），此处只讲在本体系中的用法。
+> 完整文档见插件文档站（链接在 [GitHub 仓库主页](https://luna-jmy.github.io/ob-plugin-docs)），此处只讲在本体系中的用法。
 
 ### 4.1 Vault Dashboard（仓库工作台）
 
@@ -63,7 +64,7 @@ Obsidian-ThinkDoKit/
 
 ### 4.2 Task Matrix（任务矩阵）
 
-- **数据即任务本身**：扫描指定文件夹，任务格式匹配 `Tasks` 插件语法（`📅 ⏳ 🔼` 等）。
+- **跨笔记搜集任务**：扫描指定文件夹，任务格式匹配 `Tasks` 插件语法（`📅 ⏳ 🔼` 等）。
 - **四视图**：
     - 列表视图：全量任务清单，可筛选；
     - GTD 视图：按"收件箱 / 下一步 / 等待 / 完成"分组；
@@ -73,14 +74,14 @@ Obsidian-ThinkDoKit/
 
 ### 4.3 Project Master（项目管理中心）
 
-- **数据源是 frontmatter**：`status`（todo/active/on-hold/completed/cancelled）、`start_date`、`due_date`、`completion_date`、`priority`、`area` 等，与 TPL-Project 模板一一对应，模板参数可通过插件设置修改。
+- **数据源是项目笔记的 YAML frontmatter**：`status`（todo/active/on-hold/completed/cancelled）、`start_date`、`due_date`、`completion_date`、`priority`、`area` 等，与 TPL-Project 模板一一对应，模板参数可通过插件设置修改。
 - **两视图**：甘特图（按项目笔记展示，可拖拽调日期）与 面板（按项目文件夹展示）。
 
 ### 4.4 Quick Journal（日志速记）
 
 - **表单录入**：点按钮 → 填表单 → 打卡、数据、小结自动写进当天日志的对应标题区，全程不进 Markdown 编辑模式，**手机可便利完成**。
-- **内容流与汇总**：周 / 月 / 年汇总视图与复盘在同一体系里，不再需要日志模板中复杂的 DataviewJS 统计块。
-- **模板变化**：2.0 的 Journal 模板（TPL-Daily / Weekly / Monthly / Annual）已配套删减，但模板中的 `button-` 按钮和QuickAdd 脚本驱动的任务滚动按钮仍保留了。目前全部可由 Quick Journal 插件接管完成（今日待办、打卡、数据、小结、周计划、月目标等），觉得冗余可自行在模板笔记中删除。
+- **内容流与汇总**：周 / 月 / 季度 / 年汇总视图与复盘在同一体系里，不再需要日志模板中复杂的 DataviewJS 统计块。
+- **模板变化**：2.0 的 Journal 模板（TPL-Daily / Weekly / Monthly / Annual）已配套删减dataviewjs查询，但模板中的 `button-` 按钮和QuickAdd 脚本驱动的任务滚动按钮仍保留了。目前全部可由 Quick Journal 插件接管完成（今日待办、打卡、数据、小结、周计划、月目标等），觉得冗余可自行在模板笔记中删除。
 
 ## 5. Journal 模板 2.0 详解
 
@@ -94,7 +95,7 @@ Obsidian-ThinkDoKit/
 
 ### 5.2 TPL-Weekly（周日志）
 
-- 保留：上周提醒 / 上周展望自动回引、周例会待办查询（tasks）、本周计划 / 上期未完成 / 周末回顾（按钮）、新增 Zettelkasten 与资源笔记、发布文章三张 Dataview 表（这类"本周新增"轻量表保留——它们是知识回顾的一部分，插件不覆盖此场景）。
+- 保留：上周提醒 / 上周展望自动回引、周例会待办查询（tasks）、本周计划 / 上期未完成 / 周末回顾（按钮）、新增 Zettelkasten 与资源笔记、发布文章三张 Dataview 表（这类"本周新增"轻量表保留，但也可以把查询写到插件的自定义查询模块里，不需要可以自行删除）。
 - 新增：周例会链接与周会待办查询；底部 `calendar-timeline`、`journals-home`、归档按钮。
 - 移除：1.x 的"本周日志汇总" DataviewJS 块（`journal-section-summary` 的打卡 / 数据记录汇总）——由 Quick Journal 的周汇总视图替代。
 
@@ -105,26 +106,26 @@ Obsidian-ThinkDoKit/
 
 ### 5.4 TPL-Annual（年度日志）
 
-- 生命之轮改为 **Dataview 内联字段**：八个维度（PersonalGrowth / HealthFitness / LoveRelationships / CareerWork / FunRecreation / Social / Finance / Spiritual）各只保留两个指标——年度目标 `🎯` 与年底复盘 `🏆`，以列表内联字段（如 `- [Finance🎯:: 0]`）写在正文中，由 **Quick Journal 读取，在日志汇总视图生成雷达图**；1.x 交互脚本 `wheel-of-life-interactive` 及 frontmatter 中的多组冗余数值字段移除。
-- 保留：年度核心目标（Tasks 语法）、高光时刻、对未来的思考。
-- 新增：年度日志索引（由脚本自动生成）。
-- 移除：项目回顾 Dataview 表与年度数据统计 DataviewJS 块（同上，交给插件）。
+- 保留：年度核心目标（Tasks 语法，配任务滚动按钮）、高光时刻（与挑战合并为一节）、对未来的思考。
+- 新增：个人成长与学习、年度事件；年度日志索引（由 `generate-journal-index.py` 脚本自动生成，勿手动编辑，请通过AI agent使用）。
+- 生命之轮改为 **Dataview 内联字段**，由 **Quick Journal 读取，在日志汇总视图生成雷达图**。
+- 移除：1.x 交互脚本 `wheel-of-life-interactive`、frontmatter 多组数值字段、项目回顾表与年度数据统计 DataviewJS 块（统计交给 Quick Journal / Project Master）。
 
 ## 6. GTD 工作流在 2.0 中的落地
 
 方法论五步不变，工具映射更新：
 
-| GTD 阶段      | 1.x 主要工具                             | 2.0 主要工具                                            |
-| ----------- | ------------------------------------ | --------------------------------------------------- |
-| 收集 Capture  | 每日日志 + QuickAdd + Inbox              | 不变；手机端推荐 Quick Journal 按钮录入                         |
-| 理清 Clarify  | 手动 + Dataview 查询                     | Task Matrix 的 **GTD 视图**（收件箱/下一步/等待分组）              |
-| 组织 Organize | 模板 frontmatter + Tasks 语法 + Dataview | 项目统一用 TPL-Project 的 frontmatter，由 Project Master 识别 |
-| 回顾 Reflect  | 日志模板中的 Dataview/DataviewJS 统计块       | Quick Journal 周/月/年汇总视图 + 模板中保留的轻量表                 |
-| 执行 Engage   | 每日日志 + 任务中心查询                        | Task Matrix 四象限/日历 + 每日日志"今日到期"查询                   |
+| GTD 阶段      | 1.x 主要工具                             | 2.0 主要工具                                                                |
+| ----------- | ------------------------------------ | ----------------------------------------------------------------------- |
+| 收集 Capture  | 每日日志 + QuickAdd + Inbox              | 不变；手机端推荐 Quick Journal 按钮录入                                             |
+| 理清 Clarify  | 手动 + Dataview 查询                     | Task Matrix 的 **GTD 视图**（收件箱/下一步/等待分组）                                  |
+| 组织 Organize | 模板 frontmatter + Tasks 语法 + Dataview | 项目统一用 TPL-Project 的 frontmatter，由 Project Master 识别；任务统一用Task Matrix管理。 |
+| 回顾 Reflect  | 日志模板中的 Dataview/DataviewJS 统计块       | Quick Journal 周/月/年汇总视图 + 模板中保留的轻量表                                     |
+| 执行 Engage   | 每日日志 + 任务中心查询                        | Task Matrix 四象限/日历 + 每日日志"今日到期"查询                                       |
 
 学习工作流（Zettelkasten + Spaced Repetition）在 2.0 无结构性变化。
 
-## 7. 插件配置总览
+## 7. 核心插件配置总览
 
 | 插件                                 | 2.0 中的角色  | 预配置要点                       |
 | ---------------------------------- | --------- | --------------------------- |
@@ -156,7 +157,7 @@ Obsidian-ThinkDoKit/
 | TPL-Daily | 顶部 journals-home/calendar-nav；提示文字多；脚本驱动的任务滚动 | 模板瘦身，按钮统一由 Quick Journal 驱动；查询块仅保留"今日到期任务" |
 | TPL-Weekly | 含"本周日志汇总"DataviewJS（打卡/数据统计） | 移除统计脚本块；保留三张"新增笔记"轻量表；新增周例会区 |
 | TPL-Monthly | 含"月度数据统计"（项目表 + 3 张任务统计表 + 2 个 DataviewJS 脚本） | 整章删除，统计交给 Quick Journal / Project Master |
-| TPL-Annual | 含项目回顾表 + 年度任务统计 DataviewJS + frontmatter 三组生命之轮数值字段 | 生命之轮改为 `🎯`/`🏆` 两个内联字段指标，由 Quick Journal 生成雷达图；统计块删除；新增自动索引 |
+| TPL-Annual | 含项目回顾表 + 年度任务统计 DataviewJS + frontmatter 三组生命之轮数值字段 | 生命之轮改为 `🎯`/`🏆` 两个内联字段指标，由 Quick Journal 生成雷达图；统计块删除；新增个人成长与学习、年度事件、自动索引三节 |
 
 ### 9.2 查询与脚本变化
 

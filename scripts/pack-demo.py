@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 
 # Configuration
-VERSION = os.environ.get("TDK_VERSION", "1.2.2")
+VERSION = os.environ.get("TDK_VERSION", "2.0.0")
 TARGET = f"ThinkDoKit-Demo-{VERSION}.zip"
 EXCLUDE_DIRS = {".trash"}
 EXCLUDE_FILES = {".DS_Store"}
