@@ -58,7 +58,7 @@ jobs:
           versions = {}
           for path in files:
               content = path.read_text(encoding="utf-8")
-              match = re.search(r'^VERSION = "([^"]+)"', content, re.M)
+              match = re.search(r'^VERSION = (?:os\.environ\.get\("TDK_VERSION", )?"([^"]+)"', content, re.M)
               if not match:
                   raise SystemExit(f"Missing VERSION in {path}")
               versions[str(path)] = match.group(1)
