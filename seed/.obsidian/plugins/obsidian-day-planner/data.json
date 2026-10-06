@@ -25,14 +25,7 @@
   "pluginVersion": "0.35.1",
   "showCompletedTasks": false,
   "showSubtasksInTaskBlocks": true,
-  "icals": [
-    {
-      "name": "Luna Work",
-      "email": "luna.j@cims.com",
-      "url": "https://outlook.office365.com/owa/calendar/87fa916116154e87b0f8520544266e87@cims.com/bd2eb99b4fa04c4bb438e11c320c64295898503124433135431/calendar.ics",
-      "color": "#ffffff"
-    }
-  ],
+  "icals": [],
   "colorOverrides": [],
   "releaseNotes": true,
   "taskStatusOnCreation": " ",

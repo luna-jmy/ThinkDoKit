@@ -871,20 +871,6 @@
           "config": {
             "items": [
               {
-                "id": "a5e6f7b8-5c6d-4e9f-9a0b-2c3d4e5f6a7b",
-                "key": "button",
-                "config": {
-                  "action": {
-                    "type": "navigate-step",
-                    "direction": "prev",
-                    "unit": "year",
-                    "amount": 1
-                  },
-                  "icon": "chevrons-left",
-                  "tooltip": "上一年"
-                }
-              },
-              {
                 "id": "b6f7a8c9-6d7e-4f0a-8b1c-3d4e5f6a7b8c",
                 "key": "button",
                 "config": {
@@ -931,20 +917,6 @@
                   "icon": "chevron-right",
                   "tooltip": "下个月"
                 }
-              },
-              {
-                "id": "e9c0d1f2-9a0b-4c3d-9e4f-6a7b8c9d0e1f",
-                "key": "button",
-                "config": {
-                  "action": {
-                    "type": "navigate-step",
-                    "direction": "next",
-                    "unit": "year",
-                    "amount": 1
-                  },
-                  "icon": "chevrons-right",
-                  "tooltip": "下一年"
-                }
               }
             ]
           }
@@ -958,18 +930,6 @@
             "hiddenWeekdays": [],
             "weeks": "left",
             "showHeading": false
-          }
-        },
-        {
-          "id": "ab1e2f3c-1c2d-4e5f-9a6b-8c9d0e1f2a3b",
-          "key": "divider",
-          "config": {}
-        },
-        {
-          "id": "bc2f3a4d-2d3e-4f6a-8b7c-9d0e1f2a3b4c",
-          "key": "custom-intervals",
-          "config": {
-            "window": "month"
           }
         }
       ]

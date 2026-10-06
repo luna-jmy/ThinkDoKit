@@ -2,8 +2,7 @@
   "uiLanguage": "auto",
   "scanFolders": [
     "500 Journal",
-    "100 Projects",
-    "300 Resources/360 WorkMemos/会议记录"
+    "100 Projects"
   ],
   "excludeFolders": [
     "900 Assets"

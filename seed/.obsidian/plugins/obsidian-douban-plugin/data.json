@@ -23,6 +23,7 @@
   "noteTemplateFile": "",
   "gameTemplateFile": "",
   "teleplayTemplateFile": "",
+  "theaterTemplateFile": "",
   "searchUrl": "https://www.douban.com/search?q=",
   "dateFormat": "yyyy-MM-DD",
   "timeFormat": "HH:mm:ss",
@@ -69,9 +70,10 @@
     }
   ],
   "loginCookiesContent": "",
-  "loginHeadersContent": "{\"Accept\":\"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\",\"Accept-Encoding\":\"gzip, deflate, br, zstd\",\"Accept-Language\":\"zh-CN\",\"Cookie\":\"bid=sik6LR7vfq0; dbcl2=\\\"134971337:2LSO/XouRUE\\\"; ck=7Yiz\",\"Referer\":\"https://accounts.douban.com/\",\"Sec-Fetch-Mode\":\"navigate\",\"Sec-Fetch-Site\":\"same-site\",\"Upgrade-Insecure-Requests\":\"1\",\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) obsidian/1.12.4 Chrome/142.0.7444.265 Electron/39.6.0 Safari/537.36\"}",
+  "loginHeadersContent": "",
   "cacheImage": true,
   "cacheHighQuantityImage": true,
+  "showAfterCreate": true,
   "attachmentPath": "900 Assets/990 Attachments/Douban",
   "attachmentFileName": "{{title}}",
   "syncHandledDataArray": [],
@@ -81,5 +83,6 @@
     "displayStarEmpty": false,
     "maxStar": 5
   },
-  "searchDefaultType": "all"
+  "searchDefaultType": "all",
+  "arrayLengthLimits": []
 }
