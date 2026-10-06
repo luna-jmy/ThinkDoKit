@@ -305,7 +305,6 @@
               {
                 "id": "4e24fd18aa02f614",
                 "type": "leaf",
-                "pinned": true,
                 "state": {
                   "type": "pm-dashboard-view",
                   "state": {
@@ -333,7 +332,6 @@
                     "sort": "due-asc",
                     "tab": "gantt"
                   },
-                  "pinned": true,
                   "icon": "gantt-chart",
                   "title": "Project dashboard"
                 }
@@ -341,13 +339,21 @@
               {
                 "id": "c41a219002db7f54",
                 "type": "leaf",
-                "pinned": true,
                 "state": {
                   "type": "task-matrix-view",
                   "state": {},
-                  "pinned": true,
                   "icon": "square-kanban",
                   "title": "任务矩阵"
+                }
+              },
+              {
+                "id": "4105f4ad5d34f810",
+                "type": "leaf",
+                "state": {
+                  "type": "graph",
+                  "state": {},
+                  "icon": "lucide-git-fork",
+                  "title": "关系图谱"
                 }
               }
             ]
@@ -491,8 +497,8 @@
                 "state": {
                   "type": "claudian-view",
                   "state": {},
-                  "icon": "bot",
-                  "title": "Claudian"
+                  "icon": "lucide-ghost",
+                  "title": "claudian-view"
                 }
               },
               {
@@ -616,28 +622,20 @@
           }
         ],
         "direction": "horizontal",
-        "width": 341.5
+        "width": 358.5
       },
       "left-ribbon": {
         "hiddenItems": {
+          "homepage:Open homepage": false,
+          "pomodoro-timer:Toggle timer panel": false,
           "quick-journal:快速录入": false,
           "task-matrix-dashboard:打开任务矩阵": false,
           "obsidian-excalidraw-plugin:新建绘图文件": false,
-          "marp-slides:Show Slide Preview": false,
           "project-master:打开项目中心": false,
-          "aurora-dashboard:打开 Dashboard": false,
           "vault-dashboard:打开工作台": false,
-          "tts-reader:Open TTS player": false,
-          "janitor:Janitor: scan vault": false,
-          "open-vscode:VS Code": false,
-          "obsidian-gantt-builder:打开当前笔记 Gantt Builder": false,
-          "mp-publisher:打开公众号发布": false,
-          "obsidian42-brat:BRAT": false,
-          "claudian:Open Claudian": false,
           "bases:新建数据库": false,
           "obsidian-local-images-plus:Local Images Plus  0.16.4\r\nLocalize attachments (plugin folder)": false,
           "table-editor-obsidian:Advanced Tables Toolbar": false,
-          "remotely-save:Remotely Save": false,
           "switcher:打开快速切换": true,
           "graph:查看关系图谱": true,
           "canvas:新建白板": false,
@@ -654,8 +652,8 @@
           "obsidian-day-planner:Open Multi-Day View": true
         }
       },
-      "active": "7f2eaee98074a2b5",
-      "mtime": "2026-09-30T19:23:45+08:00",
+      "active": "c2bbd590909f709a",
+      "mtime": "2026-10-06T19:40:39+08:00",
       "workspaces-plus:settings-v1": {
         "explorerFoldState": [],
         "trackedFiles": {}

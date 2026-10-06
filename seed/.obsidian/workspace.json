@@ -20,23 +20,8 @@
             }
           },
           {
-            "id": "8fed1712c225ddfd",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "000 Inbox/ThinkDoKit样例库同步工作流.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "ThinkDoKit样例库同步工作流"
-            }
-          },
-          {
             "id": "4e24fd18aa02f614",
             "type": "leaf",
-            "pinned": true,
             "state": {
               "type": "pm-dashboard-view",
               "state": {
@@ -64,39 +49,32 @@
                 "sort": "due-asc",
                 "tab": "gantt"
               },
-              "pinned": true,
               "icon": "gantt-chart",
               "title": "Project dashboard"
             }
           },
           {
-            "id": "673a4167364b227b",
+            "id": "c41a219002db7f54",
             "type": "leaf",
-            "pinned": true,
             "state": {
               "type": "task-matrix-view",
               "state": {},
-              "pinned": true,
               "icon": "square-kanban",
               "title": "任务矩阵"
             }
           },
           {
-            "id": "6b48678d6a03c43e",
+            "id": "4105f4ad5d34f810",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "000 Inbox/AGENTS.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "AGENTS"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "关系图谱"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -108,7 +86,7 @@
       {
         "id": "0d4936ce4a90f2a3",
         "type": "tabs",
-        "dimension": 67.87941787941789,
+        "dimension": 62.149532710280376,
         "children": [
           {
             "id": "c2bbd590909f709a",
@@ -157,7 +135,7 @@
       {
         "id": "70ad89988ea71d43",
         "type": "tabs",
-        "dimension": 32.12058212058212,
+        "dimension": 37.850467289719624,
         "children": [
           {
             "id": "9b31f8b60aa7d915",
@@ -220,7 +198,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 213.5
+    "width": 306.5
   },
   "right": {
     "id": "1d363781f2dc0572",
@@ -237,8 +215,8 @@
             "state": {
               "type": "claudian-view",
               "state": {},
-              "icon": "bot",
-              "title": "Claudian"
+              "icon": "lucide-ghost",
+              "title": "claudian-view"
             }
           },
           {
@@ -280,49 +258,9 @@
               "icon": "notebook-pen",
               "title": "日志汇总"
             }
-          },
-          {
-            "id": "fafadf4775718557",
-            "type": "leaf",
-            "state": {
-              "type": "backlink",
-              "state": {
-                "collapseAll": false,
-                "extraContext": false,
-                "sortOrder": "alphabetical",
-                "showSearch": false,
-                "searchQuery": "",
-                "backlinkCollapsed": false,
-                "unlinkedCollapsed": true
-              },
-              "icon": "links-coming-in",
-              "title": "反向链接"
-            }
-          },
-          {
-            "id": "24320fc7d93c995b",
-            "type": "leaf",
-            "state": {
-              "type": "outgoing-link",
-              "state": {
-                "linksCollapsed": false,
-                "unlinkedCollapsed": true
-              },
-              "icon": "links-going-out",
-              "title": "出链"
-            }
-          },
-          {
-            "id": "c26373fdb4a6f747",
-            "type": "leaf",
-            "state": {
-              "type": "planner-time-tracker",
-              "state": {},
-              "icon": "timer",
-              "title": "Time Tracker"
-            }
           }
-        ]
+        ],
+        "currentTab": 4
       },
       {
         "id": "ab6e053c3b226343",
@@ -347,13 +285,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "000 Inbox/ThinkDoKit样例库同步工作流.md",
+                "file": "500 Journal/540 Daily/2026-04-09.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "大纲"
+              "title": "2026-04-09 的大纲"
             }
           },
           {
@@ -362,7 +300,7 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "000 Inbox/ThinkDoKit（知行盒子）使用指南2.0（公众号版·无表格）.md"
+                "file": "900 Assets/920 Queries/👉从这里开始 Start from here!.md"
               },
               "icon": "lucide-info",
               "title": "笔记属性"
@@ -398,32 +336,24 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 627.5
+    "width": 358.5
   },
   "left-ribbon": {
     "hiddenItems": {
+      "homepage:Open homepage": false,
+      "pomodoro-timer:Toggle timer panel": false,
       "quick-journal:快速录入": false,
       "task-matrix-dashboard:打开任务矩阵": false,
       "obsidian-excalidraw-plugin:新建绘图文件": false,
-      "marp-slides:Show Slide Preview": false,
       "project-master:打开项目中心": false,
-      "aurora-dashboard:打开 Dashboard": false,
       "vault-dashboard:打开工作台": false,
-      "tts-reader:Open TTS player": false,
-      "janitor:Janitor: scan vault": false,
-      "open-vscode:VS Code": false,
-      "obsidian-gantt-builder:打开当前笔记 Gantt Builder": false,
-      "mp-publisher:打开公众号发布": false,
-      "obsidian42-brat:BRAT": false,
-      "claudian:Open Claudian": false,
       "bases:新建数据库": false,
       "obsidian-local-images-plus:Local Images Plus  0.16.4\r\nLocalize attachments (plugin folder)": false,
       "table-editor-obsidian:Advanced Tables Toolbar": false,
-      "remotely-save:Remotely Save": false,
       "switcher:打开快速切换": true,
       "graph:查看关系图谱": true,
       "canvas:新建白板": false,
@@ -440,8 +370,22 @@
       "obsidian-day-planner:Open Multi-Day View": true
     }
   },
-  "active": "24e9fcaa50f1c811",
+  "active": "c41a219002db7f54",
   "lastOpenFiles": [
+    "300 Resources/360 WorkMemos/会议记录/20240116 Meeting Minutes.md",
+    "000 Inbox/AGENTS-ThinkDoKit.md",
+    "300 Resources/360 WorkMemos/会议记录/20240312 Meeting Minutes.md",
+    "300 Resources/360 WorkMemos/会议记录/20240206 Meeting Minutes.md",
+    "300 Resources/360 WorkMemos/会议记录/20240109 Meeting Minutes.md",
+    "300 Resources/360 WorkMemos/会议记录/20240123 Meeting Minutes.md",
+    "300 Resources/360 WorkMemos/会议记录/20240409 Meeting Minutes.md",
+    "100 Projects/2026工作项目/202604康代菁英计划/2026菁英计划项目介绍大纲.md",
+    "300 Resources/350 PersonalMemos/20200119 李春林 离婚证.md",
+    "400 Archive/410 Project Archive/2024工作项目/快速项目/2024年度旅游.md",
+    "300 Resources/360 WorkMemos/会议记录/20240221 Monthly HR Meeting.md",
+    "000 Inbox/AGENTS.md",
+    "900 Assets/AgentLogs/20260930.md",
+    "000 Inbox/ThinkDoKit样例库同步工作流.md",
     "900 Assets/960 Scripts/r2.sh",
     "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/_shared.mjs",
     "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/_shared.d.mts",
@@ -452,7 +396,6 @@
     "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/deflate.mjs",
     "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/deflate.d.mts",
     "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/brotli.mjs",
-    "900 Assets/960 Scripts/node_modules/unenv/dist/runtime/node/internal/zlib/formats/brotli.d.mts",
     "900 Assets/960 Scripts/node_modules/unenv/README.md",
     "900 Assets/960 Scripts/node_modules/undici/lib/web/subresource-integrity/Readme.md",
     "900 Assets/960 Scripts/node_modules/undici/docs/docs/best-practices/writing-tests.md",
@@ -465,19 +408,6 @@
     "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/Util.md",
     "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/Socks5ProxyAgent.md",
     "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/SnapshotAgent.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/RoundRobinPool.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/RetryHandler.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/RetryAgent.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/RedirectHandler.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/ProxyAgent.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/PoolStats.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/Pool.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockPool.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockErrors.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockClient.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockCallHistoryLog.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockCallHistory.md",
-    "900 Assets/960 Scripts/node_modules/undici/docs/docs/api/MockAgent.md",
     "900 Assets/960 Scripts/node_modules/miniflare/dist/local-explorer-ui/favicon.svg",
     "900 Assets/920 Queries/2026Dashboard.canvas",
     "900 Assets/990 Attachments/2026-09-30 tasks插件.png",
