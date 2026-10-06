@@ -5,8 +5,6 @@ cssclasses:
 obsidianUIMode: preview
 ---
 
-
-
 - 待交付事项
 	- PPT/Reports/Other deliverables：
 	  ```tasks

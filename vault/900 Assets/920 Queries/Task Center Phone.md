@@ -7,15 +7,6 @@ type: query
 obsidianUIMode: preview
 ---
 
-```dataviewjs
-dv.view("task-heatmap-vertical", { 
-  theme: "light",
-  title: "任务热力图",
-  color: "blue",
-  months: "current"
-   })
-```
-
 >[!warning]- Overdue Tasks 
 >```tasks
 >not done

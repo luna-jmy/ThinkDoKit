@@ -541,7 +541,8 @@
                   "title": "Time Tracker"
                 }
               }
-            ]
+            ],
+            "currentTab": 2
           },
           {
             "id": "ab6e053c3b226343",
@@ -651,8 +652,8 @@
           "obsidian-day-planner:Open Multi-Day View": true
         }
       },
-      "active": "53e6381173c1ba89",
-      "mtime": "2026-10-06T19:48:09+08:00",
+      "active": "2482a2660c24cb8c",
+      "mtime": "2026-10-06T20:37:59+08:00",
       "workspaces-plus:settings-v1": {
         "explorerFoldState": [],
         "trackedFiles": {}

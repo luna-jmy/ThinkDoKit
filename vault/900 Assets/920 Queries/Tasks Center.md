@@ -50,13 +50,3 @@ dv.el("div", statsHtml, { raw: true });
 >```
 
 ---
-
-```dataviewjs
-dv.view("TabTaskView", {
-    tabs: [
-        { name: "推迟", folder: "", status: ">" },
-        { name: "备忘", folder: "", status: "information" },
-    ]
-});
-```
-
